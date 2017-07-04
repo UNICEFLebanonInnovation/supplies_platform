@@ -37,7 +37,7 @@ class ItemsAdmin(admin.ModelAdmin):
 class TransportAdmin(admin.ModelAdmin):
     list_display = (
         'get_parent_waybill', 'get_section', 'status', 'get_loading_warehouse', 'loading_time', 'delivery_date',
-        'get_destination_warehouse', 'total_items', 'view_link')
+        'get_destination_warehouse', 'total_items', 'view_link', )
 
     list_filter = ('RO_id',)
 
@@ -84,10 +84,11 @@ class TransportAdmin(admin.ModelAdmin):
     total_items.admin_order_field = 'item__count'
 
 
-class TransportInline(admin.TabularInline):
+class TransportInline(admin.StackedInline):
     model = TransportDetail
-    exclude = ['delivery_date', 'loading_time', 'unloading_time']
-
+    extra = 1
+    #readonly_fields = ['driver_id',]
+    exclude = ['driver_id','delivery_date', 'loading_time', 'unloading_time']
 
 
 class ReleaseOrderAdmin(admin.ModelAdmin):

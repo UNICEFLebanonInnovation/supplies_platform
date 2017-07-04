@@ -115,7 +115,7 @@ MANAGERS = ADMINS
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgres:///supplies_platform'),
+    'default': env.db('DATABASE_URL', default='postgres:///supplies_platform_db'),
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
@@ -204,6 +204,7 @@ SUIT_CONFIG = {
         {'app': 'users', 'label': 'Users', 'icon':'icon-user'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
         {'app': 'transport', 'label': 'Transport', 'icon': 'icon-globe'},
+        {'app': 'drivers', 'label': 'Drivers', 'icon': 'icon-car'},
         {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
         {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
     ),
@@ -252,7 +253,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # PASSWORD STORAGE SETTINGS
 # ------------------------------------------------------------------------------
-# See https://docs.djangoproject.com/en/dev/topics/auth/passwords/#using-argon2-with-django
+# See
+
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',

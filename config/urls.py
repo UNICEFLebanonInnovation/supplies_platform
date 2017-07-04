@@ -15,8 +15,7 @@ urlpatterns = [
     # User management
     url(r'^users/', include('supplies_platform.users.urls', namespace='users')),
     url(r'^accounts/', include('allauth.urls')),
-
-    url(r'^go-to-django/$', RedirectView.as_view(url='https://djangoproject.com'), name='go-to-django'),
+    url(r'^drivers/', include('supplies_platform.drivers.urls', namespace='drivers')),
 
 
     # Your stuff: custom urls includes go here

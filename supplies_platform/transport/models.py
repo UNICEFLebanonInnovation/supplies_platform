@@ -80,8 +80,10 @@ class TransportDetail(TimeStampedModel):
     unloading_time = models.TimeField(default=now)
     status = models.CharField(max_length=256L, choices=STATUS)
     waybill_signed = models.BooleanField()
-    focal_point = models.ForeignKey(User)
-    driver = models.ForeignKey(Driver,default=0)
+    focal_point = models.ForeignKey(User,related_name="Focal Point+")
+    driver = models.ForeignKey(Driver, null=True, blank=True)
+    transporter = models.ForeignKey(User,related_name="Transporter Company+", null=True, blank=True)
+
 
     def __str__(self):
         return str(self.id) + " " + str(self.RO_id)

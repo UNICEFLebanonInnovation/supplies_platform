@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import User, UserType
+from .models import User
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -38,12 +38,12 @@ class MyUserAdmin(AuthUserAdmin):
 
     AuthUserAdmin.fieldsets[1][1]["fields"] += ("phone_number",)
 
-    fieldsets = (('User Profile', {'fields': ('name','usr_type')}),
+    fieldsets = (('User Profile', {'fields': ('name',)}),
                 ) + AuthUserAdmin.fieldsets
 
-    list_display = ('username', 'name','usr_type','is_superuser')
+    list_display = ('username', 'name','is_superuser')
     search_fields = ['name']
 
 
 #admin.site.register(User)
-admin.site.register(UserType)
+#admin.site.register(UserType)

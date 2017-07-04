@@ -6,12 +6,12 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @python_2_unicode_compatible
-class UserType(models.Model):
-
-    type = models.CharField(max_length=254L)
-
-    def __str__(self):
-        return self.type
+# class UserType(models.Model):
+#
+#     type = models.CharField(max_length=254L)
+#
+#     def __str__(self):
+#         return self.type
 
 
 class User(AbstractUser):
@@ -26,7 +26,8 @@ class User(AbstractUser):
         blank=True
     )
 
-    usr_type = models.ForeignKey(UserType,blank=True ,null=True, verbose_name='User Type')
+
+    #usr_type = models.ForeignKey(UserType,blank=True ,null=True, verbose_name='User Type')
 
 
     def __str__(self):
