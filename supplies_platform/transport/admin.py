@@ -26,7 +26,12 @@ delivered_tasks.short_description = 'Mark as Delivered'
 
 
 class ItemsAdmin(admin.ModelAdmin):
-    list_display = ('get_transport', 'item_code', 'sales_order_no', 'po_no', 'item_desc', 'unit',
+    list_display = ('get_transport',
+                    'item_code',
+                    'sales_order_no',
+                    'po_no',
+                    'item_desc',
+                    'unit',
                     'dispatch_quantity',)
 
     def get_transport(self, obj):
@@ -37,17 +42,33 @@ class ItemsAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj):
        if has_group(request.user,"Transporter"):
-          return ('transport_id', 'item_code', 'sales_order_no', 'po_no', 'item_desc', 'unit',
-                    'dispatch_quantity',)
+          return ('transport_id',
+                  'item_code',
+                  'sales_order_no',
+                  'po_no',
+                  'item_desc',
+                  'unit',
+                  'dispatch_quantity',)
 
 
 
 class TransportAdmin(admin.ModelAdmin):
     list_display = (
-        'get_parent_waybill', 'sub_waybill_ref', 'get_section', 'status', 'get_loading_warehouse', 'driver', 'transporter','loading_time', 'delivery_date',
-        'get_destination_warehouse', 'total_items', 'view_link', )
+        'get_parent_waybill',
+        'status',
+        'driver',
+        'proposed_loading_time',
+        'loading_time_start',
+        'loading_time_end',
+        'unloading_time_start',
+        'unloading_time_end',
+        'delivery_date',
+        'total_items',
+        'view_link', )
 
-    list_filter = ('RO_id',)
+    exclude = ("loading_time",)
+
+    list_filter = ('release_order',)
 
     # actions = [onGoing_tasks, delivered_tasks]
 
@@ -56,7 +77,6 @@ class TransportAdmin(admin.ModelAdmin):
             if has_group(request.user,"Transporter"):
                 kwargs["queryset"] = Driver.objects.filter(transporter=request.user)
         return super(TransportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
 
 
     def view_link(self, obj):
@@ -80,28 +100,20 @@ class TransportAdmin(admin.ModelAdmin):
        readonly = super(TransportAdmin, self).get_readonly_fields(request,obj)
 
        if has_group(request.user,"Transporter"):
-          return ('RO_id', 'sub_waybill_ref', 'get_section', 'status', 'loading_warehouse', 'transporter','loading_time', 'delivery_date','destination_warehouse','section', 'location', 'focal_point','unloading_time','cosignee', 'waybill_signed' )
+          return ('release_order',
+                  'status',
+                  'proposed_loading_time',
+                  'loading_time_start',
+                  'delivery_date',
+                  'unloading_time',
+                  'cosignee',
+                  'waybill_signed')
        return readonly
 
     def get_parent_waybill(self, obj):
-        return obj.RO_id.waybill_ref
-
+        return obj.release_order.waybill_ref
     get_parent_waybill.short_description = 'Parent Waybill'
 
-    def get_section(self, obj):
-        return obj.section.name
-
-    get_section.short_description = 'Section'
-
-    def get_loading_warehouse(self, obj):
-        return obj.loading_warehouse.name
-
-    get_loading_warehouse.short_description = 'Loading Warehouse'
-
-    def get_destination_warehouse(self, obj):
-        return obj.destination_warehouse.name
-
-    get_destination_warehouse.short_description = 'Destination Warehouse'
 
     def get_queryset(self, request):
         qs = super(TransportAdmin, self).get_queryset(request)
@@ -112,7 +124,6 @@ class TransportAdmin(admin.ModelAdmin):
 
     def total_items(self, obj):
         return obj.item__count
-
     total_items.admin_order_field = 'item__count'
 
 
@@ -120,13 +131,26 @@ class TransportInline(admin.StackedInline):
     model = TransportDetail
     extra = 1
     #readonly_fields = ['driver_id',]
-    exclude = ['driver_id','delivery_date', 'loading_time', 'unloading_time']
+    exclude = ['driver_id',
+               'delivery_date',
+               'loading_time',
+               'unloading_time']
 
 
 class ReleaseOrderAdmin(admin.ModelAdmin):
     inlines = [TransportInline, ]
 
-    list_display = ('release_order_id', 'waybill_ref', 'reference_number', 'total_transport', 'view_link')
+    list_display = ('release_order',
+                    'waybill_ref',
+                    'reference_number',
+                    'get_loading_warehouse',
+                    'get_destination_warehouse',
+                    'transporter',
+                    'cosignee',
+                    'focal_point',
+                    'get_section',
+                    'total_transport',
+                    'view_link')
 
 
     def get_queryset(self, request):
@@ -134,18 +158,29 @@ class ReleaseOrderAdmin(admin.ModelAdmin):
         qs = qs.annotate(models.Count('transportdetail'))
         return qs
 
+    def get_loading_warehouse(self, obj):
+        return obj.loading_warehouse.name
+    get_loading_warehouse.short_description = 'Loading Warehouse'
+
+    def get_destination_warehouse(self, obj):
+        return obj.destination_warehouse.name
+    get_destination_warehouse.short_description = 'Destination Warehouse'
+
+    def get_section(self, obj):
+        return obj.section.name
+    get_section.short_description = 'Section'
+
+
+
     def total_transport(self, obj):
         return obj.transportdetail__count
-
     total_transport.admin_order_field = 'transportdetail__count'
 
     def view_link(self, obj):
         index = obj.id
-
         change_url = urlresolvers.reverse('admin:transport_transportdetail_changelist')
-        link = '<a href="' + change_url + '?RO_id=' + str(index) + '">View Transport</a>'
+        link = '<a href="' + change_url + '?release_order=' + str(index) + '">View Transport</a>'
         return link
-
     view_link.short_description = ''
     view_link.allow_tags = True
 
