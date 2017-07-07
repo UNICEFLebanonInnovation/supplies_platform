@@ -1,7 +1,9 @@
 from django.contrib import admin
 from .models import ReleaseOrder, TransportDetail, Item, Warehouse, Section
+from supplies_platform.users.util import has_group
 from django.core import urlresolvers
 from django.db import models
+from supplies_platform.drivers.models import Driver
 
 
 #############-----ACTIONS-----########################
@@ -33,15 +35,29 @@ class ItemsAdmin(admin.ModelAdmin):
     get_transport.short_description = 'Transport'
     list_filter = ('transport_id',)
 
+    def get_readonly_fields(self, request, obj):
+       if has_group(request.user,"Transporter"):
+          return ('transport_id', 'item_code', 'sales_order_no', 'po_no', 'item_desc', 'unit',
+                    'dispatch_quantity',)
+
+
 
 class TransportAdmin(admin.ModelAdmin):
     list_display = (
-        'get_parent_waybill', 'get_section', 'status', 'get_loading_warehouse', 'loading_time', 'delivery_date',
+        'get_parent_waybill', 'sub_waybill_ref', 'get_section', 'status', 'get_loading_warehouse', 'driver', 'transporter','loading_time', 'delivery_date',
         'get_destination_warehouse', 'total_items', 'view_link', )
 
     list_filter = ('RO_id',)
 
     # actions = [onGoing_tasks, delivered_tasks]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "driver":
+            if has_group(request.user,"Transporter"):
+                kwargs["queryset"] = Driver.objects.filter(transporter=request.user)
+        return super(TransportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 
     def view_link(self, obj):
         index = obj.id
@@ -52,6 +68,20 @@ class TransportAdmin(admin.ModelAdmin):
 
     view_link.short_description = ''
     view_link.allow_tags = True
+
+
+    # def get_queryset(self, request):
+    #     qs = super(TransportAdmin, self).get_queryset(request)
+    #     if has_group(request.user,"Transporter"):
+    #         qs.filter(transporter=request.user.username)
+    #     return qs
+
+    def get_readonly_fields(self, request, obj):
+       readonly = super(TransportAdmin, self).get_readonly_fields(request,obj)
+
+       if has_group(request.user,"Transporter"):
+          return ('RO_id', 'sub_waybill_ref', 'get_section', 'status', 'loading_warehouse', 'transporter','loading_time', 'delivery_date','destination_warehouse','section', 'location', 'focal_point','unloading_time','cosignee', 'waybill_signed' )
+       return readonly
 
     def get_parent_waybill(self, obj):
         return obj.RO_id.waybill_ref
@@ -76,6 +106,8 @@ class TransportAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(TransportAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('item'))
+        if has_group(request.user,"Transporter"):
+            return qs.filter(transporter = request.user)
         return qs
 
     def total_items(self, obj):

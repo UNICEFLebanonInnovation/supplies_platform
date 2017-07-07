@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-12 col-sm-12 col-lg-12">
         <ul class="nav nav-tabs" id="myTab">
-            <li class="nav-item"><a class="nav-link active"  data-toggle="tab" role="tab" href="#transports">Transport Details</a></li>
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#transports">Transport Details</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#drivers">Driver Details</a></li>
         </ul>
     </div>
@@ -23,18 +23,26 @@
          <thead>
       <tr>
         <th>Release Order</th>
+          <th>Waybill</th>
+        <th>Sub-Waybill</th>
         <th>Source Warehouse</th>
         <th>Destination Warehouse</th>
+        <th>Delivery Date</th>
         <th>Driver</th>
       </tr>
     </thead>
         <tbody>
     {% for transport in transport_list %}
-      <tr>
-        <td>{{ transport.RO_id }}</td>
+
+      <tr {% if transport.driver_id == None %}  class="table-danger"  {% endif %} >
+
+        <td>{{ transport.RO_id.release_order_id }}</td>
+        <td>{{ transport.RO_id.waybill_ref }}</td>
+        <td>{{ transport.sub_waybill_ref }}</td>
         <td>{{ transport.loading_warehouse }}</td>
         <td>{{ transport.destination_warehouse }}</td>
-        <td>{{ transport.driver_id }}</td>
+          <td>{{ transport.delivery_date }}</td>
+        <td>{{ transport.driver }}</td>
       </tr>
 
     {% endfor %}
@@ -43,7 +51,6 @@
         </div>
 
         <div role="tabpanel" class="tab-pane" id="drivers">
-
                   <table class="table table-hover">
          <thead>
       <tr>
@@ -55,6 +62,8 @@
     </thead>
         <tbody>
     {% for driver in driver_list %}
+
+
       <tr>
         <td>{{ driver.driver_name }}</td>
         <td>{{ driver.phone_number }}</td>
@@ -80,13 +89,5 @@
 {% endblock content %}
 
 {% block custom_javascript %}
-    <script>
 
-$('a').click(function (e) {
- // e.preventDefault()
-  $(this).tab('show')
-
-})
-
-    </script>
 {%  endblock custom_javascript %}

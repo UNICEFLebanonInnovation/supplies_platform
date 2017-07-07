@@ -54,7 +54,7 @@ class ReleaseOrder(TimeStampedModel):
     waybill_doc =  models.FileField(upload_to='documents/',null=True,blank=True)
 
     def __str__(self):
-        return self.reference_number + " " + self.waybill_ref + " " + self.release_order_id
+        return  self.release_order_id + " " + self.waybill_ref
 
 
 class TransportDetail(TimeStampedModel):
@@ -65,6 +65,8 @@ class TransportDetail(TimeStampedModel):
     )
 
     RO_id = models.ForeignKey(ReleaseOrder, on_delete=models.CASCADE)
+    sub_waybill_ref = models.CharField(max_length=256L,null=True,blank=True)
+
     section = models.ForeignKey(Section)
     loading_warehouse = models.ForeignKey(Warehouse,related_name="loading warehouse+")
     destination_warehouse = models.ForeignKey(Warehouse,related_name="destination warehouse+")

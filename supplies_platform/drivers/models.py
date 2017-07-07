@@ -21,3 +21,7 @@ class Driver(models.Model):
     driver_name = models.CharField(max_length=256)
     phone_number = models.CharField(_('Phone number'),max_length=20, null=True, blank=True)
     plate_number = models.CharField(max_length=256L)
+
+
+    def __str__(self):
+        return self.driver_name

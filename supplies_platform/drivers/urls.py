@@ -9,6 +9,11 @@ urlpatterns = [
         view=views.DriverListView.as_view(),
         name='drivers_list'
     ),
+    #     url(
+    #     regex=r'^(?P<pk>[\d.@+-]+)/$',
+    #     view=views.UserDetailView.as_view(),
+    #     name='detail'
+    # ),
     # url(
     #     regex=r'^~redirect/$',
     #     view=views.UserRedirectView.as_view(),
