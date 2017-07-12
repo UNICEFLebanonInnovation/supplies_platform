@@ -46,14 +46,14 @@ class DriverState(object):
     Constants to represent the `state`s of the Warehouse-TRANSPORT Model
     '''
     # STARTED = 'started'
-    SET_VOLUME = 'set volume'
-    SET_DRIVER = 'set_drivers'
+    REQUEST_DRIVER = 'set volume'
+    SET_DRIVER = 'set driver'
     REVISE_VOLUMES = 'revise volumes'
     CONFIRM_DRIVER = 'confirm driver'
     COMPLETED = 'completed'
 
     CHOICES = (
-        (SET_VOLUME, SET_VOLUME),
+        (REQUEST_DRIVER, REQUEST_DRIVER),
         (SET_DRIVER, SET_DRIVER),
         (REVISE_VOLUMES, REVISE_VOLUMES),
         (CONFIRM_DRIVER, CONFIRM_DRIVER),
@@ -92,6 +92,7 @@ class ReleaseOrder(TimeStampedModel):
     release_order = models.CharField(max_length=256L)
     waybill_ref = models.CharField(max_length=256L)
     reference_number = models.CharField(max_length=256L)
+    delivery_date = models.DateField(default=now)
     # waybill_doc_name = models.CharField(max_length=256L)# to change to FileType
     waybill_doc = models.FileField(upload_to='documents/', null=True, blank=True)
     cosignee = models.CharField(max_length=256L, default="")
@@ -106,11 +107,11 @@ class ReleaseOrder(TimeStampedModel):
 
 
 class TransportDetail(TimeStampedModel):
-    STATUS = Choices(
-        ('STARTED', 'Started'),
-        ('ONGOING', 'Ongoing'),
-        ('DELIVERED', 'Delivered')
-    )
+    # STATUS = Choices(
+    #     ('STARTED', 'Started'),
+    #     ('ONGOING', 'Ongoing'),
+    #     ('DELIVERED', 'Delivered')
+    # )
 
     transport_state = FSMField(
         default=TransportState.SET_PROPOSED_LOADING_TIME,
@@ -120,20 +121,23 @@ class TransportDetail(TimeStampedModel):
     )
 
     driver_select_state = FSMField(
-        default=DriverState.SET_VOLUME,
+        default=DriverState.REQUEST_DRIVER,
         verbose_name='Driver State',
         choices=DriverState.CHOICES,
         protected=True,
     )
 
     release_order = models.ForeignKey(ReleaseOrder, on_delete=models.CASCADE)
-    delivery_date = models.DateField(default=now)
     proposed_loading_time = models.TimeField(null=True, blank=True)
     loading_time_start = models.TimeField(null=True, blank=True)
     loading_time_end = models.TimeField(null=True, blank=True)
     unloading_time_start = models.TimeField(null=True, blank=True)
     unloading_time_end = models.TimeField(null=True, blank=True)
     volume = models.FloatField( null=True, blank=True)
+    waybill_doc_signed1 = models.FileField(upload_to='documents/', null=True, blank=True)
+    waybill_doc_signed2 = models.FileField(upload_to='documents/', null=True, blank=True)
+
+
    # status = models.CharField(max_length=256L, choices=STATUS)
     driver = models.ForeignKey(Driver, null=True, blank=True)
 
@@ -203,7 +207,7 @@ class TransportDetail(TimeStampedModel):
     ########################################################
     # Workflow (state) Transitions
 
-    @transition(field=driver_select_state, source=DriverState.SET_VOLUME,
+    @transition(field=driver_select_state, source=DriverState.REQUEST_DRIVER,
         target=DriverState.SET_DRIVER,
         conditions=[has_volume_set], permission=only_unicef_group)
     def save_and_send_transporter(self):
@@ -215,10 +219,8 @@ class TransportDetail(TimeStampedModel):
     @transition(field=driver_select_state, source=DriverState.SET_DRIVER,
         target=DriverState.CONFIRM_DRIVER,
         conditions=[has_driver_set], permission=only_transporter_group)
-    def confirm_driver(self,user):
-        # send_mail(
-        #     subject='TEST',message='test'
-        # )
+    def confirm_driver(self):
+        send_mail(subject="TEST ONE", message="TEST",from_email="tmoubarak@unicef.org",recipient_list=("tmoubarak@fusionsecond.com",))
         '''
         Publish the object.
         '''

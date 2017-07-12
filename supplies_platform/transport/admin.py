@@ -1,11 +1,12 @@
 from django.contrib import admin
 from .models import ReleaseOrder, TransportDetail, Item, Warehouse, Section
+from django.forms import ModelForm
 from supplies_platform.users.util import has_group
 from django.core import urlresolvers
 from django.db import models
 from supplies_platform.drivers.models import Driver
 from fsm_admin.mixins import FSMTransitionMixin
-
+from suit.widgets import EnclosedInput
 
 #############-----ACTIONS-----########################
 
@@ -54,6 +55,15 @@ class ItemsAdmin(admin.ModelAdmin):
 
 
 
+
+class TransportForm(ModelForm):
+    class Meta:
+        widgets = {
+                'volume': EnclosedInput(append='L'),
+        }
+
+
+
 class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
     list_display = (
         'get_parent_waybill',
@@ -63,16 +73,23 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
         'loading_time_end',
         'unloading_time_start',
         'unloading_time_end',
-        'delivery_date',
         'total_items',
         'view_link', )
+
+
+    form = TransportForm
+    fieldsets = (
+                 ('States', {'fields': ('transport_state','driver_select_state', )}),
+                 ('Loading Vehicles at Source Warehouse', {'fields': ('proposed_loading_time','loading_time_start','loading_time_end','waybill_doc_signed1', )}),
+                 ('Unloading Vehicles at Destination Warehouse', {'fields': ('unloading_time_start','unloading_time_end','waybill_doc_signed2', )}),
+                 ('Vehicle Information', {'fields': ('driver','volume', )}),
+                 )
 
 
     fsm_field = ('transport_state', 'driver_select_state')
 
     exclude = ("loading_time",)
     readonly_fields = ('transport_state', 'driver_select_state')
-
     list_filter = ('release_order',)
 
     # actions = [onGoing_tasks, delivered_tasks]
@@ -121,8 +138,12 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
        if has_group(request.user,"Transporter"):
           return ('release_order',
                   'proposed_loading_time',
-                  'delivery_date',
                   'transport_state',
+                  'loading_time_start',
+                  'loading_time_end',
+                  'volume',
+                  'unloading_time_start',
+                  'unloading_time_end',
                   'driver_select_state')
        return readonly
 
@@ -159,6 +180,7 @@ class ReleaseOrderAdmin(admin.ModelAdmin):
                     'reference_number',
                     'get_loading_warehouse',
                     'get_destination_warehouse',
+                    'delivery_date',
                     'transporter',
                     'cosignee',
                     'focal_point',
