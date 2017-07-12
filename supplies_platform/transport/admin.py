@@ -4,6 +4,7 @@ from supplies_platform.users.util import has_group
 from django.core import urlresolvers
 from django.db import models
 from supplies_platform.drivers.models import Driver
+from fsm_admin.mixins import FSMTransitionMixin
 
 
 #############-----ACTIONS-----########################
@@ -41,6 +42,7 @@ class ItemsAdmin(admin.ModelAdmin):
     list_filter = ('transport_id',)
 
     def get_readonly_fields(self, request, obj):
+
        if has_group(request.user,"Transporter"):
           return ('transport_id',
                   'item_code',
@@ -52,10 +54,9 @@ class ItemsAdmin(admin.ModelAdmin):
 
 
 
-class TransportAdmin(admin.ModelAdmin):
+class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
     list_display = (
         'get_parent_waybill',
-        'status',
         'driver',
         'proposed_loading_time',
         'loading_time_start',
@@ -66,11 +67,24 @@ class TransportAdmin(admin.ModelAdmin):
         'total_items',
         'view_link', )
 
+
+    fsm_field = ('transport_state', 'driver_select_state')
+
     exclude = ("loading_time",)
+    readonly_fields = ('transport_state', 'driver_select_state')
 
     list_filter = ('release_order',)
 
     # actions = [onGoing_tasks, delivered_tasks]
+
+
+    # def change_view(self, request, object_id, form_url='', extra_context=None):
+    #     extra_context = extra_context or {}
+    #     extra_context['show_save_and_add_another'] = False
+    #     print extra_context
+    #     return super(TransportAdmin, self).change_view(request, object_id,
+    #         form_url, extra_context=extra_context)
+
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "driver":
@@ -96,18 +110,20 @@ class TransportAdmin(admin.ModelAdmin):
     #         qs.filter(transporter=request.user.username)
     #     return qs
 
+
+    # def has_add_permission(self, request):
+    #     return False
+
+
+
     def get_readonly_fields(self, request, obj):
        readonly = super(TransportAdmin, self).get_readonly_fields(request,obj)
-
        if has_group(request.user,"Transporter"):
           return ('release_order',
-                  'status',
                   'proposed_loading_time',
-                  'loading_time_start',
                   'delivery_date',
-                  'unloading_time',
-                  'cosignee',
-                  'waybill_signed')
+                  'transport_state',
+                  'driver_select_state')
        return readonly
 
     def get_parent_waybill(self, obj):
@@ -118,8 +134,6 @@ class TransportAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(TransportAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('item'))
-        if has_group(request.user,"Transporter"):
-            return qs.filter(transporter = request.user)
         return qs
 
     def total_items(self, obj):
@@ -138,7 +152,7 @@ class TransportInline(admin.StackedInline):
 
 
 class ReleaseOrderAdmin(admin.ModelAdmin):
-    inlines = [TransportInline, ]
+   # inlines = [TransportInline, ]
 
     list_display = ('release_order',
                     'waybill_ref',
@@ -156,6 +170,8 @@ class ReleaseOrderAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(ReleaseOrderAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('transportdetail'))
+        if has_group(request.user,"Transporter"):
+            return qs.filter(transporter = request.user)
         return qs
 
     def get_loading_warehouse(self, obj):
