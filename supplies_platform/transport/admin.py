@@ -8,6 +8,7 @@ from supplies_platform.drivers.models import Driver
 from fsm_admin.mixins import FSMTransitionMixin
 from suit.widgets import EnclosedInput
 
+
 #############-----ACTIONS-----########################
 
 def onGoing_tasks(modeladmin, request, queryset):
@@ -43,28 +44,24 @@ class ItemsAdmin(admin.ModelAdmin):
     list_filter = ('transport_id',)
 
     def get_readonly_fields(self, request, obj):
-
-       if has_group(request.user,"Transporter"):
-          return ('transport_id',
-                  'item_code',
-                  'sales_order_no',
-                  'po_no',
-                  'item_desc',
-                  'unit',
-                  'dispatch_quantity',)
-
-
+        if has_group(request.user, "Transporter"):
+            return ('transport_id',
+                    'item_code',
+                    'sales_order_no',
+                    'po_no',
+                    'item_desc',
+                    'unit',
+                    'dispatch_quantity',)
 
 
 class TransportForm(ModelForm):
     class Meta:
         widgets = {
-                'volume': EnclosedInput(append='L'),
+            'volume': EnclosedInput(append='L'),
         }
 
 
-
-class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
+class TransportAdmin(FSMTransitionMixin, admin.ModelAdmin):
     list_display = (
         'get_parent_waybill',
         'driver',
@@ -74,17 +71,19 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
         'unloading_time_start',
         'unloading_time_end',
         'total_items',
-        'view_link', )
-
+        'view_link',
+    )
 
     form = TransportForm
     fieldsets = (
-                 ('States', {'fields': ('transport_state','driver_select_state', )}),
-                 ('Loading Vehicles at Source Warehouse', {'fields': ('proposed_loading_time','loading_time_start','loading_time_end','waybill_doc_signed1', )}),
-                 ('Unloading Vehicles at Destination Warehouse', {'fields': ('unloading_time_start','unloading_time_end','waybill_doc_signed2', )}),
-                 ('Vehicle Information', {'fields': ('driver','volume', )}),
-                 )
-
+        ('States', {'fields': ('transport_state', 'driver_select_state',)}),
+        ('Release Order/Waybill', {'fields': ('release_order',)}),
+        ('Loading Vehicles at Source Warehouse',
+         {'fields': ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)}),
+        ('Unloading Vehicles at Destination Warehouse',
+         {'fields': ('unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
+        ('Vehicle Information', {'fields': ('driver', 'volume',)}),
+    )
 
     fsm_field = ('transport_state', 'driver_select_state')
 
@@ -105,10 +104,9 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "driver":
-            if has_group(request.user,"Transporter"):
+            if has_group(request.user, "Transporter"):
                 kwargs["queryset"] = Driver.objects.filter(transporter=request.user)
         return super(TransportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
 
     def view_link(self, obj):
         index = obj.id
@@ -119,7 +117,6 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
 
     view_link.short_description = ''
     view_link.allow_tags = True
-
 
     # def get_queryset(self, request):
     #     qs = super(TransportAdmin, self).get_queryset(request)
@@ -134,38 +131,51 @@ class TransportAdmin(FSMTransitionMixin,admin.ModelAdmin):
 
 
     def get_readonly_fields(self, request, obj):
-       readonly = super(TransportAdmin, self).get_readonly_fields(request,obj)
-       if has_group(request.user,"Transporter"):
-          return ('release_order',
-                  'proposed_loading_time',
-                  'transport_state',
-                  'loading_time_start',
-                  'loading_time_end',
-                  'volume',
-                  'unloading_time_start',
-                  'unloading_time_end',
-                  'driver_select_state')
-       return readonly
+        readonly = super(TransportAdmin, self).get_readonly_fields(request, obj)
+        if has_group(request.user, "Transporter"):
+            return ('release_order',
+                    'proposed_loading_time',
+                    'transport_state',
+                    'loading_time_start',
+                    'loading_time_end',
+                    'leaving_time'
+                    'volume',
+
+                    'driver_select_state',)
+
+        elif has_group(request.user, "Warehouse"):
+            return ('release_order',
+                    'proposed_loading_time',
+                    'transport_state',
+                    'volume',
+                    'unloading_time_start',
+                    'unloading_time_end',
+                    'driver_select_state')
+
+        return readonly
 
     def get_parent_waybill(self, obj):
         return obj.release_order.waybill_ref
-    get_parent_waybill.short_description = 'Parent Waybill'
 
+    get_parent_waybill.short_description = 'Parent Waybill'
 
     def get_queryset(self, request):
         qs = super(TransportAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('item'))
         return qs
 
+
+
     def total_items(self, obj):
         return obj.item__count
+
     total_items.admin_order_field = 'item__count'
 
 
 class TransportInline(admin.StackedInline):
     model = TransportDetail
     extra = 1
-    #readonly_fields = ['driver_id',]
+    # readonly_fields = ['driver_id',]
     exclude = ['driver_id',
                'delivery_date',
                'loading_time',
@@ -173,7 +183,7 @@ class TransportInline(admin.StackedInline):
 
 
 class ReleaseOrderAdmin(admin.ModelAdmin):
-   # inlines = [TransportInline, ]
+    # inlines = [TransportInline, ]
 
     list_display = ('release_order',
                     'waybill_ref',
@@ -188,30 +198,31 @@ class ReleaseOrderAdmin(admin.ModelAdmin):
                     'total_transport',
                     'view_link')
 
-
     def get_queryset(self, request):
         qs = super(ReleaseOrderAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('transportdetail'))
-        if has_group(request.user,"Transporter"):
-            return qs.filter(transporter = request.user)
+        if has_group(request.user, "Transporter"):
+            return qs.filter(transporter=request.user)
         return qs
 
     def get_loading_warehouse(self, obj):
         return obj.loading_warehouse.name
+
     get_loading_warehouse.short_description = 'Loading Warehouse'
 
     def get_destination_warehouse(self, obj):
         return obj.destination_warehouse.name
+
     get_destination_warehouse.short_description = 'Destination Warehouse'
 
     def get_section(self, obj):
         return obj.section.name
+
     get_section.short_description = 'Section'
-
-
 
     def total_transport(self, obj):
         return obj.transportdetail__count
+
     total_transport.admin_order_field = 'transportdetail__count'
 
     def view_link(self, obj):
@@ -219,8 +230,18 @@ class ReleaseOrderAdmin(admin.ModelAdmin):
         change_url = urlresolvers.reverse('admin:transport_transportdetail_changelist')
         link = '<a href="' + change_url + '?release_order=' + str(index) + '">View Transport</a>'
         return link
+
     view_link.short_description = ''
     view_link.allow_tags = True
+
+
+class WarehouseAdmin(admin.ModelAdmin):
+    list_display = ('name', 'warehouse_type', 'warehouse_user',)
+
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "warehouse_user":
+    #         kwargs["queryset"] = Warehouse.objects.filter(warehouse_user=)
+    #     return super(WarehouseAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(TransportDetail, TransportAdmin)

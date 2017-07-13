@@ -73,6 +73,7 @@ class Warehouse(models.Model):
         blank=True, null=True,
         related_name='+',
     )
+    warehouse_user = models.ForeignKey(User, related_name="Warehouse Focal Point+", null=True, blank=True)
     warehouse_type = models.CharField(max_length=256L, choices=WAREHOUSE_TYPE)
 
     def __str__(self):
@@ -133,12 +134,12 @@ class TransportDetail(TimeStampedModel):
     loading_time_end = models.TimeField(null=True, blank=True)
     unloading_time_start = models.TimeField(null=True, blank=True)
     unloading_time_end = models.TimeField(null=True, blank=True)
-    volume = models.FloatField( null=True, blank=True)
+    leaving_time = models.TimeField(null=True, blank=True)
+    volume = models.FloatField(null=True, blank=True)
     waybill_doc_signed1 = models.FileField(upload_to='documents/', null=True, blank=True)
     waybill_doc_signed2 = models.FileField(upload_to='documents/', null=True, blank=True)
 
-
-   # status = models.CharField(max_length=256L, choices=STATUS)
+    # status = models.CharField(max_length=256L, choices=STATUS)
     driver = models.ForeignKey(Driver, null=True, blank=True)
 
     def __str__(self):
@@ -146,21 +147,36 @@ class TransportDetail(TimeStampedModel):
 
 
 
-   ########################################################
+        ########################################################
+
     # Transition Conditions
     # These must be defined prior to the actual transitions
     # to be refrenced.
 
     def has_volume_set(self):
-      #  print "TEST:"+str(self.volume)
+        #  print "TEST:"+str(self.volume)
         return self.volume
     has_volume_set.hint = 'Set volume to approximate value.'
 
-
     def has_driver_set(self):
-      #  print "TEST:"+str(self.volume)
+        #  print "TEST:"+str(self.volume)
         return self.driver
     has_driver_set.hint = 'Set Driver'
+
+    def has_proposed_time(self):
+        #  print "TEST:"+str(self.volume)
+        return self.proposed_loading_time
+    has_proposed_time.hint = 'Set Proposed Time'
+
+    def has_loading_time_set(self):
+        #  print "TEST:"+str(self.volume)
+        return self.loading_time_start and self.loading_time_end  and self.leaving_time and self.waybill_doc_signed1
+    has_loading_time_set.hint = 'Set Start and End time for loading.'
+
+    def has_unloading_time_set(self):
+        #  print "TEST:"+str(self.volume)
+        return self.unloading_time_start and self.unloading_time_end and self.waybill_doc_signed2
+    has_unloading_time_set.hint = 'Set Start and End time for unloading.'
 
 
     def only_unicef_group(self, user):
@@ -177,7 +193,12 @@ class TransportDetail(TimeStampedModel):
         else:
             return False
 
-
+    def only_warehouse_group(self, user):
+        if has_group(user, "Warehouse"):
+            print "TRUE"
+            return True
+        else:
+            return False
 
     # def can_display(self):
     #     '''
@@ -208,8 +229,8 @@ class TransportDetail(TimeStampedModel):
     # Workflow (state) Transitions
 
     @transition(field=driver_select_state, source=DriverState.REQUEST_DRIVER,
-        target=DriverState.SET_DRIVER,
-        conditions=[has_volume_set], permission=only_unicef_group)
+                target=DriverState.SET_DRIVER,
+                conditions=[has_volume_set], permission=only_unicef_group)
     def save_and_send_transporter(self):
         self.save()
         '''
@@ -217,35 +238,76 @@ class TransportDetail(TimeStampedModel):
         '''
 
     @transition(field=driver_select_state, source=DriverState.SET_DRIVER,
-        target=DriverState.CONFIRM_DRIVER,
-        conditions=[has_driver_set], permission=only_transporter_group)
-    def confirm_driver(self):
-        send_mail(subject="TEST ONE", message="TEST",from_email="tmoubarak@unicef.org",recipient_list=("tmoubarak@fusionsecond.com",))
+                target=DriverState.CONFIRM_DRIVER,
+                conditions=[has_driver_set], permission=only_transporter_group)
+    def set_driver(self):
         '''
         Publish the object.
         '''
 
-    #
-    # @transition(field=state, source=State.PUBLISHED, target=State.EXPIRED,
-    #     conditions=[has_display_dates])
-    # def expire(self):
-    #     '''
-    #     Automatically called when a object is detected as being not
-    #     displayable. See `check_displayable`
-    #     '''
-    #     self.display_until = timezone.now()
-    #
-    # @transition(field=state, source=State.PUBLISHED, target=State.APPROVED)
-    # def unpublish(self):
-    #     '''
-    #     Revert to the approved state
-    #     '''
-    #
-    # @transition(field=state, source=State.DRAFT, target=State.APPROVED)
-    # def approve(self):
-    #     '''
-    #     After reviewed by stakeholders, the Page is approved.
-    #     '''
+    @transition(field=driver_select_state, source=DriverState.CONFIRM_DRIVER,
+                target=DriverState.COMPLETED,
+                conditions=[has_driver_set], permission=only_unicef_group)
+    def confirm_driver(self):
+        '''
+        Publish the object.
+        '''
+
+    @transition(field=transport_state, source=TransportState.SET_PROPOSED_LOADING_TIME,
+                target=TransportState.CONFIRM_LOADING_TIME,
+                conditions=[has_proposed_time], permission=only_unicef_group)
+    def send_loading_time(self):
+        '''
+        Publish the object.
+        '''
+
+    @transition(field=transport_state, source=TransportState.CONFIRM_LOADING_TIME,
+                target=TransportState.SET_ACTUAL_LOADING_TIME,
+                conditions=[has_proposed_time], permission=only_warehouse_group)
+    def confirm_loading_time(self):
+        '''
+        Publish the object.
+        '''
+
+    @transition(field=transport_state, source=TransportState.SET_ACTUAL_LOADING_TIME,
+                target=TransportState.SET_UNLOADING_TIME,
+                conditions=[has_loading_time_set], permission=only_warehouse_group)
+    def set_loading_time(self):
+        '''
+        Publish the object.
+        '''
+
+    @transition(field=transport_state, source=TransportState.SET_UNLOADING_TIME,
+                target=TransportState.COMPLETED,
+                conditions=[has_unloading_time_set], permission=only_transporter_group)
+    def set_unloading_time(self):
+        '''
+        Publish the object.
+        '''
+
+
+
+        #
+        # @transition(field=state, source=State.PUBLISHED, target=State.EXPIRED,
+        #     conditions=[has_display_dates])
+        # def expire(self):
+        #     '''
+        #     Automatically called when a object is detected as being not
+        #     displayable. See `check_displayable`
+        #     '''
+        #     self.display_until = timezone.now()
+        #
+        # @transition(field=state, source=State.PUBLISHED, target=State.APPROVED)
+        # def unpublish(self):
+        #     '''
+        #     Revert to the approved state
+        #     '''
+        #
+        # @transition(field=state, source=State.DRAFT, target=State.APPROVED)
+        # def approve(self):
+        #     '''
+        #     After reviewed by stakeholders, the Page is approved.
+        #     '''
 
 
 class Item(TimeStampedModel):
