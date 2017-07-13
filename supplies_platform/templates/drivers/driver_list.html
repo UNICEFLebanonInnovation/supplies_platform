@@ -36,7 +36,7 @@
 
       <tr {% if transport.driver_id == None %}  class="table-danger"  {% endif %} >
 
-        <td>{{ transport.RO_id.release_order_id }}</td>
+        <td>{{ transport.release_order.release_order }}</td>
         <td>{{ transport.RO_id.waybill_ref }}</td>
         <td>{{ transport.sub_waybill_ref }}</td>
         <td>{{ transport.loading_warehouse }}</td>
