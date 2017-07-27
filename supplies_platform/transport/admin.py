@@ -54,10 +54,11 @@ class ItemsAdmin(admin.ModelAdmin):
                     'dispatch_quantity',)
 
 
+
 class TransportForm(ModelForm):
     class Meta:
         widgets = {
-            'volume': EnclosedInput(append='L'),
+            'volume': EnclosedInput(append='m<sup>3</sup>'),
         }
 
 
@@ -140,7 +141,6 @@ class TransportAdmin(FSMTransitionMixin, admin.ModelAdmin):
                     'loading_time_end',
                     'leaving_time'
                     'volume',
-
                     'driver_select_state',)
 
         elif has_group(request.user, "Warehouse"):
@@ -176,14 +176,22 @@ class TransportInline(admin.StackedInline):
     model = TransportDetail
     extra = 1
     # readonly_fields = ['driver_id',]
-    exclude = ['driver_id',
+    exclude = ['driver',
                'delivery_date',
-               'loading_time',
-               'unloading_time']
+               'loading_time_start',
+               'loading_time_end',
+               'unloading_time_start',
+               'unloading_time_end',
+               'leaving_time',
+               'waybill_doc_signed1',
+               'waybill_doc_signed2',
+               'transport_state',
+               'driver_select_state',
+               ]
 
 
 class ReleaseOrderAdmin(admin.ModelAdmin):
-    # inlines = [TransportInline, ]
+    inlines = [TransportInline, ]
 
     list_display = ('release_order',
                     'waybill_ref',

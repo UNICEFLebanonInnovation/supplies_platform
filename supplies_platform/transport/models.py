@@ -230,7 +230,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=driver_select_state, source=DriverState.REQUEST_DRIVER,
                 target=DriverState.SET_DRIVER,
-                conditions=[has_volume_set], permission=only_unicef_group)
+                conditions=[has_volume_set], permission=only_unicef_group, custom={"button_name":"Save and Send to transporter"})
     def save_and_send_transporter(self):
         self.save()
         '''
@@ -239,7 +239,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=driver_select_state, source=DriverState.SET_DRIVER,
                 target=DriverState.CONFIRM_DRIVER,
-                conditions=[has_driver_set], permission=only_transporter_group)
+                conditions=[has_driver_set], permission=only_transporter_group, custom={"button_name":"Set Driver"})
     def set_driver(self):
         '''
         Publish the object.
@@ -247,7 +247,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=driver_select_state, source=DriverState.CONFIRM_DRIVER,
                 target=DriverState.COMPLETED,
-                conditions=[has_driver_set], permission=only_unicef_group)
+                conditions=[has_driver_set], permission=only_unicef_group, custom={"button_name":"Confirm Driver"})
     def confirm_driver(self):
         '''
         Publish the object.
@@ -255,7 +255,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=transport_state, source=TransportState.SET_PROPOSED_LOADING_TIME,
                 target=TransportState.CONFIRM_LOADING_TIME,
-                conditions=[has_proposed_time], permission=only_unicef_group)
+                conditions=[has_proposed_time], permission=only_unicef_group, custom={"button_name":"Send Loading Time"})
     def send_loading_time(self):
         '''
         Publish the object.
@@ -263,7 +263,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=transport_state, source=TransportState.CONFIRM_LOADING_TIME,
                 target=TransportState.SET_ACTUAL_LOADING_TIME,
-                conditions=[has_proposed_time], permission=only_warehouse_group)
+                conditions=[has_proposed_time], permission=only_warehouse_group, custom={"button_name":"Confirm Loading Time"})
     def confirm_loading_time(self):
         '''
         Publish the object.
@@ -271,7 +271,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=transport_state, source=TransportState.SET_ACTUAL_LOADING_TIME,
                 target=TransportState.SET_UNLOADING_TIME,
-                conditions=[has_loading_time_set], permission=only_warehouse_group)
+                conditions=[has_loading_time_set], permission=only_warehouse_group, custom={"button_name":"Set Loading Time"})
     def set_loading_time(self):
         '''
         Publish the object.
@@ -279,7 +279,7 @@ class TransportDetail(TimeStampedModel):
 
     @transition(field=transport_state, source=TransportState.SET_UNLOADING_TIME,
                 target=TransportState.COMPLETED,
-                conditions=[has_unloading_time_set], permission=only_transporter_group)
+                conditions=[has_unloading_time_set], permission=only_transporter_group, custom={"button_name":"Set Unloading Time"})
     def set_unloading_time(self):
         '''
         Publish the object.
