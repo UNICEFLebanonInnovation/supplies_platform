@@ -43,12 +43,8 @@ pytz==2017.2
 django-redis==4.8.0
 redis>=2.10.5
 
-
-
-
-
 # Your custom requirements go here
-
 
 django-suit==0.2.25
 django-mptt==0.8.4
+django-fsm-admin>=1.2.4
