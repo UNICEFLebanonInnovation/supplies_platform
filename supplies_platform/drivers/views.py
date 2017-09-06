@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from .models import Driver
-from supplies_platform.transport.models import TransportDetail
+from supplies_platform.transport.models import ReleaseOrder
 
 #@group_required('Transporter')
 class DriverMainView(LoginRequiredMixin,
@@ -30,7 +30,7 @@ class DriverListView(DriverMainView):
 
         data['driver_list'] = Driver.objects.filter(transporter__id=self.request.user.id).order_by("driver_name")
 
-        data['transport_list'] = TransportDetail.objects.filter(transporter__id=self.request.user.id).order_by("delivery_date")
+        data['transport_list'] = ReleaseOrder.objects.filter(transporter__id=self.request.user.id).order_by("delivery_date")
 
         print data['driver_list']
 

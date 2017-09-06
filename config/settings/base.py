@@ -40,7 +40,7 @@ DJANGO_APPS = [
 
     # Useful template tags:
     # 'django.contrib.humanize',
-
+    'mptt',
     # Admin
     'suit',
     'django.contrib.admin',
@@ -115,7 +115,7 @@ MANAGERS = ADMINS
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgres:///supplies_platform_db'),
+    'default': env.db('DATABASE_URL', default='postgres:///supplies_platform'),
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 

@@ -16,7 +16,7 @@ class VehicleType(models.Model):
 class Driver(models.Model):
 
     #transport_id = models.ForeignKey(TransportDetail)
-    vehicle_type = models.ForeignKey(VehicleType)
+    v_type = models.ForeignKey(VehicleType)
     transporter= models.ForeignKey(User)
     driver_name = models.CharField(max_length=256)
     phone_number = models.CharField(_('Phone number'),max_length=20, null=True, blank=True)
@@ -24,4 +24,4 @@ class Driver(models.Model):
 
 
     def __str__(self):
-        return self.driver_name
+        return self.driver_name +"-"+self.v_type.type+"-"+self.plate_number

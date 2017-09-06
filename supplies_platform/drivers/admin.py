@@ -11,12 +11,12 @@ class DriverAdmin(admin.ModelAdmin):
         'transporter',
         'driver_name',
         'phone_number',
-        'vehicle_type',
+        'v_type',
         'plate_number',)
     fields = (
         'driver_name',
         'phone_number',
-        'vehicle_type',
+        'v_type',
         'plate_number',)
 
     exclude = ('transporter',)
