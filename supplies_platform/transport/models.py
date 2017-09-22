@@ -108,7 +108,7 @@ class ReleaseOrder(TimeStampedModel):
     #
     # waybill_doc_name = models.CharField(max_length=256L)# to change to FileType
     waybill_doc = models.FileField(upload_to='documents/', null=True, blank=True)
-    cosignee = models.CharField(max_length=256L, default="")
+    cosignee = models.ForeignKey(User, related_name="Cosignee+", null=True, blank=True)
     focal_point = models.ForeignKey(User, related_name="Focal Point+")
     section = models.ForeignKey(Section)
     loading_warehouse = models.ForeignKey(Warehouse, related_name="loading warehouse+")
@@ -119,6 +119,7 @@ class ReleaseOrder(TimeStampedModel):
     proposed_loading_time = models.TimeField(null=True, blank=True)
     loading_time_start = models.TimeField(null=True, blank=True)
     loading_time_end = models.TimeField(null=True, blank=True)
+    unloading_date = models.DateField(null=True, blank=True)
     unloading_time_start = models.TimeField(null=True, blank=True)
     unloading_time_end = models.TimeField(null=True, blank=True)
     leaving_time = models.TimeField(null=True, blank=True)

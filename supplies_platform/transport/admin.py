@@ -222,17 +222,17 @@ class ReleaseOrderAdmin(FSMTransitionMixin,admin.ModelAdmin):
     form = TransportForm
     fieldsets = (
         ('States', {'fields': ('transport_state', 'driver_select_state',)}),
-        ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section',)}),
+        ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section','volume',)}),
         ('Loading Vehicles at Source Warehouse',
          {'fields': ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)}),
         ('Unloading Vehicles at Destination Warehouse',
-         {'fields': ('unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
+         {'fields': ('unloading_date','unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
         ('Vehicle Information', {'fields': ('driver', 'volume',)}),
     )
 
     fsm_field = ('transport_state', 'driver_select_state')
 
-    readonly_fields = ('transport_state', 'driver_select_state')
+
 
     def total_items(self, obj):
         return obj.item__count
@@ -262,41 +262,54 @@ class ReleaseOrderAdmin(FSMTransitionMixin,admin.ModelAdmin):
     get_section.short_description = 'Section'
 
     def get_fieldsets(self, request, obj=None):
+
+        if has_group(request.user,"Unicef"):
+            self.fieldsets = (
+                            ('States', {'fields': ('transport_state', 'driver_select_state',)}),
+                            ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section','volume')}),
+                            ('Loading Vehicles at Source Warehouse',
+                             {'fields': ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)}),
+                            ('Unloading Vehicles at Destination Warehouse',
+                             {'fields': ('unloading_date','unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
+                            ('Vehicle Information', {'fields': ('driver',)}),
+                            )
+
         if has_group(request.user,"Warehouse"):
             self.fieldsets = (
                              ('States', {'fields': ('transport_state', 'driver_select_state',)}),
                              ('Loading Vehicles at Source Warehouse',
                              {'fields': ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)}),
-                             ('Vehicle Information', {'fields': ('driver', 'volume',)}),
-                             ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section',)}),
+                             ('Vehicle Information', {'fields': ('driver',)}),
+                             ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section','volume',)}),
 
     )
         if has_group(request.user,"Transporter"):
             self.fieldsets= (
                             ('States', {'fields': ('transport_state', 'driver_select_state',)}),
-                            ('Vehicle Information', {'fields': ('driver', 'volume',)}),
+                            ('Vehicle Information', {'fields': ('driver',)}),
                             ('Loading Vehicles at Source Warehouse',
                             {'fields': ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)}),
                             ('Unloading Vehicles at Destination Warehouse',
-                            {'fields': ('unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
-                            ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section',)}),
+                            {'fields': ('unloading_date', 'unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2',)}),
+                            ('Release Order/Waybill', {'fields': ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section','volume',)}),
 
     )
         return self.fieldsets
 
 
     def get_readonly_fields(self, request, obj=None):
+        state_readonly = ('transport_state', 'driver_select_state',)
         common_readonly = ('release_order','waybill_ref','loading_warehouse','destination_warehouse','delivery_date','transporter','cosignee','focal_point','section',)
         transporter_readonly = ('proposed_loading_time', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1',)
-        warehouse_readonly = ('unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2','driver', 'volume',)
-        unicef_readonly = ('unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2','driver', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1')
+        warehouse_readonly = ('unloading_date', 'unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2','driver', 'volume',)
+        unicef_readonly = ('unloading_date', 'unloading_time_start', 'unloading_time_end', 'waybill_doc_signed2','driver', 'loading_time_start', 'loading_time_end','leaving_time','waybill_doc_signed1')
 
         if has_group(request.user,"Warehouse"):
-            self.readonly_fields = self.readonly_fields + common_readonly + warehouse_readonly
+            self.readonly_fields = state_readonly + common_readonly + warehouse_readonly
         if has_group(request.user,"Transporter"):
-            self.readonly_fields = self.readonly_fields + common_readonly + transporter_readonly
+            self.readonly_fields = state_readonly  + common_readonly + transporter_readonly
         if has_group(request.user,"Unicef"):
-            self.readonly_fields = self.readonly_fields + unicef_readonly
+            self.readonly_fields =  state_readonly + unicef_readonly
         return self.readonly_fields
 
     # def total_transport(self, obj):
