@@ -57,10 +57,11 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     # custom users app
     # Your stuff: custom apps go here
-    'supplies_platform.users.apps.UsersConfig',
-    'supplies_platform.locations.apps.LocationsConfig',
-    'supplies_platform.transport.apps.TransportConfig',
-    'supplies_platform.drivers.apps.DriversConfig',
+    'supplies_platform.users',
+    'supplies_platform.locations',
+    'supplies_platform.supplies',
+    'supplies_platform.planning',
+    'supplies_platform.transport',
 
 ]
 
@@ -199,12 +200,11 @@ SUIT_CONFIG = {
     'MENU_OPEN_FIRST_CHILD': True, # Default True
     'MENU_EXCLUDE': ('auth.group',),
     'MENU': (
-        'sites',
-        {'app': 'auth', 'icon':'icon-lock', 'models': ('user', 'group')},
         {'app': 'users', 'label': 'Users', 'icon':'icon-user'},
+        {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-globe'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
+        {'app': 'planning', 'label': 'Planning', 'icon': 'icon-globe'},
         {'app': 'transport', 'label': 'Transport', 'icon': 'icon-globe'},
-        {'app': 'drivers', 'label': 'Drivers', 'icon': 'icon-car'},
         {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
         {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
     ),
