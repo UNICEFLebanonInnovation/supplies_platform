@@ -34,6 +34,66 @@ class SupplyPlanItem(models.Model):
     Planning fields
     """
     supply_plan = models.ForeignKey(SupplyPlan)
+    item = models.ForeignKey(SupplyItem)
+    quantity = models.PositiveIntegerField(
+        help_text=u'PD Quantity'
+    )
+    # auto generate
+    target_population = models.IntegerField(
+        verbose_name=u'Max No. of beneficiaries covered',
+        null=True, blank=True
+    )
+
+    covered_per_item = models.IntegerField(
+        verbose_name=u'Beneficiaries covered per item',
+        null=True, blank=True
+    )
+
+    def __unicode__(self):
+        return u'{}-{}-{}'.format(
+            self.supply_plan.__unicode__(),
+            self.item,
+            self.quantity
+        )
+
+
+class WavePlan(models.Model):
+
+    supply_plan = models.ForeignKey(SupplyPlan)
+    supply_item = models.ForeignKey(SupplyItem)
+    wave_number = models.CharField(
+        max_length=2,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    quantity_required = models.PositiveIntegerField(
+        help_text=u'Quantity required for this wave',
+        null=True, blank=True
+    )
+    date_required_by = models.DateField(
+        null=True, blank=True
+    )
+
+    def __unicode__(self):
+        return u'{} Wave: {}'.format(
+            self.supply_item.__unicode__(),
+            self.wave_number,
+        )
+
+
+class DistributionPlan(SupplyPlan):
+    class Meta:
+        proxy = True
+
+
+class DistributionPlanItem(models.Model):
+    """
+    Distribution Fields
+    """
+    plan = models.ForeignKey(SupplyPlan)
+    wave = models.ForeignKey(WavePlan)
+    site = models.ForeignKey(Location)
     purpose = models.CharField(
         max_length=50,
         null=True, blank=True,
@@ -42,25 +102,10 @@ class SupplyPlanItem(models.Model):
             ('pd_request', 'PD Request',),
         )
     )
-    item = models.ForeignKey(SupplyItem)
-    quantity = models.PositiveIntegerField(
-        help_text=u'PD Quantity'
-    )
-    # auto generate
     target_population = models.IntegerField(
-        help_text=u'No. of beneficiaries',
+        verbose_name=u'No. of beneficiaries covered',
         null=True, blank=True
     )
-
-    covered_per_item = models.IntegerField(
-        help_text=u'Beneficiaries covered per item',
-        null=True, blank=True
-    )
-
-    """
-    Distribution Fields
-    """
-    site = models.ForeignKey(Location, null=True)
     delivery_location = models.ForeignKey(
         Location,
         null=True, blank=True,
@@ -71,29 +116,36 @@ class SupplyPlanItem(models.Model):
         null=True, blank=True
     )
     quantity_requested = models.PositiveIntegerField(
-        help_text=u'Quantity required for this location',
+        verbose_name=u'Quantity required for this location',
         null=True, blank=True
     )
     date_required_by = models.DateField(
-        null=True, blank=True
+        null=True, blank=True,
     )
     date_distributed_by = models.DateField(
+        verbose_name=u'planned distribution date',
         null=True, blank=True
     )
 
+    quantity_received = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_received = models.DateField(
+        null=True, blank=True,
+    )
+    quantity_balance = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_distributed = models.DateField(
+        null=True, blank=True,
+    )
+    quantity_distributed = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+
+
     def __unicode__(self):
-        return u'{}-{}-{}'.format(
-            self.item,
+        return u'{} Site: {}'.format(
+            self.wave.__unicode__(),
             self.site,
-            self.quantity
         )
-
-
-class DistributionPlan(SupplyPlan):
-    class Meta:
-        proxy = True
-
-
-class DistributionPlanItem(SupplyPlanItem):
-    class Meta:
-        proxy = True
