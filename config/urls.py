@@ -15,11 +15,8 @@ urlpatterns = [
     # User management
     url(r'^users/', include('supplies_platform.users.urls', namespace='users')),
     url(r'^accounts/', include('allauth.urls')),
-    url(r'^drivers/', include('supplies_platform.drivers.urls', namespace='drivers')),
-
 
     # Your stuff: custom urls includes go here
-
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
