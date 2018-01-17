@@ -50,17 +50,17 @@ THIRD_PARTY_APPS = [
     'allauth',  # registration
     'allauth.account',  # registration
     'allauth.socialaccount',  # registration
+    'fsm_admin',
 ]
 
 # Apps specific for this project go here.
 LOCAL_APPS = [
     # custom users app
+    # Your stuff: custom apps go here
     'supplies_platform.users.apps.UsersConfig',
     'supplies_platform.locations.apps.LocationsConfig',
     'supplies_platform.transport.apps.TransportConfig',
     'supplies_platform.drivers.apps.DriversConfig',
-
-    # Your stuff: custom apps go here
 
 ]
 
