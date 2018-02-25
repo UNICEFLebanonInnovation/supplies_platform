@@ -5,6 +5,13 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 
+class Section(models.Model):
+    name = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.name
+
+
 @python_2_unicode_compatible
 # class UserType(models.Model):
 #
@@ -12,8 +19,6 @@ from django.utils.translation import ugettext_lazy as _
 #
 #     def __str__(self):
 #         return self.type
-
-
 class User(AbstractUser):
 
     # First Name and Last Name do not cover name patterns
@@ -35,7 +40,4 @@ class User(AbstractUser):
 
     def get_absolute_url(self):
         return reverse('users:detail', kwargs={'username': self.username})
-
-
-
 

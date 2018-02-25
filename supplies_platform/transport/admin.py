@@ -39,11 +39,13 @@ class ItemsAdmin(admin.ModelAdmin):
         return obj.release_order.id
 
     get_transport.short_description = 'Transport'
-    list_filter = ('release_order',)
+    list_filter = (
+        'release_order',
+    )
 
     def get_readonly_fields(self, request, obj):
         if has_group(request.user, "Transporter"):
-            return (
+            return self.readonly_fields + (
                 'release_order',
                 'item_code',
                 'sales_order_no',
@@ -52,6 +54,7 @@ class ItemsAdmin(admin.ModelAdmin):
                 'unit',
                 'dispatch_quantity',
             )
+        return self.readonly_fields
 
 
 class TransportForm(ModelForm):
@@ -254,7 +257,8 @@ class DriverAdmin(admin.ModelAdmin):
         'driver_name',
         'phone_number',
         'v_type',
-        'plate_number',)
+        'plate_number',
+    )
 
     exclude = ('transporter',)
 
@@ -282,4 +286,3 @@ admin.site.register(VehicleType)
 admin.site.register(ReleaseOrder, ReleaseOrderAdmin)
 admin.site.register(LineItem, ItemsAdmin)
 admin.site.register(Section)
-# Register your models here.

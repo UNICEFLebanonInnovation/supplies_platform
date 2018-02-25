@@ -62,6 +62,7 @@ LOCAL_APPS = [
     'supplies_platform.supplies',
     'supplies_platform.planning',
     'supplies_platform.transport',
+    'supplies_platform.partners',
 
 ]
 

@@ -2,8 +2,8 @@ from django.contrib import admin
 from django import forms
 
 # Register your models here.
+from supplies_platform.supplies.models import SupplyItem
 from .models import (
-    SupplyItem,
     SupplyPlan,
     WavePlan,
     SupplyPlanItem,
@@ -20,6 +20,8 @@ class SupplyPlanItemInline(admin.TabularInline):
     fields = (
         'item',
         'quantity',
+        'wave_number',
+        'date_required_by',
         'covered_per_item',
         'target_population',
     )
@@ -81,7 +83,7 @@ class SupplyPlanWaveInlineAdmin(admin.TabularInline):
 
 class SupplyPlanAdmin(admin.ModelAdmin):
 
-    inlines = [SupplyPlanItemInline, SupplyPlanWaveInlineAdmin,]
+    inlines = [SupplyPlanItemInline,]
 
 
 class DistributionPlanItemInline(admin.TabularInline):

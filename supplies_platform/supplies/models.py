@@ -2,13 +2,13 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from supplies_platform.users.models import Section
 
-# Create your models here.
+
 class SupplyItem(models.Model):
 
-    number = models.CharField(
+    code = models.CharField(
         max_length=10,
-        unique=True
     )
     name = models.CharField(
         max_length=255,
@@ -20,6 +20,7 @@ class SupplyItem(models.Model):
     unit_weight = models.DecimalField(max_digits=3, decimal_places=2, help_text='KG')
     unit_volume = models.DecimalField(max_digits=3, decimal_places=2, help_text='M3')
     quantity_in_stock = models.PositiveIntegerField()
+    section = models.ForeignKey(Section)
 
     def __unicode__(self):
-        return self.name
+        return '{} - {}'.format(self.name, self.code)

@@ -3,18 +3,12 @@ from __future__ import unicode_literals
 from django.db import models
 
 from model_utils.choices import Choices
+from model_utils.models import TimeStampedModel
 
 from supplies_platform.locations.models import Location
+from supplies_platform.users.models import User, Section
+from supplies_platform.partners.models import PartnerOrganization
 from supplies_platform.supplies.models import SupplyItem
-from supplies_platform.users.models import User
-
-
-# Create your models here.
-class Section(models.Model):
-    name = models.CharField(max_length=256)
-
-    def __str__(self):
-        return self.name
 
 
 class SupplyPlan(models.Model):
@@ -23,10 +17,13 @@ class SupplyPlan(models.Model):
         max_length=50,
         null=True, blank=True
     )
+    partner = models.ForeignKey(
+        PartnerOrganization
+    )
     section = models.ForeignKey(Section)
 
     def __unicode__(self):
-        return self.partnership
+        return '{} - {}'.format(self.partnership, self.partner)
 
 
 class SupplyPlanItem(models.Model):
@@ -37,6 +34,15 @@ class SupplyPlanItem(models.Model):
     item = models.ForeignKey(SupplyItem)
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
+    )
+    wave_number = models.CharField(
+        max_length=2,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    date_required_by = models.DateField(
+        null=True, blank=True
     )
     # auto generate
     target_population = models.IntegerField(
@@ -82,16 +88,15 @@ class WavePlan(models.Model):
         )
 
 
-class DistributionPlan(SupplyPlan):
-    class Meta:
-        proxy = True
+class DistributionPlan(models.Model):
+    plan = models.ForeignKey(SupplyPlan)
 
 
 class DistributionPlanItem(models.Model):
     """
     Distribution Fields
     """
-    plan = models.ForeignKey(SupplyPlan)
+    plan = models.ForeignKey(DistributionPlan)
     wave = models.ForeignKey(WavePlan)
     site = models.ForeignKey(Location)
     purpose = models.CharField(
@@ -126,7 +131,6 @@ class DistributionPlanItem(models.Model):
         verbose_name=u'planned distribution date',
         null=True, blank=True
     )
-
     quantity_received = models.PositiveIntegerField(
         null=True, blank=True
     )
@@ -143,9 +147,56 @@ class DistributionPlanItem(models.Model):
         null=True, blank=True
     )
 
-
     def __unicode__(self):
         return u'{} Site: {}'.format(
             self.wave.__unicode__(),
             self.site,
         )
+
+
+class DistributionItemRequest(TimeStampedModel):
+
+    plan = models.ForeignKey(DistributionPlan)
+    quantity = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    expected_date = models.DateField(
+        null=True, blank=True
+    )
+    requested_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    to_review = models.BooleanField(blank=True, default=False)
+    review_date = models.DateField(
+        null=True, blank=True
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    to_validate = models.BooleanField(blank=True, default=False)
+    validation_date = models.DateField(
+        null=True, blank=True
+    )
+    validated_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    to_approve = models.BooleanField(blank=True, default=False)
+    approval_date = models.DateField(
+        null=True, blank=True
+    )
+    approved_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    delivery_date = models.DateField(
+        null=True, blank=True
+    )
+    status = models.CharField(max_length=20, null=True, blank=True)
+
