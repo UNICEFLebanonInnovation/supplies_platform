@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django import forms
 
-# Register your models here.
 from supplies_platform.supplies.models import SupplyItem
 from .models import (
     SupplyPlan,
@@ -16,12 +15,23 @@ class SupplyPlanItemInline(admin.TabularInline):
     model = SupplyPlanItem
     verbose_name = 'Supply Item'
     verbose_name_plural = 'Supply Items'
+    suit_classes = u'suit-tab suit-tab-waves'
 
     fields = (
         'item',
         'quantity',
-        'wave_number',
-        'date_required_by',
+        'wave_number_1',
+        'wave_quantity_1',
+        'date_required_by_1',
+        'wave_number_2',
+        'wave_quantity_2',
+        'date_required_by_2',
+        'wave_number_3',
+        'wave_quantity_3',
+        'date_required_by_3',
+        'wave_number_4',
+        'wave_quantity_4',
+        'date_required_by_4',
         'covered_per_item',
         'target_population',
     )
@@ -83,6 +93,25 @@ class SupplyPlanWaveInlineAdmin(admin.TabularInline):
 
 class SupplyPlanAdmin(admin.ModelAdmin):
 
+    fieldsets = [
+        (None, {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'partnership',
+                'partner',
+                'section',
+                'approved',
+                'approved_by',
+                'approval_date'
+            ]
+        }),
+    ]
+
+    suit_form_tabs = (
+                      ('general', 'Supply Plan'),
+                      ('waves', 'Supply Items'),
+                    )
+
     inlines = [SupplyPlanItemInline,]
 
 
@@ -98,16 +127,10 @@ class DistributionPlanItemInline(admin.TabularInline):
         'target_population',
         'delivery_location',
         'contact_person',
-        #'item',
-        #'quantity',
         'quantity_requested',
         'date_required_by',
         'date_distributed_by',
     )
-
-
-    # def has_add_permission(self, request):
-    #     return False
 
 
 class DistributionItemInline(admin.TabularInline):
@@ -125,12 +148,13 @@ class DistributionItemInline(admin.TabularInline):
     )
 
 
-    # def has_add_permission(self, request):
-    #
+class DistributionPlanAdmin(admin.ModelAdmin):
 
-class DistributionPlanAdmin(SupplyPlanAdmin):
+    readonly_fields = (
+        'plan',
+    )
 
-    inlines = [DistributionPlanItemInline, DistributionItemInline]
+    inlines = [DistributionItemInline, DistributionPlanItemInline]
 
 
 admin.site.register(SupplyPlan, SupplyPlanAdmin)

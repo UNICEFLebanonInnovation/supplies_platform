@@ -37,7 +37,7 @@ class PartnerOrganization(models.Model):
         blank=True
     )
     description = models.CharField(
-        max_length=256L,
+        max_length=256,
         blank=True
     )
     shared_partner = models.CharField(
@@ -49,7 +49,7 @@ class PartnerOrganization(models.Model):
             u'with UNDP & UNFPA',
         ),
         default=u'No',
-        max_length=50
+        max_length=50, blank=True,
     )
     address = models.TextField(
         blank=True,
@@ -60,7 +60,7 @@ class PartnerOrganization(models.Model):
         blank=True, null=True
     )
     phone_number = models.CharField(
-        max_length=32L,
+        max_length=32,
         blank=True, null=True
     )
     vendor_number = models.CharField(
@@ -80,7 +80,7 @@ class PartnerOrganization(models.Model):
     )
     rating = models.CharField(
         max_length=50,
-        null=True,
+        blank=True, null=True,
         verbose_name=u'Risk Rating'
     )
 
@@ -98,11 +98,11 @@ class PartnerOrganization(models.Model):
 class PartnerStaffMember(models.Model):
 
     partner = models.ForeignKey(PartnerOrganization)
-    title = models.CharField(max_length=64L)
-    first_name = models.CharField(max_length=64L)
-    last_name = models.CharField(max_length=64L)
-    email = models.CharField(max_length=128L, unique=True, blank=False)
-    phone = models.CharField(max_length=64L, blank=True)
+    title = models.CharField(max_length=64)
+    first_name = models.CharField(max_length=64)
+    last_name = models.CharField(max_length=64)
+    email = models.CharField(max_length=128, unique=True, blank=False)
+    phone = models.CharField(max_length=64, blank=True)
     active = models.BooleanField(
         default=True
     )

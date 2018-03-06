@@ -21,6 +21,15 @@ class SupplyPlan(models.Model):
         PartnerOrganization
     )
     section = models.ForeignKey(Section)
+    approved = models.BooleanField(blank=True, default=False)
+    approval_date = models.DateField(
+        null=True, blank=True
+    )
+    approved_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
 
     def __unicode__(self):
         return '{} - {}'.format(self.partnership, self.partner)
@@ -35,15 +44,63 @@ class SupplyPlanItem(models.Model):
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
     )
-    wave_number = models.CharField(
+
+    wave_number_1 = models.CharField(
         max_length=2,
+        null=True, blank=True,
         choices=Choices(
             '1', '2', '3', '4'
         )
     )
-    date_required_by = models.DateField(
+    wave_quantity_1 = models.PositiveIntegerField(
         null=True, blank=True
     )
+    date_required_by_1 = models.DateField(
+        null=True, blank=True
+    )
+
+    wave_number_2 = models.CharField(
+        max_length=2,
+        null=True, blank=True,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    wave_quantity_2 = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_required_by_2 = models.DateField(
+        null=True, blank=True
+    )
+
+    wave_number_3 = models.CharField(
+        max_length=2,
+        null=True, blank=True,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    wave_quantity_3 = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_required_by_3 = models.DateField(
+        null=True, blank=True
+    )
+
+    wave_number_4 = models.CharField(
+        max_length=2,
+        null=True, blank=True,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    wave_quantity_4 = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_required_by_4 = models.DateField(
+        null=True, blank=True
+    )
+
     # auto generate
     target_population = models.IntegerField(
         verbose_name=u'Max No. of beneficiaries covered',
