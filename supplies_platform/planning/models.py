@@ -5,22 +5,48 @@ from django.db import models
 from model_utils.choices import Choices
 from model_utils.models import TimeStampedModel
 
+from django.conf import settings
+
 from supplies_platform.locations.models import Location
 from supplies_platform.users.models import User, Section
 from supplies_platform.partners.models import PartnerOrganization
 from supplies_platform.supplies.models import SupplyItem
 
 
-class SupplyPlan(models.Model):
+class SupplyPlan(TimeStampedModel):
+
+    DRAFT = u'draft'
+    PLANNED = u'planned'
+    SUBMITTED = u'submitted'
+    APPROVED = u'approved'
+    COMPLETED = u'completed'
+    CANCELLED = u'cancelled'
+    STATUS = (
+        (DRAFT, u"Draft"),
+        (PLANNED, u"Planned"),
+        (SUBMITTED, u"Submitted"),
+        (APPROVED, u"Approved"),
+        (COMPLETED, u"Completed"),
+        (CANCELLED, u"Cancelled"),
+    )
 
     partnership = models.CharField(
         max_length=50,
         null=True, blank=True
     )
     partner = models.ForeignKey(
-        PartnerOrganization
+        PartnerOrganization,
+        null=True, blank=False
     )
-    section = models.ForeignKey(Section)
+    section = models.ForeignKey(
+        Section,
+        null=True, blank=False
+    )
+    status = models.CharField(
+        max_length=32L,
+        choices=STATUS,
+        default=DRAFT,
+    )
     approved = models.BooleanField(blank=True, default=False)
     approval_date = models.DateField(
         null=True, blank=True
@@ -29,6 +55,18 @@ class SupplyPlan(models.Model):
         User,
         null=True, blank=True,
         related_name='+'
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False, null=True,
+        related_name='+',
+        verbose_name='Planned by'
+    )
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True, null=True,
+        related_name='modifications',
+        verbose_name='Modified by',
     )
 
     def __unicode__(self):
@@ -147,6 +185,18 @@ class WavePlan(models.Model):
 
 class DistributionPlan(models.Model):
     plan = models.ForeignKey(SupplyPlan)
+
+    @property
+    def plan_partner(self):
+        return self.plan.partner
+
+    @property
+    def plan_partnership(self):
+        return self.plan.partnership
+
+    @property
+    def plan_section(self):
+        return self.plan.section
 
 
 class DistributionPlanItem(models.Model):

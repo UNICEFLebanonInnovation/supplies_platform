@@ -1,6 +1,9 @@
+import datetime
+
 from django.contrib import admin
 from django import forms
 
+from supplies_platform.users.util import has_group
 from supplies_platform.supplies.models import SupplyItem
 from .models import (
     SupplyPlan,
@@ -100,9 +103,12 @@ class SupplyPlanAdmin(admin.ModelAdmin):
                 'partnership',
                 'partner',
                 'section',
+                'status',
+                'created',
+                'created_by',
                 'approved',
-                'approved_by',
-                'approval_date'
+                # 'approved_by',
+                # 'approval_date',
             ]
         }),
     ]
@@ -112,7 +118,79 @@ class SupplyPlanAdmin(admin.ModelAdmin):
                       ('waves', 'Supply Items'),
                     )
 
-    inlines = [SupplyPlanItemInline,]
+    inlines = [SupplyPlanItemInline, ]
+
+    ordering = (u'-created',)
+    date_hierarchy = u'created'
+    search_fields = (
+        'partner__name',
+        'partnership',
+    )
+    list_display = (
+        'partner',
+        'partnership',
+        'section',
+        'status',
+        'created',
+        'created_by',
+        'approval_date',
+        'approved_by',
+    )
+    list_filter = (
+        'partner',
+        'status',
+        'approved',
+        'approved_by',
+        'approval_date',
+        'section',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'status',
+            'created',
+            'created_by',
+            'approved',
+            'approved_by',
+            'approval_date',
+        ]
+
+        if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.PLANNED:
+            fields.remove('approved')
+            fields.remove('approved_by')
+            fields.remove('approval_date')
+
+        if has_group(request.user, 'UNICEF_PA'):
+            fields.remove('status')
+
+        return fields
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SupplyPlanAdmin, self).get_form(request, obj, **kwargs)
+        form.request = request
+        user = request.user
+        form.base_fields['section'].initial = user.section
+        if has_group(request.user, 'BUDGET_OWNER') and 'approved_by' in form.base_fields:
+            form.base_fields['approved_by'].initial = user
+
+        return form
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        if obj and obj.approved is True and not obj.approval_date:
+            obj.approval_date = datetime.datetime.now()
+            obj.approved_by = request.user
+            obj.status = obj.APPROVED
+            DistributionPlan.objects.create(plan=obj)
+        super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super(SupplyPlanAdmin, self).get_queryset(request)
+        if has_group(request.user, 'BUDGET_OWNER'):
+            qs = qs.filter(status__in=['planned', 'approved'])
+        return qs
 
 
 class DistributionPlanItemInline(admin.TabularInline):
@@ -152,6 +230,22 @@ class DistributionPlanAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         'plan',
+        'plan_partner',
+        'plan_partnership',
+        'plan_section',
+    )
+
+    search_fields = (
+        'plan__partnership',
+    )
+    list_display = (
+        'plan_partner',
+        'plan_partnership',
+        'plan_section',
+    )
+    list_filter = (
+        'plan__partner',
+        'plan__section',
     )
 
     inlines = [DistributionItemInline, DistributionPlanItemInline]

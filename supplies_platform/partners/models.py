@@ -66,7 +66,6 @@ class PartnerOrganization(models.Model):
     vendor_number = models.CharField(
         blank=True,
         null=True,
-        unique=True,
         max_length=30
     )
     alternate_id = models.IntegerField(

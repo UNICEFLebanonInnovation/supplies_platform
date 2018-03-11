@@ -4,6 +4,8 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
+from supplies_platform.partners.models import PartnerOrganization
+
 
 class Section(models.Model):
     name = models.CharField(max_length=256)
@@ -33,7 +35,14 @@ class User(AbstractUser):
 
 
     #usr_type = models.ForeignKey(UserType,blank=True ,null=True, verbose_name='User Type')
-
+    section = models.ForeignKey(
+        Section,
+        null=True, blank=True
+    )
+    partner = models.ForeignKey(
+        PartnerOrganization,
+        null=True, blank=True
+    )
 
     def __str__(self):
         return self.username

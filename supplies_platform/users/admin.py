@@ -3,9 +3,6 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from .models import User
-from django.utils.translation import ugettext_lazy as _
-
-
 
 
 class MyUserChangeForm(UserChangeForm):
@@ -36,13 +33,12 @@ class MyUserAdmin(AuthUserAdmin):
     form = MyUserChangeForm
     add_form = MyUserCreationForm
 
-    AuthUserAdmin.fieldsets[1][1]["fields"] += ("phone_number",)
+    AuthUserAdmin.fieldsets[1][1]["fields"] += ("phone_number", "section", "partner")
 
-    fieldsets = (('User Profile', {'fields': ('name',)}),
-                ) + AuthUserAdmin.fieldsets
+    fieldsets = AuthUserAdmin.fieldsets
 
-    list_display = ('username', 'name','is_superuser')
-    search_fields = ['name']
+    list_display = ('username', 'is_superuser')
+    search_fields = ['username']
 
 
 #admin.site.register(User)

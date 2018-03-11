@@ -65,3 +65,8 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # Your local stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------
+
+########## CELERY
+# In development, all tasks will be executed locally by blocking until the task returns
+CELERY_ALWAYS_EAGER = True
+########## END CELERY

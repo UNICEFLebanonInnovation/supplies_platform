@@ -51,6 +51,9 @@ THIRD_PARTY_APPS = [
     'allauth.account',  # registration
     'allauth.socialaccount',  # registration
     'fsm_admin',
+    'django_celery_beat',
+    'django_celery_results',
+    'import_export',
 ]
 
 # Apps specific for this project go here.
@@ -315,3 +318,10 @@ ADMIN_URL = r'^admin/'
 
 # Your common stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------
+
+
+########## CELERY
+INSTALLED_APPS += ['supplies_platform.taskapp.celery.CeleryConfig']
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = 'django-db'
+########## END CELERY
