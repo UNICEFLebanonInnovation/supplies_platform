@@ -1,7 +1,7 @@
-Supplies Platform
-=================
+Internos
+========
 
-Unicef Lebanon Supplies Platform
+Internal tools
 
 .. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
      :target: https://github.com/pydanny/cookiecutter-django/
@@ -57,6 +57,22 @@ Moved to `Live reloading and SASS compilation`_.
 
 
 
+Celery
+^^^^^^
+
+This app comes with Celery.
+
+To run a celery worker:
+
+.. code-block:: bash
+
+    cd internos
+    celery -A internos.taskapp worker -l info
+
+Please note: For Celery's import magic to work, it is important *where* the celery commands are run. If you are in the same folder with *manage.py*, you should be right.
+
+
+
 
 
 Sentry
@@ -74,13 +90,12 @@ Deployment
 The following details how to deploy this application.
 
 
-
-
-Custom Bootstrap Compilation
+Heroku
 ^^^^^^
 
-To get automatic Bootstrap recompilation with variables of your choice, install bootstrap sass (`bower install bootstrap-sass`) and tweak your variables in `static/sass/custom_bootstrap_vars`.
+See detailed `cookiecutter-django Heroku documentation`_.
 
-(You can find a list of available variables [in the bootstrap-sass source](https://github.com/twbs/bootstrap-sass/blob/master/assets/stylesheets/bootstrap/_variables.scss), or get explanations on them in the [Bootstrap docs](https://getbootstrap.com/customize/).)
+.. _`cookiecutter-django Heroku documentation`: http://cookiecutter-django.readthedocs.io/en/latest/deployment-on-heroku.html
+
 
 

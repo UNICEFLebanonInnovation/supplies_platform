@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 from model_utils.choices import Choices
+from django.conf import settings
 
 
 class PartnerOrganization(models.Model):
@@ -91,9 +92,6 @@ class PartnerOrganization(models.Model):
         return self.name
 
 
-# post_save.connect(PartnerOrganization.create_user, sender=PartnerOrganization)
-
-
 class PartnerStaffMember(models.Model):
 
     partner = models.ForeignKey(PartnerOrganization)
@@ -113,188 +111,227 @@ class PartnerStaffMember(models.Model):
             self.partner.name
         )
 
-# https://github.com/digi604/django-smart-selects
-# class PCA(models.Model):
-#
-#     IN_PROCESS = u'in_process'
-#     ACTIVE = u'active'
-#     IMPLEMENTED = u'implemented'
-#     CANCELLED = u'cancelled'
-#     PCA_STATUS = (
-#         (IN_PROCESS, u"In Process"),
-#         (ACTIVE, u"Active"),
-#         (IMPLEMENTED, u"Implemented"),
-#         (CANCELLED, u"Cancelled"),
-#     )
-#     PD = u'PD'
-#     SHPD = u'SHPD'
-#     AWP = u'AWP'
-#     SSFA = u'SSFA'
-#     IC = u'IC'
-#     PARTNERSHIP_TYPES = (
-#         (PD, u'Programme Document'),
-#         (SHPD, u'Simplified Humanitarian Programme Document'),
-#         (AWP, u'Cash Transfers to Government'),
-#         (SSFA, u'SSFA TOR'),
-#         (IC, u'IC TOR'),
-#     )
-#
-#     partner = models.ForeignKey(
-#         PartnerOrganization,
-#         related_name='documents',
-#     )
-#     agreement = ChainedForeignKey(
-#         Agreement,
-#         related_name='interventions',
-#         chained_field="partner",
-#         chained_model_field="partner",
-#         show_all=False,
-#         auto_choose=True,
-#         blank=True, null=True,
-#     )
-#     partnership_type = models.CharField(
-#         choices=PARTNERSHIP_TYPES,
-#         default=PD,
-#         blank=True, null=True,
-#         max_length=255,
-#         verbose_name=u'Document type'
-#     )
-#     result_structure = models.ForeignKey(
-#         ResultStructure,
-#         blank=True, null=True, on_delete=models.DO_NOTHING,
-#         help_text=u'Which result structure does this partnership report under?'
-#     )
-#     number = models.CharField(
-#         max_length=45L,
-#         blank=True, null=True,
-#         verbose_name=u'Reference Number'
-#     )
-#     title = models.CharField(max_length=256L)
-#     project_type = models.CharField(
-#         max_length=20,
-#         blank=True, null=True,
-#         choices=Choices(
-#             u'Bulk Procurement',
-#             u'Construction Project',
-#         )
-#     )
-#     status = models.CharField(
-#         max_length=32,
-#         blank=True,
-#         choices=PCA_STATUS,
-#         default=u'in_process',
-#         help_text=u'In Process = In discussion with partner, '
-#                   u'Active = Currently ongoing, '
-#                   u'Implemented = completed, '
-#                   u'Cancelled = cancelled or not approved'
-#     )
-#
-#     # dates
-#     start_date = models.DateField(
-#         null=True, blank=True,
-#         help_text=u'The date the Intervention will start'
-#     )
-#     end_date = models.DateField(
-#         null=True, blank=True,
-#         help_text=u'The date the Intervention will end'
-#     )
-#     initiation_date = models.DateField(
-#         verbose_name=u'Submission Date',
-#         help_text=u'The date the partner submitted complete partnership documents to Unicef',
-#     )
-#     submission_date = models.DateField(
-#         verbose_name=u'Submission Date to PRC',
-#         help_text=u'The date the documents were submitted to the PRC',
-#         null=True, blank=True,
-#     )
-#     review_date = models.DateField(
-#         verbose_name=u'Review date by PRC',
-#         help_text=u'The date the PRC reviewed the partnership',
-#         null=True, blank=True,
-#     )
-#     signed_by_unicef_date = models.DateField(null=True, blank=True)
-#     signed_by_partner_date = models.DateField(null=True, blank=True)
-#
-#     # managers and focal points
-#     unicef_manager = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         related_name='approved_partnerships',
-#         verbose_name=u'Signed by',
-#         blank=True, null=True
-#     )
-#     unicef_managers = models.ManyToManyField(
-#         settings.AUTH_USER_MODEL,
-#         verbose_name='Unicef focal points',
-#         blank=True
-#     )
-#     partner_manager = ChainedForeignKey(
-#         PartnerStaffMember,
-#         verbose_name=u'Signed by partner',
-#         related_name='signed_partnerships',
-#         chained_field="partner",
-#         chained_model_field="partner",
-#         show_all=False,
-#         auto_choose=False,
-#         blank=True, null=True,
-#     )
-#     partner_focal_point = ChainedForeignKey(
-#         PartnerStaffMember,
-#         related_name='my_partnerships',
-#         chained_field="partner",
-#         chained_model_field="partner",
-#         show_all=False,
-#         auto_choose=False,
-#         blank=True, null=True,
-#     )
-#
-#     fr_number = models.CharField(max_length=50, null=True, blank=True)
-#     planned_visits = models.IntegerField(default=0)
-#
-#     sectors = models.CharField(max_length=255, null=True, blank=True)
-#     current = models.BooleanField(default=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#
-#     class Meta:
-#         verbose_name = 'Intervention'
-#         verbose_name_plural = 'Interventions'
-#         ordering = ['-created_at']
-#
-#     def __unicode__(self):
-#         return u'{}: {}'.format(
-#             self.partner.name,
-#             self.number if self.number else self.reference_number
-#         )
-#
-#     @property
-#     def sector_id(self):
-#         if self.sector_children:
-#             return self.sector_children[0].id
-#         return 0
-#
-#     @property
-#     def sector_names(self):
-#         return u', '.join(self.sector_children.values_list('name', flat=True))
-#
-#     @property
-#     def amendment_num(self):
-#         return self.amendments_log.all().count()
-#
-#     @property
-#     def total_unicef_cash(self):
-#
-#         if self.budget_log.exists():
-#             return sum([b['unicef_cash'] for b in
-#                  self.budget_log.values('created', 'year', 'unicef_cash').
-#                  order_by('year', '-created').distinct('year').all()
-#                  ])
-#         return 0
-#
-#     @property
-#     def total_budget(self):
-#
-#         if self.budget_log.exists():
-#             return sum([b['unicef_cash'] + b['in_kind_amount'] + b['partner_contribution'] for b in
-#                  self.budget_log.values('created', 'year', 'unicef_cash', 'in_kind_amount', 'partner_contribution').
-#                  order_by('year','-created').distinct('year').all()])
-#         return 0
+
+class Agreement(models.Model):
+
+    PCA = u'PCA'
+    MOU = u'MOU'
+    SSFA = u'SSFA'
+    IC = u'IC'
+    AWP = u'AWP'
+    AGREEMENT_TYPES = (
+        (PCA, u"Programme Cooperation Agreement"),
+        (SSFA, u'Small Scale Funding Agreement'),
+        (MOU, u'Memorandum of Understanding'),
+        (IC, u'Institutional Contract'),
+        (AWP, u"Work Plan"),
+    )
+
+    partner = models.ForeignKey(PartnerOrganization)
+    agreement_type = models.CharField(
+        max_length=10,
+        choices=AGREEMENT_TYPES
+    )
+    agreement_number = models.CharField(
+        max_length=45L,
+        blank=True,
+        verbose_name=u'Reference Number'
+    )
+    start = models.DateField(null=True, blank=True)
+    end = models.DateField(null=True, blank=True)
+
+    signed_by_unicef_date = models.DateField(null=True, blank=True)
+    signed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='signed_pcas',
+        null=True, blank=True
+    )
+
+    signed_by_partner_date = models.DateField(null=True, blank=True)
+    partner_manager = models.ForeignKey(
+        PartnerStaffMember,
+        verbose_name=u'Signed by partner',
+        blank=True, null=True,
+    )
+
+    def __unicode__(self):
+        return u'{} for {} ({} - {})'.format(
+            self.agreement_type,
+            self.partner.name,
+            self.start.strftime('%d-%m-%Y') if self.start else '',
+            self.end.strftime('%d-%m-%Y') if self.end else ''
+        )
+
+
+class PCA(models.Model):
+
+    IN_PROCESS = u'in_process'
+    ACTIVE = u'active'
+    IMPLEMENTED = u'implemented'
+    CANCELLED = u'cancelled'
+    PCA_STATUS = (
+        (IN_PROCESS, u"In Process"),
+        (ACTIVE, u"Active"),
+        (IMPLEMENTED, u"Implemented"),
+        (CANCELLED, u"Cancelled"),
+    )
+    PD = u'PD'
+    SHPD = u'SHPD'
+    AWP = u'AWP'
+    SSFA = u'SSFA'
+    IC = u'IC'
+    PARTNERSHIP_TYPES = (
+        (PD, u'Programme Document'),
+        (SHPD, u'Simplified Humanitarian Programme Document'),
+        (AWP, u'Cash Transfers to Government'),
+        (SSFA, u'SSFA TOR'),
+        (IC, u'IC TOR'),
+    )
+
+    partner = models.ForeignKey(
+        PartnerOrganization,
+        related_name='documents',
+    )
+    agreement = models.ForeignKey(
+        Agreement,
+        related_name='interventions',
+        blank=True, null=True,
+    )
+    partnership_type = models.CharField(
+        choices=PARTNERSHIP_TYPES,
+        default=PD,
+        blank=True, null=True,
+        max_length=255,
+        verbose_name=u'Document type'
+    )
+    result_structure = models.CharField(
+        max_length=32,
+        blank=True, null=True,
+        help_text=u'Which result structure does this partnership report under?'
+    )
+    number = models.CharField(
+        max_length=45L,
+        blank=True, null=True,
+        verbose_name=u'Reference Number'
+    )
+    title = models.CharField(max_length=256L)
+    project_type = models.CharField(
+        max_length=20,
+        blank=True, null=True,
+        choices=Choices(
+            u'Bulk Procurement',
+            u'Construction Project',
+        )
+    )
+    status = models.CharField(
+        max_length=32,
+        blank=True,
+        choices=PCA_STATUS,
+        default=u'in_process',
+        help_text=u'In Process = In discussion with partner, '
+                  u'Active = Currently ongoing, '
+                  u'Implemented = completed, '
+                  u'Cancelled = cancelled or not approved'
+    )
+
+    # dates
+    start_date = models.DateField(
+        null=True, blank=True,
+        help_text=u'The date the Intervention will start'
+    )
+    end_date = models.DateField(
+        null=True, blank=True,
+        help_text=u'The date the Intervention will end'
+    )
+    initiation_date = models.DateField(
+        verbose_name=u'Submission Date',
+        help_text=u'The date the partner submitted complete partnership documents to Unicef',
+    )
+    submission_date = models.DateField(
+        verbose_name=u'Submission Date to PRC',
+        help_text=u'The date the documents were submitted to the PRC',
+        null=True, blank=True,
+    )
+    review_date = models.DateField(
+        verbose_name=u'Review date by PRC',
+        help_text=u'The date the PRC reviewed the partnership',
+        null=True, blank=True,
+    )
+    signed_by_unicef_date = models.DateField(null=True, blank=True)
+    signed_by_partner_date = models.DateField(null=True, blank=True)
+
+    # managers and focal points
+    unicef_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='approved_partnerships',
+        verbose_name=u'Signed by',
+        blank=True, null=True
+    )
+    unicef_managers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Unicef focal points',
+        blank=True
+    )
+    partner_manager = models.ForeignKey(
+        PartnerStaffMember,
+        verbose_name=u'Signed by partner',
+        related_name='signed_partnerships',
+        blank=True, null=True,
+    )
+    partner_focal_point = models.ForeignKey(
+        PartnerStaffMember,
+        related_name='my_partnerships',
+        blank=True, null=True,
+    )
+
+    fr_number = models.CharField(max_length=50, null=True, blank=True)
+    planned_visits = models.IntegerField(default=0)
+
+    sectors = models.CharField(max_length=255, null=True, blank=True)
+    current = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Intervention'
+        verbose_name_plural = 'Interventions'
+        ordering = ['-created_at']
+
+    def __unicode__(self):
+        return u'{}: {}'.format(
+            self.partner.name,
+            self.number if self.number else self.reference_number
+        )
+
+    @property
+    def sector_id(self):
+        if self.sector_children:
+            return self.sector_children[0].id
+        return 0
+
+    @property
+    def sector_names(self):
+        return u', '.join(self.sector_children.values_list('name', flat=True))
+
+    @property
+    def amendment_num(self):
+        return self.amendments_log.all().count()
+
+    @property
+    def total_unicef_cash(self):
+
+        if self.budget_log.exists():
+            return sum([b['unicef_cash'] for b in
+                 self.budget_log.values('created', 'year', 'unicef_cash').
+                 order_by('year', '-created').distinct('year').all()
+                 ])
+        return 0
+
+    @property
+    def total_budget(self):
+
+        if self.budget_log.exists():
+            return sum([b['unicef_cash'] + b['in_kind_amount'] + b['partner_contribution'] for b in
+                 self.budget_log.values('created', 'year', 'unicef_cash', 'in_kind_amount', 'partner_contribution').
+                 order_by('year','-created').distinct('year').all()])
+        return 0
