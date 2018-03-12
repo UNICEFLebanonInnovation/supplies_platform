@@ -3,6 +3,10 @@ import datetime
 from django.contrib import admin
 from django import forms
 
+from import_export import resources, fields
+from import_export import fields
+from import_export.admin import ImportExportModelAdmin
+
 from supplies_platform.users.util import has_group
 from supplies_platform.supplies.models import SupplyItem
 from .models import (
@@ -94,8 +98,23 @@ class SupplyPlanWaveInlineAdmin(admin.TabularInline):
     #     return 0
 
 
-class SupplyPlanAdmin(admin.ModelAdmin):
+class SupplyPlanResource(resources.ModelResource):
+    class Meta:
+        model = SupplyPlan
+        fields = (
+            'partnership',
+            'partner',
+            'section',
+            'status',
+            'created',
+            'created_by',
+            'approved',
+        )
+        export_order = fields
 
+
+class SupplyPlanAdmin(ImportExportModelAdmin):
+    resource_class = SupplyPlanResource
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
@@ -107,6 +126,8 @@ class SupplyPlanAdmin(admin.ModelAdmin):
                 'created',
                 'created_by',
                 'approved',
+                'partnership_start_date',
+                'partnership_end_date',
                 # 'approved_by',
                 # 'approval_date',
             ]
@@ -154,6 +175,8 @@ class SupplyPlanAdmin(admin.ModelAdmin):
             'approved',
             'approved_by',
             'approval_date',
+            'partnership_start_date',
+            'partnership_end_date',
         ]
 
         if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.PLANNED:
@@ -188,6 +211,8 @@ class SupplyPlanAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(SupplyPlanAdmin, self).get_queryset(request)
+        if has_group(request.user, 'UNICEF_PA'):
+            qs = qs.filter(created_by=request.user)
         if has_group(request.user, 'BUDGET_OWNER'):
             qs = qs.filter(status__in=['planned', 'approved'])
         return qs
@@ -226,13 +251,23 @@ class DistributionItemInline(admin.TabularInline):
     )
 
 
-class DistributionPlanAdmin(admin.ModelAdmin):
+class DistributionPlanResource(resources.ModelResource):
+    class Meta:
+        model = DistributionPlan
+        fields = (
+            'plan',
+        )
+        export_order = fields
 
+
+class DistributionPlanAdmin(ImportExportModelAdmin):
+    resource_class = DistributionPlanResource
     readonly_fields = (
         'plan',
         'plan_partner',
         'plan_partnership',
         'plan_section',
+        # DistributionPlanItemInline
     )
 
     search_fields = (
@@ -248,7 +283,7 @@ class DistributionPlanAdmin(admin.ModelAdmin):
         'plan__section',
     )
 
-    inlines = [DistributionItemInline, DistributionPlanItemInline]
+    inlines = [DistributionPlanItemInline, DistributionItemInline]
 
 
 admin.site.register(SupplyPlan, SupplyPlanAdmin)

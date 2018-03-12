@@ -68,6 +68,13 @@ class SupplyPlan(TimeStampedModel):
         related_name='modifications',
         verbose_name='Modified by',
     )
+    partnership_start_date = models.DateField(
+        null=True, blank=True
+    )
+
+    partnership_end_date = models.DateField(
+        null=True, blank=True
+    )
 
     def __unicode__(self):
         return '{} - {}'.format(self.partnership, self.partner)
@@ -85,16 +92,16 @@ class SupplyPlanItem(models.Model):
 
     wave_number_1 = models.CharField(
         max_length=2,
-        null=True, blank=True,
+        null=True, blank=False,
         choices=Choices(
             '1', '2', '3', '4'
         )
     )
     wave_quantity_1 = models.PositiveIntegerField(
-        null=True, blank=True
+        null=True, blank=False
     )
     date_required_by_1 = models.DateField(
-        null=True, blank=True
+        null=True, blank=False
     )
 
     wave_number_2 = models.CharField(
