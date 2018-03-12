@@ -325,3 +325,16 @@ INSTALLED_APPS += ['supplies_platform.taskapp.celery.CeleryConfig']
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'
 ########## END CELERY
+
+
+# django-compressor
+# ------------------------------------------------------------------------------
+INSTALLED_APPS += ("compressor", )
+STATICFILES_FINDERS += ("compressor.finders.CompressorFinder", )
+
+# Location of root django.contrib.admin URL, use {% url 'admin:index' %}
+ADMIN_URL = r'^admin/'
+
+LOCALE_PATHS = [
+    str(APPS_DIR.path('static/locale')),
+]
