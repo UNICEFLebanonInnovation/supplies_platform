@@ -7,6 +7,7 @@ from import_export import resources, fields
 from import_export import fields
 from import_export.admin import ImportExportModelAdmin
 
+from supplies_platform.partners.models import PCA
 from supplies_platform.users.util import has_group
 from supplies_platform.supplies.models import SupplyItem
 from .models import (
@@ -18,15 +19,56 @@ from .models import (
 )
 
 
-class SupplyPlanItemInline(admin.TabularInline):
+class SupplyPlanItemInline(admin.StackedInline):
     model = SupplyPlanItem
     verbose_name = 'Supply Item'
     verbose_name_plural = 'Supply Items'
     suit_classes = u'suit-tab suit-tab-waves'
 
+    # fieldsets = (
+    #     ('', {
+    #         'fields': (
+    #             'item',
+    #             'quantity',
+    #             'covered_per_item',
+    #             'target_population',
+    #         )
+    #     }),
+    #     ('Wave 1', {
+    #         'fields': (
+    #             'wave_number_1',
+    #             'wave_quantity_1',
+    #             'date_required_by_1',
+    #         )
+    #     }),
+    #     ('Wave 2', {
+    #         'fields': (
+    #             'wave_number_2',
+    #             'wave_quantity_2',
+    #             'date_required_by_2',
+    #         )
+    #     }),
+    #     ('Wave 3', {
+    #         'fields': (
+    #             'wave_number_3',
+    #             'wave_quantity_3',
+    #             'date_required_by_3',
+    #         )
+    #     }),
+    #     ('Wave 4', {
+    #         'fields': (
+    #             'wave_number_4',
+    #             'wave_quantity_4',
+    #             'date_required_by_4',
+    #         )
+    #     })
+    # )
+
     fields = (
         'item',
         'quantity',
+        'covered_per_item',
+        'target_population',
         'wave_number_1',
         'wave_quantity_1',
         'date_required_by_1',
@@ -39,9 +81,8 @@ class SupplyPlanItemInline(admin.TabularInline):
         'wave_number_4',
         'wave_quantity_4',
         'date_required_by_4',
-        'covered_per_item',
-        'target_population',
     )
+
     readonly_fields = (
         'target_population',
         'covered_per_item',
@@ -79,7 +120,7 @@ class WavePlanForm(forms.ModelForm):
         self.fields['supply_item'].queryset = queryset
 
 
-class SupplyPlanWaveInlineAdmin(admin.TabularInline):
+class SupplyPlanWaveInlineAdmin(admin.StackedInline):
     model = WavePlan
     form = WavePlanForm
     formset = WavePlanFormSet
@@ -126,8 +167,8 @@ class SupplyPlanAdmin(ImportExportModelAdmin):
                 'created',
                 'created_by',
                 'approved',
-                'partnership_start_date',
-                'partnership_end_date',
+                'partnership_start',
+                'partnership_end',
                 # 'approved_by',
                 # 'approval_date',
             ]
@@ -150,6 +191,8 @@ class SupplyPlanAdmin(ImportExportModelAdmin):
     list_display = (
         'partner',
         'partnership',
+        'partnership_start',
+        'partnership_end',
         'section',
         'status',
         'created',
@@ -166,6 +209,20 @@ class SupplyPlanAdmin(ImportExportModelAdmin):
         'section',
     )
 
+    def partnership_start(self, obj):
+        if obj.partnership:
+            try:
+                return PCA.objects.get(number=obj.partnership).start
+            except PCA.DoesNotExist:
+                return ''
+
+    def partnership_end(self, obj):
+        if obj.partnership:
+            try:
+                return PCA.objects.get(number=obj.partnership).end
+            except PCA.DoesNotExist:
+                return ''
+
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
@@ -175,8 +232,8 @@ class SupplyPlanAdmin(ImportExportModelAdmin):
             'approved',
             'approved_by',
             'approval_date',
-            'partnership_start_date',
-            'partnership_end_date',
+            'partnership_start',
+            'partnership_end',
         ]
 
         if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.PLANNED:
@@ -218,10 +275,11 @@ class SupplyPlanAdmin(ImportExportModelAdmin):
         return qs
 
 
-class DistributionPlanItemInline(admin.TabularInline):
+class DistributionPlanItemInline(admin.StackedInline):
     model = DistributionPlanItem
     verbose_name = 'Request'
     verbose_name_plural = 'Requests'
+    suit_classes = u'suit-tab suit-tab-request'
 
     fields = (
         'purpose',
@@ -236,10 +294,12 @@ class DistributionPlanItemInline(admin.TabularInline):
     )
 
 
-class DistributionItemInline(admin.TabularInline):
+class DistributionItemInline(admin.StackedInline):
     model = DistributionPlanItem
+    max_num = 99
     verbose_name = 'Distribution'
     verbose_name_plural = 'Distribution'
+    suit_classes = u'suit-tab suit-tab-distribution'
 
     fields = (
         'wave',
@@ -249,6 +309,9 @@ class DistributionItemInline(admin.TabularInline):
         'date_distributed',
         'quantity_distributed'
     )
+
+    # def get_max_num(self, request, obj=None):
+    #     return 0
 
 
 class DistributionPlanResource(resources.ModelResource):
@@ -270,6 +333,24 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
         # DistributionPlanItemInline
     )
 
+    fieldsets = [
+        (None, {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'plan',
+                'plan_partner',
+                'plan_partnership',
+                'plan_section',
+            ]
+        }),
+    ]
+
+    suit_form_tabs = (
+                      ('general', 'Distribution Plan'),
+                      ('request', 'Request Items Plan'),
+                      ('distribution', 'Distribution Items Plan'),
+                    )
+
     search_fields = (
         'plan__partnership',
     )
@@ -284,6 +365,14 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
     )
 
     inlines = [DistributionPlanItemInline, DistributionItemInline]
+
+    # def get_inline_instances(self, request, obj=None):
+    #     if not obj:
+    #         return []
+        # if not obj.requests.all().count():
+        #     print(obj.requests.all().count())
+        #     return [DistributionItemInline, ]
+        # return self.inlines
 
 
 admin.site.register(SupplyPlan, SupplyPlanAdmin)

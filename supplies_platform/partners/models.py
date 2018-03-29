@@ -127,13 +127,21 @@ class Agreement(models.Model):
         (AWP, u"Work Plan"),
     )
 
-    partner = models.ForeignKey(PartnerOrganization)
+    partner = models.ForeignKey(
+        PartnerOrganization,
+        blank=True,null=True
+    )
+    partner_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
     agreement_type = models.CharField(
         max_length=10,
         choices=AGREEMENT_TYPES
     )
     agreement_number = models.CharField(
-        max_length=45L,
+        max_length=45,
         blank=True,
         verbose_name=u'Reference Number'
     )
@@ -157,7 +165,7 @@ class Agreement(models.Model):
     def __unicode__(self):
         return u'{} for {} ({} - {})'.format(
             self.agreement_type,
-            self.partner.name,
+            self.partner_name,
             self.start.strftime('%d-%m-%Y') if self.start else '',
             self.end.strftime('%d-%m-%Y') if self.end else ''
         )
@@ -190,21 +198,26 @@ class PCA(models.Model):
 
     partner = models.ForeignKey(
         PartnerOrganization,
-        related_name='documents',
+        blank=True, null=True
+    )
+    partner_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
     )
     agreement = models.ForeignKey(
         Agreement,
         related_name='interventions',
         blank=True, null=True,
     )
-    partnership_type = models.CharField(
+    document_type = models.CharField(
         choices=PARTNERSHIP_TYPES,
         default=PD,
         blank=True, null=True,
         max_length=255,
         verbose_name=u'Document type'
     )
-    result_structure = models.CharField(
+    country_programme = models.CharField(
         max_length=32,
         blank=True, null=True,
         help_text=u'Which result structure does this partnership report under?'
@@ -235,15 +248,16 @@ class PCA(models.Model):
     )
 
     # dates
-    start_date = models.DateField(
+    start= models.DateField(
         null=True, blank=True,
         help_text=u'The date the Intervention will start'
     )
-    end_date = models.DateField(
+    end = models.DateField(
         null=True, blank=True,
         help_text=u'The date the Intervention will end'
     )
     initiation_date = models.DateField(
+        null=True, blank=True,
         verbose_name=u'Submission Date',
         help_text=u'The date the partner submitted complete partnership documents to Unicef',
     )
@@ -299,8 +313,8 @@ class PCA(models.Model):
 
     def __unicode__(self):
         return u'{}: {}'.format(
-            self.partner.name,
-            self.number if self.number else self.reference_number
+            self.partner_name,
+            self.number
         )
 
     @property

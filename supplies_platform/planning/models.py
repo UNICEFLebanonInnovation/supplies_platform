@@ -210,8 +210,8 @@ class DistributionPlanItem(models.Model):
     """
     Distribution Fields
     """
-    plan = models.ForeignKey(DistributionPlan)
-    wave = models.ForeignKey(WavePlan)
+    plan = models.ForeignKey(DistributionPlan, related_name='requests')
+    wave = models.ForeignKey(SupplyPlanItem)
     site = models.ForeignKey(Location)
     purpose = models.CharField(
         max_length=50,
