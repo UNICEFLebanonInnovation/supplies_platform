@@ -250,10 +250,12 @@ class PCA(models.Model):
     # dates
     start= models.DateField(
         null=True, blank=True,
+        verbose_name='Partnership start date',
         help_text=u'The date the Intervention will start'
     )
     end = models.DateField(
         null=True, blank=True,
+        verbose_name='Partnership end date',
         help_text=u'The date the Intervention will end'
     )
     initiation_date = models.DateField(

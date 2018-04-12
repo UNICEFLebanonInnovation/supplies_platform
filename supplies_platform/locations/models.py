@@ -8,19 +8,16 @@ from mptt.models import MPTTModel, TreeForeignKey
 from django.db import models
 
 
-# Create your models here.
-
-
-
 class LocationType(models.Model):
-    type = models.CharField(max_length=254L)
+    type = models.CharField(max_length=254)
 
     def __str__(self):
         return self.type
 
 
 class Location(MPTTModel):
-    name = models.CharField(max_length=254L)
+    name = models.CharField(max_length=254)
+    description = models.CharField(max_length=254)
     type = models.ForeignKey(LocationType, verbose_name='Location Type')
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -31,7 +28,6 @@ class Location(MPTTModel):
     # objects = models.GeoManager()
 
     def __unicode__(self):
-        # TODO: Make generic
         return u'{} - {}'.format(
             self.name,
             self.type.type
