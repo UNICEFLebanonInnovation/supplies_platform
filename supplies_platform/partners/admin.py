@@ -4,7 +4,7 @@ from import_export import fields
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 
-from .models import PartnerOrganization, Agreement, PCA
+from .models import PartnerOrganization, Agreement, PCA, PartnerStaffMember
 
 
 class PartnerOrganizationResource(resources.ModelResource):
@@ -72,6 +72,51 @@ class PCAAdmin(ImportExportModelAdmin):
     resource_class = PCAResource
 
 
+class PartnerStaffMemberResource(resources.ModelResource):
+    class Meta:
+        model = PartnerStaffMember
+        fields = (
+        )
+        export_order = fields
+
+
+class PartnerStaffMemberAdmin(ImportExportModelAdmin):
+    resource_class = PartnerStaffMemberResource
+    fields = (
+        'title',
+        'first_name',
+        'last_name',
+        'email',
+        'phone',
+        'active',
+    )
+    list_display = (
+        'partner',
+        'title',
+        'first_name',
+        'last_name',
+        'email',
+        'phone',
+        'active',
+    )
+    list_filter = (
+        'partner',
+        'active',
+    )
+    search_fields = (
+        'partner__name',
+        'first_name',
+        'last_name',
+        'email',
+        'phone',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.partner = request.user.partner
+
+
 admin.site.register(PartnerOrganization, PartnerOrganizationAdmin)
 admin.site.register(Agreement, AgreementAdmin)
 admin.site.register(PCA, PCAAdmin)
+admin.site.register(PartnerStaffMember, PartnerStaffMemberAdmin)

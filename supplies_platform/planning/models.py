@@ -6,10 +6,11 @@ from model_utils.choices import Choices
 from model_utils.models import TimeStampedModel
 
 from django.conf import settings
+from smart_selects.db_fields import ChainedForeignKey
 
 from supplies_platform.locations.models import Location
 from supplies_platform.users.models import User, Section
-from supplies_platform.partners.models import PartnerOrganization
+from supplies_platform.partners.models import PartnerOrganization, PartnerStaffMember, PCA
 from supplies_platform.supplies.models import SupplyItem
 
 
@@ -18,6 +19,7 @@ class SupplyPlan(TimeStampedModel):
     DRAFT = u'draft'
     PLANNED = u'planned'
     SUBMITTED = u'submitted'
+    REVIEWED = u'reviewed'
     APPROVED = u'approved'
     COMPLETED = u'completed'
     CANCELLED = u'cancelled'
@@ -25,6 +27,7 @@ class SupplyPlan(TimeStampedModel):
         (DRAFT, u"Draft"),
         (PLANNED, u"Planned"),
         (SUBMITTED, u"Submitted"),
+        (REVIEWED, u"Reviewed"),
         (APPROVED, u"Approved"),
         (COMPLETED, u"Completed"),
         (CANCELLED, u"Cancelled"),
@@ -32,21 +35,46 @@ class SupplyPlan(TimeStampedModel):
 
     partnership = models.CharField(
         max_length=50,
-        null=True, blank=True
+        null=True, blank=True,
+        verbose_name=''
+    )
+    pca = ChainedForeignKey(
+        PCA,
+        null=True, blank=True,
+        verbose_name='Partnership/Reference Number',
+        chained_field="partner__name",
+        chained_model_field="partner_name",
+        show_all=False,
+        auto_choose=False,
     )
     partner = models.ForeignKey(
         PartnerOrganization,
-        null=True, blank=False
+        null=True, blank=False,
+        verbose_name='Partner Organization'
     )
     section = models.ForeignKey(
         Section,
         null=True, blank=False
     )
     status = models.CharField(
-        max_length=32L,
+        max_length=32,
         choices=STATUS,
         default=DRAFT,
     )
+    to_review = models.BooleanField(blank=True, default=False)
+    reviewed = models.BooleanField(blank=True, default=False)
+    review_date = models.DateField(
+        null=True, blank=True
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    review_comments = models.TextField(
+        null=True, blank=True,
+    )
+    to_approve = models.BooleanField(blank=True, default=False)
     approved = models.BooleanField(blank=True, default=False)
     approval_date = models.DateField(
         null=True, blank=True
@@ -55,6 +83,9 @@ class SupplyPlan(TimeStampedModel):
         User,
         null=True, blank=True,
         related_name='+'
+    )
+    approval_comments = models.TextField(
+        null=True, blank=True,
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -68,12 +99,8 @@ class SupplyPlan(TimeStampedModel):
         related_name='modifications',
         verbose_name='Modified by',
     )
-    partnership_start_date = models.DateField(
-        null=True, blank=True
-    )
-
-    partnership_end_date = models.DateField(
-        null=True, blank=True
+    comments = models.TextField(
+        null=True, blank=True,
     )
 
     def __unicode__(self):
@@ -84,7 +111,7 @@ class SupplyPlanItem(models.Model):
     """
     Planning fields
     """
-    supply_plan = models.ForeignKey(SupplyPlan)
+    supply_plan = models.ForeignKey(SupplyPlan, related_name='supply_plans')
     item = models.ForeignKey(SupplyItem)
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
@@ -167,31 +194,97 @@ class SupplyPlanItem(models.Model):
 
 class WavePlan(models.Model):
 
-    supply_plan = models.ForeignKey(SupplyPlan)
-    supply_item = models.ForeignKey(SupplyItem)
+    supply_plan = models.ForeignKey(SupplyPlanItem, related_name='supply_plans_waves')
+    # supply_item = models.ForeignKey(SupplyItem)
+    # supply_plan_item = models.ForeignKey(SupplyPlanItem)
     wave_number = models.CharField(
         max_length=2,
+        null=True, blank=False,
         choices=Choices(
             '1', '2', '3', '4'
         )
     )
     quantity_required = models.PositiveIntegerField(
         help_text=u'Quantity required for this wave',
-        null=True, blank=True
+        null=True, blank=False
     )
     date_required_by = models.DateField(
-        null=True, blank=True
+        null=True, blank=False
     )
 
     def __unicode__(self):
-        return u'{} Wave: {}'.format(
-            self.supply_item.__unicode__(),
+        return u'{} Wave: {} - ({})'.format(
+            self.supply_plan.__unicode__(),
             self.wave_number,
+            self.quantity_required
         )
 
 
 class DistributionPlan(models.Model):
+
+    DRAFT = u'draft'
+    PLANNED = u'planned'
+    SUBMITTED = u'submitted'
+    APPROVED = u'approved'
+    COMPLETED = u'completed'
+    CANCELLED = u'cancelled'
+    STATUS = (
+        (DRAFT, u"Draft"),
+        (PLANNED, u"Planned"),
+        (SUBMITTED, u"Submitted"),
+        (APPROVED, u"Approved"),
+        (COMPLETED, u"Completed"),
+        (CANCELLED, u"Cancelled"),
+    )
+
     plan = models.ForeignKey(SupplyPlan)
+    status = models.CharField(
+        max_length=32,
+        choices=STATUS,
+        default=DRAFT,
+    )
+    to_review = models.BooleanField(blank=True, default=False)
+    reviewed = models.BooleanField(blank=True, default=False)
+    review_date = models.DateField(
+        null=True, blank=True
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    review_comments = models.TextField(
+        null=True, blank=True,
+    )
+    to_validate = models.BooleanField(blank=True, default=False)
+    validated = models.BooleanField(blank=True, default=False)
+    validation_date = models.DateField(
+        null=True, blank=True
+    )
+    validated_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    validation_comments = models.TextField(
+        null=True, blank=True,
+    )
+    to_approve = models.BooleanField(blank=True, default=False)
+    approved = models.BooleanField(blank=True, default=False)
+    approval_date = models.DateField(
+        null=True, blank=True
+    )
+    approved_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    approval_comments = models.TextField(
+        null=True, blank=True,
+    )
+    comments = models.TextField(
+        null=True, blank=True,
+    )
 
     @property
     def plan_partner(self):
@@ -199,7 +292,7 @@ class DistributionPlan(models.Model):
 
     @property
     def plan_partnership(self):
-        return self.plan.partnership
+        return self.plan.pca
 
     @property
     def plan_section(self):
@@ -211,7 +304,7 @@ class DistributionPlanItem(models.Model):
     Distribution Fields
     """
     plan = models.ForeignKey(DistributionPlan, related_name='requests')
-    wave = models.ForeignKey(SupplyPlanItem)
+    wave = models.ForeignKey(WavePlan)
     site = models.ForeignKey(Location)
     purpose = models.CharField(
         max_length=50,
@@ -219,7 +312,8 @@ class DistributionPlanItem(models.Model):
         choices=Choices(
             ('emergency_request', 'Emergency Request',),
             ('pd_request', 'PD Request',),
-        )
+        ),
+        default='pd_request'
     )
     target_population = models.IntegerField(
         verbose_name=u'No. of beneficiaries covered',
@@ -231,7 +325,7 @@ class DistributionPlanItem(models.Model):
         related_name='supply_items'
     )
     contact_person = models.ForeignKey(
-        User,
+        PartnerStaffMember,
         null=True, blank=True
     )
     quantity_requested = models.PositiveIntegerField(

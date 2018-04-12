@@ -15,6 +15,8 @@ urlpatterns = [
     # User management
     url(r'^users/', include('supplies_platform.users.urls', namespace='users')),
     url(r'^accounts/', include('allauth.urls')),
+    url(r'^nested_admin/', include('nested_admin.urls')),
+    url(r'^chaining/', include('smart_selects.urls')),
 
     # Your stuff: custom urls includes go here
 
