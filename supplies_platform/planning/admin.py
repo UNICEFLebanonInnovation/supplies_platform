@@ -189,12 +189,10 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
-            # fields.remove('review_date')
             fields.remove('review_comments')
 
         if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.REVIEWED:
             fields.remove('approved')
-            # fields.remove('approval_date')
             fields.remove('approval_comments')
 
         if has_group(request.user, 'UNICEF_PA'):
@@ -247,6 +245,9 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
 
 class DistributionPlanItemInline(admin.StackedInline):
     model = DistributionPlanItem
+    max_num = 99
+    min_num = 0
+    extra = 0
     verbose_name = 'Request'
     verbose_name_plural = 'Requests'
     form = DistributionPlanItemForm
@@ -268,6 +269,8 @@ class DistributionPlanItemInline(admin.StackedInline):
 class ReceivedItemInline(admin.StackedInline):
     model = DistributionPlanItem
     max_num = 99
+    min_num = 0
+    extra = 0
     verbose_name = 'Distribution'
     verbose_name_plural = 'Distribution'
     suit_classes = u'suit-tab suit-tab-distribution'
@@ -285,9 +288,6 @@ class ReceivedItemInline(admin.StackedInline):
         'quantity_balance',
     )
 
-    # def get_max_num(self, request, obj=None):
-    #     return 0
-
 
 class DistributionPlanResource(resources.ModelResource):
     class Meta:
@@ -300,20 +300,6 @@ class DistributionPlanResource(resources.ModelResource):
 
 class DistributionPlanAdmin(ImportExportModelAdmin):
     resource_class = DistributionPlanResource
-    readonly_fields = (
-        'plan',
-        'plan_partner',
-        'plan_partnership',
-        'plan_section',
-        'reviewed',
-        'review_date',
-        'reviewed_by',
-        'review_comments',
-        'approved',
-        'approved_by',
-        'approval_date',
-        'approval_comments',
-    )
 
     fieldsets = [
         (None, {
@@ -387,18 +373,28 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
 
-        fields = self.readonly_fields
+        fields = [
+            'plan',
+            'plan_partner',
+            'plan_partnership',
+            'plan_section',
+            'status',
+            'reviewed',
+            'review_date',
+            'reviewed_by',
+            'review_comments',
+            'approved',
+            'approved_by',
+            'approval_date',
+            'approval_comments',
+        ]
 
         if has_group(request.user, 'ZONAL_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
-            # fields.remove('reviewed_by')
-            # fields.remove('review_date')
             fields.remove('review_comments')
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.REVIEWED:
             fields.remove('approved')
-            # fields.remove('approved_by')
-            # fields.remove('approval_date')
             fields.remove('approval_comments')
 
         if has_group(request.user, 'PARTNER'):
@@ -420,6 +416,14 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             obj.approved_by = request.user
             obj.status = obj.APPROVED
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super(DistributionPlanAdmin, self).get_queryset(request)
+        if has_group(request.user, 'PARTNER'):
+            qs = qs.filter(plan__partner_id=request.user.partner_id)
+        if has_group(request.user, 'FIELD_FP'):
+            qs = qs.filter(status__in=['reviewed', 'submitted'])
+        return qs
 
 
 admin.site.register(SupplyPlan, SupplyPlanAdmin)
