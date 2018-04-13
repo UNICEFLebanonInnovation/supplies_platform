@@ -115,8 +115,8 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'approved',
-                'approved_by',
                 'approval_date',
+                'approved_by',
                 'approval_comments',
             ]
         }),
@@ -180,20 +180,22 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
             'reviewed',
             'review_date',
             'reviewed_by',
+            'review_comments',
             'approved',
             'approved_by',
             'approval_date',
+            'approval_comments',
         ]
 
-        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.PLANNED:
+        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
-            fields.remove('reviewed_by')
-            fields.remove('review_date')
+            # fields.remove('review_date')
+            fields.remove('review_comments')
 
         if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.REVIEWED:
             fields.remove('approved')
-            fields.remove('approved_by')
-            fields.remove('approval_date')
+            # fields.remove('approval_date')
+            fields.remove('approval_comments')
 
         if has_group(request.user, 'UNICEF_PA'):
             fields.remove('status')
@@ -387,15 +389,17 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
 
         fields = self.readonly_fields
 
-        if has_group(request.user, 'ZONAL_FP') and obj and obj.status == obj.PLANNED:
+        if has_group(request.user, 'ZONAL_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
-            fields.remove('reviewed_by')
-            fields.remove('review_date')
+            # fields.remove('reviewed_by')
+            # fields.remove('review_date')
+            fields.remove('review_comments')
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.REVIEWED:
             fields.remove('approved')
-            fields.remove('approved_by')
-            fields.remove('approval_date')
+            # fields.remove('approved_by')
+            # fields.remove('approval_date')
+            fields.remove('approval_comments')
 
         if has_group(request.user, 'PARTNER'):
             fields.remove('status')
