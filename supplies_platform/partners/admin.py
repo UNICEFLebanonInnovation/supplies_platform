@@ -71,6 +71,9 @@ class PartnerOrganizationAdmin(ImportExportModelAdmin):
         'email',
         'phone_number',
     )
+    search_fields = (
+        'name',
+    )
 
     inlines = [PartnerStaffMemberInline, ]
 

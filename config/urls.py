@@ -5,6 +5,8 @@ from django.contrib import admin
 from django.views.generic import TemplateView,RedirectView
 from django.views import defaults as default_views
 
+from supplies_platform.locations.views import LocationAutocomplete
+
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='pages/home.html'), name='home'),
     url(r'^about/$', TemplateView.as_view(template_name='pages/about.html'), name='about'),
@@ -17,8 +19,7 @@ urlpatterns = [
     url(r'^accounts/', include('allauth.urls')),
     url(r'^nested_admin/', include('nested_admin.urls')),
     url(r'^chaining/', include('smart_selects.urls')),
-
-    # Your stuff: custom urls includes go here
+    url(r'^location-autocomplete/$', LocationAutocomplete.as_view(), name='location_autocomplete'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

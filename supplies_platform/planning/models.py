@@ -363,15 +363,6 @@ class DistributionPlanItem(models.Model):
         PartnerStaffMember,
         null=True, blank=True
     )
-    # contact_person = ChainedForeignKey(
-    #     PartnerStaffMember,
-    #     chained_field="partner",
-    #     chained_model_field="partner",
-    #     show_all=False,
-    #     auto_choose=False,
-    #     null=True, blank=True,
-    #     verbose_name='Partnership/Reference Number',
-    # )
 
     quantity_requested = models.PositiveIntegerField(
         verbose_name=u'Quantity required for this location',

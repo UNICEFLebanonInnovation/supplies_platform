@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.contrib import messages
+from dal import autocomplete
 
 from django.core.exceptions import (
     ValidationError,
@@ -11,6 +12,7 @@ from django.core.exceptions import (
 )
 
 from supplies_platform.partners.models import PartnerStaffMember
+from supplies_platform.locations.models import Location
 from .models import (
     SupplyPlan,
     SupplyItem,
@@ -117,6 +119,14 @@ class DistributionPlanItemFormSet(forms.BaseInlineFormSet):
 
 
 class DistributionPlanItemForm(forms.ModelForm):
+    site = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        widget=autocomplete.ModelSelect2(url='location_autocomplete')
+    )
+    delivery_location = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        widget=autocomplete.ModelSelect2(url='location_autocomplete')
+    )
 
     class Meta:
         model = DistributionPlanItem
