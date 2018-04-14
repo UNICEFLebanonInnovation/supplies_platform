@@ -38,19 +38,19 @@ class SupplyPlan(TimeStampedModel):
         null=True, blank=True,
         verbose_name=''
     )
-    pca = ChainedForeignKey(
-        PCA,
-        null=True, blank=True,
-        verbose_name='Partnership/Reference Number',
-        chained_field="partner__name",
-        chained_model_field="partner_name",
-        show_all=False,
-        auto_choose=False,
-    )
     partner = models.ForeignKey(
         PartnerOrganization,
         null=True, blank=False,
         verbose_name='Partner Organization'
+    )
+    pca = ChainedForeignKey(
+        PCA,
+        chained_field="partner",
+        chained_model_field="partner",
+        show_all=False,
+        auto_choose=False,
+        null=True, blank=True,
+        verbose_name='Partnership/Reference Number',
     )
     section = models.ForeignKey(
         Section,
@@ -102,6 +102,20 @@ class SupplyPlan(TimeStampedModel):
     comments = models.TextField(
         null=True, blank=True,
     )
+
+    @property
+    def total_budget(self):
+        total = 0.0
+        try:
+            items = self.supply_plans.all()
+            for item in items:
+                total += item.quantity * item.item.price
+        except Exception as ex:
+            pass
+        return '{} {}'.format(
+            total,
+            '$'
+        )
 
     def __unicode__(self):
         return '{} - {}'.format(self.partnership, self.partner)
@@ -183,6 +197,27 @@ class SupplyPlanItem(models.Model):
         verbose_name=u'Beneficiaries covered per item',
         null=True, blank=True
     )
+
+    @property
+    def item_price(self):
+        if self.item:
+            return '{} {}'.format(
+                self.item.price,
+                '$'
+            )
+        return ''
+
+    @property
+    def total_budget(self):
+        total = 0.0
+        try:
+            total = self.quantity * self.item.price
+        except Exception as ex:
+            pass
+        return '{} {}'.format(
+            total,
+            '$'
+        )
 
     def __unicode__(self):
         return u'{}-{}-{}'.format(
@@ -328,6 +363,16 @@ class DistributionPlanItem(models.Model):
         PartnerStaffMember,
         null=True, blank=True
     )
+    # contact_person = ChainedForeignKey(
+    #     PartnerStaffMember,
+    #     chained_field="partner",
+    #     chained_model_field="partner",
+    #     show_all=False,
+    #     auto_choose=False,
+    #     null=True, blank=True,
+    #     verbose_name='Partnership/Reference Number',
+    # )
+
     quantity_requested = models.PositiveIntegerField(
         verbose_name=u'Quantity required for this location',
         null=True, blank=True

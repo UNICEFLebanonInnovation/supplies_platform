@@ -29,9 +29,7 @@ class SupplyItem(models.Model):
         blank=True, null=True,
         help_text='M3'
     )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=9,
+    price = models.FloatField(
         blank=True, null=True,
         help_text='$'
     )

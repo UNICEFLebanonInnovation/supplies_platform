@@ -58,6 +58,8 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
     fields = (
         'item',
         'quantity',
+        'item_price',
+        'total_budget',
         'covered_per_item',
         'target_population',
     )
@@ -65,6 +67,8 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
     inlines = [WavePlanInline, ]
 
     readonly_fields = (
+        'item_price',
+        'total_budget',
         'target_population',
         'covered_per_item',
     )
@@ -98,6 +102,7 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
                 'comments',
                 'partnership_start_date',
                 'partnership_end_date',
+                'total_budget',
                 'created',
                 'created_by',
             ]
@@ -185,6 +190,7 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
             'approved_by',
             'approval_date',
             'approval_comments',
+            'total_budget',
         ]
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.SUBMITTED:
