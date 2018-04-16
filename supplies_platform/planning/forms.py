@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.contrib import messages
+from datetime import date
 from dal import autocomplete
 
 from django.core.exceptions import (
@@ -25,6 +26,31 @@ from .models import (
 )
 
 
+class SupplyPlanForm(forms.ModelForm):
+
+    class Meta:
+        model = SupplyPlan
+        fields = '__all__'
+
+    def clean(self):
+        """
+        Ensure distribution plans are inline with overall supply plan
+        """
+        cleaned_data = super(SupplyPlanForm, self).clean()
+        if cleaned_data.get('DELETE', False):
+            return cleaned_data
+
+        pca = cleaned_data.get('pca', 0)
+        if pca:
+            current_date = date.today()
+            if current_date > pca.end:
+                raise ValidationError(
+                    _(u'Please select a valid partnership')
+                )
+
+        return cleaned_data
+
+
 class WavePlanForm(forms.ModelForm):
 
     class Meta:
@@ -41,6 +67,8 @@ class WavePlanFormSet(BaseInlineFormSet):
         cleaned_data = super(WavePlanFormSet, self).clean()
 
         if self.instance:
+            pca = self.instance.supply_plan.pca
+
             for plan in self.instance.supply_plans_waves.all():
                 total_quantity = 0
                 for form in self.forms:
@@ -48,6 +76,14 @@ class WavePlanFormSet(BaseInlineFormSet):
                         continue
                     data = form.cleaned_data
                     # if plan.item == data.get('item', 0):
+                    date_required_by = data.get('date_required_by', 0)
+
+                    if pca and date_required_by > pca.end:
+                        raise ValidationError(
+                            _(u'The required date ({}) should be between {} and {}'.format(
+                                date_required_by, pca.start, pca.end))
+                        )
+
                     total_quantity += data.get('quantity_required', 0)
 
                 if total_quantity > self.instance.quantity:
@@ -148,6 +184,29 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
         kwargs = super(DistributionPlanItemFormSet, self).get_form_kwargs(index)
         kwargs['parent_object'] = self.instance
         return kwargs
+
+    def clean(self):
+        """
+        Ensure distribution plans are inline with overall supply plan
+        """
+        cleaned_data = super(DistributionPlanItemFormSet, self).clean()
+
+        if self.instance and self.instance.plan and self.instance.plan.pca:
+            partnership_start_date = self.instance.plan.pca.start
+            partnership_end_date = self.instance.plan.pca.end
+            for form in self.forms:
+                if form.cleaned_data.get('DELETE', False):
+                    continue
+                data = form.cleaned_data
+                date_required_by = data.get('date_required_by', 0)
+
+                if date_required_by > partnership_end_date:
+                    raise ValidationError(
+                        _(u'The required date ({}) should be between {} and {}'.format(
+                            date_required_by, partnership_start_date, partnership_end_date))
+                    )
+
+        return cleaned_data
 
 
 class DistributionPlanWaveForm(forms.ModelForm):

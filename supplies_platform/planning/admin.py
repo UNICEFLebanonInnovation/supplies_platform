@@ -21,6 +21,7 @@ from .models import (
     DistributionPlanItemReceived,
 )
 from .forms import (
+    SupplyPlanForm,
     WavePlanForm,
     WavePlanFormSet,
     DistributionPlanForm,
@@ -95,6 +96,7 @@ class SupplyPlanResource(resources.ModelResource):
 
 class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     resource_class = SupplyPlanResource
+    # form = SupplyPlanForm
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
