@@ -454,9 +454,6 @@ class DistributionPlanItemReceived(models.Model):
     date_received = models.DateField(
         null=True, blank=True,
     )
-    quantity_balance = models.PositiveIntegerField(
-        null=True, blank=True
-    )
     date_distributed = models.DateField(
         null=True, blank=True,
     )
@@ -469,51 +466,3 @@ class DistributionPlanItemReceived(models.Model):
             self.wave_number,
             self.wave
         )
-
-
-class DistributionItemRequest(TimeStampedModel):
-
-    plan = models.ForeignKey(DistributionPlan)
-    quantity = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    expected_date = models.DateField(
-        null=True, blank=True
-    )
-    requested_by = models.ForeignKey(
-        User,
-        null=True, blank=True,
-        related_name='+'
-    )
-    to_review = models.BooleanField(blank=True, default=False)
-    review_date = models.DateField(
-        null=True, blank=True
-    )
-    reviewed_by = models.ForeignKey(
-        User,
-        null=True, blank=True,
-        related_name='+'
-    )
-    to_validate = models.BooleanField(blank=True, default=False)
-    validation_date = models.DateField(
-        null=True, blank=True
-    )
-    validated_by = models.ForeignKey(
-        User,
-        null=True, blank=True,
-        related_name='+'
-    )
-    to_approve = models.BooleanField(blank=True, default=False)
-    approval_date = models.DateField(
-        null=True, blank=True
-    )
-    approved_by = models.ForeignKey(
-        User,
-        null=True, blank=True,
-        related_name='+'
-    )
-    delivery_date = models.DateField(
-        null=True, blank=True
-    )
-    status = models.CharField(max_length=20, null=True, blank=True)
-

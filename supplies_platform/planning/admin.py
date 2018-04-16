@@ -24,8 +24,6 @@ from .forms import (
     SupplyPlanForm,
     WavePlanForm,
     WavePlanFormSet,
-    DistributionPlanForm,
-    DistributionPlanFormSet,
     DistributionPlanItemForm,
     DistributionPlanItemFormSet,
     DistributionPlanWaveForm,
@@ -317,13 +315,31 @@ class ReceivedItemInline(admin.StackedInline):
         'quantity_received',
         'date_received',
         'quantity_balance',
+        'quantity_distributed',
         'date_distributed',
-        # 'quantity_distributed'
+        'quantity_distributed_balance',
     )
 
     readonly_fields = (
         'quantity_balance',
+        'quantity_distributed_balance',
     )
+
+    def quantity_balance(self, obj):
+        try:
+            if obj.wave and obj.quantity_received:
+                return obj.wave.quantity_requested - obj.quantity_received
+        except Exception:
+            pass
+        return 0
+
+    def quantity_distributed_balance(self, obj):
+        try:
+            if obj.quantity_received and obj.quantity_distributed:
+                return obj.quantity_received - obj.quantity_distributed
+        except Exception:
+            pass
+        return 0
 
 
 class DistributionPlanResource(resources.ModelResource):

@@ -27,7 +27,7 @@ class Location(MPTTModel):
     def __unicode__(self):
         return u'{} - {} ({})'.format(
             self.name,
-            self.p_code,
+            self.p_code if self.p_code else '000',
             self.type.name
         )
 

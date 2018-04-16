@@ -95,57 +95,6 @@ class WavePlanFormSet(BaseInlineFormSet):
         return cleaned_data
 
 
-class DistributionPlanForm(forms.ModelForm):
-
-    class Meta:
-        model = DistributionPlan
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        """
-        Only show supply items already in the supply plan
-        """
-        if 'parent_object' in kwargs:
-            self.parent_partnership = kwargs.pop('parent_object')
-
-        super(DistributionPlanForm, self).__init__(*args, **kwargs)
-
-        queryset = SupplyItem.objects.none()
-        if hasattr(self, 'parent_partnership'):
-
-            items = self.parent_partnership.supply_plans.all().values_list('item__id', flat=True)
-            queryset = SupplyItem.objects.filter(id__in=items)
-
-        self.fields['item'].queryset = queryset
-
-
-class DistributionPlanFormSet(BaseInlineFormSet):
-
-    def clean(self):
-        """
-        Ensure distribution plans are inline with overall supply plan
-        """
-        cleaned_data = super(DistributionPlanFormSet, self).clean()
-
-        if self.instance:
-            for plan in self.instance.supply_plans.all():
-                total_quantity = 0
-                for form in self.forms:
-                    if form.cleaned_data.get('DELETE', False):
-                        continue
-                    data = form.cleaned_data
-                    if plan.item == data.get('item', 0):
-                        total_quantity += data.get('quantity', 0)
-
-                if total_quantity > plan.quantity:
-                    raise ValidationError(
-                        _(u'The total quantity ({}) of {} exceeds the planned amount of {}'.format(
-                            total_quantity, plan.item, plan.quantity))
-                    )
-
-        return cleaned_data
-
-
 class DistributionPlanItemForm(forms.ModelForm):
     site = forms.ModelChoiceField(
         queryset=Location.objects.all(),
@@ -199,6 +148,15 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
                     continue
                 data = form.cleaned_data
                 date_required_by = data.get('date_required_by', 0)
+                wave = data.get('wave', 0)
+                wave_quantity_required = wave.quantity_required
+                quantity_requested = data.get('quantity_requested', 0)
+
+                if quantity_requested > wave_quantity_required:
+                    raise ValidationError(
+                        _(u'The total quantity ({}) of {} exceeds the planned amount of {}'.format(
+                            quantity_requested, wave.supply_plan.item.code, wave_quantity_required))
+                    )
 
                 if date_required_by > partnership_end_date:
                     raise ValidationError(
