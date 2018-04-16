@@ -162,6 +162,16 @@ class PCAResource(resources.ModelResource):
 class PCAAdmin(ImportExportModelAdmin):
     resource_class = PCAResource
 
+    list_display = (
+        'number',
+        'partner',
+        'partner_name',
+        'document_type',
+        'country_programme',
+        'start',
+        'end',
+    )
+
 
 class PartnerStaffMemberResource(resources.ModelResource):
     class Meta:

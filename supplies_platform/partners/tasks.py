@@ -36,3 +36,17 @@ def get_data(url, apifunc, token, protocol='HTTPS'):
     conn.close()
 
     return result
+
+
+def link_partner_to_partnership():
+    from supplies_platform.partners.models import PartnerOrganization, PCA
+
+    partnerships = PCA.objects.all()
+
+    for pca in partnerships:
+        try:
+            partner = PartnerOrganization.objects.get(name=pca.partner_name)
+            pca.partner = partner
+            pca.save()
+        except Exception as ex:
+            continue

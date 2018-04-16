@@ -16,7 +16,9 @@ from .models import (
     WavePlan,
     SupplyPlanItem,
     DistributionPlan,
-    DistributionPlanItem
+    DistributionPlanItem,
+    DistributionPlanWave,
+    DistributionPlanItemReceived,
 )
 from .forms import (
     WavePlanForm,
@@ -24,7 +26,9 @@ from .forms import (
     DistributionPlanForm,
     DistributionPlanFormSet,
     DistributionPlanItemForm,
-    DistributionPlanItemFormSet
+    DistributionPlanItemFormSet,
+    DistributionPlanWaveForm,
+    DistributionPlanWaveFormSet,
 )
 
 
@@ -89,7 +93,7 @@ class SupplyPlanResource(resources.ModelResource):
         export_order = fields
 
 
-class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
+class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     resource_class = SupplyPlanResource
     fieldsets = [
         (None, {
@@ -249,18 +253,40 @@ class SupplyPlanAdmin(nested_admin.NestedModelAdmin):
         return qs
 
 
+class DistributionPlanWaveInline(nested_admin.NestedStackedInline):
+    model = DistributionPlanWave
+    form = DistributionPlanWaveForm
+    formset = DistributionPlanWaveFormSet
+    verbose_name = 'Item'
+    verbose_name_plural = 'Items'
+    min_num = 0
+    max_num = 99
+    extra = 0
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-request'
+
+    fields = (
+        'supply_item',
+        'quantity_required',
+        # 'delivery_location',
+        'date_distributed_by',
+    )
+
+
 class DistributionPlanItemInline(admin.StackedInline):
     model = DistributionPlanItem
     max_num = 99
     min_num = 0
     extra = 0
-    verbose_name = 'Request'
-    verbose_name_plural = 'Requests'
+    verbose_name = 'Request per wave'
+    verbose_name_plural = 'Requests per wave'
     form = DistributionPlanItemForm
     formset = DistributionPlanItemFormSet
+    # fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-request'
 
     fields = (
+        'wave_number',
         'wave',
         'site',
         'target_population',
@@ -271,23 +297,26 @@ class DistributionPlanItemInline(admin.StackedInline):
         'date_distributed_by',
     )
 
+    # inlines = [DistributionPlanWaveInline, ]
+
 
 class ReceivedItemInline(admin.StackedInline):
-    model = DistributionPlanItem
+    model = DistributionPlanItemReceived
     max_num = 99
     min_num = 0
     extra = 0
-    verbose_name = 'Distribution'
-    verbose_name_plural = 'Distribution'
+    verbose_name = 'Received items per wave'
+    verbose_name_plural = 'Received items'
     suit_classes = u'suit-tab suit-tab-distribution'
 
     fields = (
+        'wave_number',
         'wave',
         'quantity_received',
         'date_received',
         'quantity_balance',
         'date_distributed',
-        'quantity_distributed'
+        # 'quantity_distributed'
     )
 
     readonly_fields = (
@@ -342,7 +371,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
     suit_form_tabs = (
                       ('general', 'Distribution Plan'),
                       ('request', 'Request Items Plan'),
-                      ('distribution', 'Distribution Items Plan'),
+                      ('distribution', 'Received Items'),
                     )
 
     search_fields = (

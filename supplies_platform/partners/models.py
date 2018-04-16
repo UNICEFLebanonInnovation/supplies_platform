@@ -105,10 +105,9 @@ class PartnerStaffMember(models.Model):
     )
 
     def __unicode__(self):
-        return u'{} {} ({})'.format(
+        return u'{} {}'.format(
             self.first_name,
-            self.last_name,
-            self.partner.name
+            self.last_name
         )
 
 

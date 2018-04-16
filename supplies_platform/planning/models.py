@@ -248,10 +248,11 @@ class WavePlan(models.Model):
     )
 
     def __unicode__(self):
-        return u'{} Wave: {} - ({})'.format(
-            self.supply_plan.__unicode__(),
+        return u'Wave {}: Item: {}/{} - Quantity: {}'.format(
             self.wave_number,
-            self.quantity_required
+            self.supply_plan.item.code,
+            self.supply_plan.item.description,
+            self.quantity_required,
         )
 
 
@@ -339,8 +340,15 @@ class DistributionPlanItem(models.Model):
     Distribution Fields
     """
     plan = models.ForeignKey(DistributionPlan, related_name='requests')
-    wave = models.ForeignKey(WavePlan)
-    site = models.ForeignKey(Location)
+    wave_number = models.CharField(
+        max_length=2,
+        null=True, blank=False,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    wave = models.ForeignKey(WavePlan, null=True, blank=False)
+    site = models.ForeignKey(Location, null=True, blank=False)
     purpose = models.CharField(
         max_length=50,
         null=True, blank=True,
@@ -357,7 +365,7 @@ class DistributionPlanItem(models.Model):
     delivery_location = models.ForeignKey(
         Location,
         null=True, blank=True,
-        related_name='supply_items'
+        related_name='delivery_location'
     )
     contact_person = models.ForeignKey(
         PartnerStaffMember,
@@ -392,9 +400,74 @@ class DistributionPlanItem(models.Model):
     )
 
     def __unicode__(self):
-        return u'{} Site: {}'.format(
-            self.wave.__unicode__(),
+        return u'Wave {}: Quantity: {} - Site: {}'.format(
+            self.wave_number,
+            self.quantity_requested,
             self.site,
+        )
+
+
+class DistributionPlanWave(models.Model):
+    plan = models.ForeignKey(DistributionPlanItem, related_name='supply_waves')
+    # supply_item = models.ForeignKey(SupplyPlanItem, related_name='supply_items')
+    supply_item = models.ForeignKey(SupplyItem, related_name='supply_items')
+    quantity_required = models.PositiveIntegerField(
+        help_text=u'Quantity required for this wave',
+        null=True, blank=False
+    )
+    delivery_location = models.ForeignKey(
+        Location,
+        null=True, blank=True,
+        related_name='item_delivery_location'
+    )
+    date_required_by = models.DateField(
+        null=True, blank=False
+    )
+    date_distributed_by = models.DateField(
+        verbose_name=u'planned distribution date',
+        null=True, blank=True
+    )
+
+    def __unicode__(self):
+        return u'{} - ({})'.format(
+            self.supply_item.__unicode__(),
+            self.quantity_required
+        )
+
+
+class DistributionPlanItemReceived(models.Model):
+    """
+    Distribution Fields
+    """
+    plan = models.ForeignKey(DistributionPlan, related_name='received')
+    wave_number = models.CharField(
+        max_length=2,
+        null=True, blank=False,
+        choices=Choices(
+            '1', '2', '3', '4'
+        )
+    )
+    wave = models.ForeignKey(DistributionPlanItem, null=True, blank=False)
+    quantity_received = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_received = models.DateField(
+        null=True, blank=True,
+    )
+    quantity_balance = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    date_distributed = models.DateField(
+        null=True, blank=True,
+    )
+    quantity_distributed = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+
+    def __unicode__(self):
+        return u'{} {}'.format(
+            self.wave_number,
+            self.wave
         )
 
 
