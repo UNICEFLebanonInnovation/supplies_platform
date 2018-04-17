@@ -76,6 +76,21 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
         'covered_per_item',
     )
 
+    # def get_readonly_fields(self, request, obj=None):
+    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.status in ['SUBMITTED', 'APPROVED']:
+    #         return self.fields
+    #     return self.readonly_fields
+    #
+    # def has_add_permission(self, request, obj=None):
+    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
+    #         return False
+    #     return True
+    #
+    # def has_change_permission(self, request, obj=None):
+    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
+    #         return False
+    #     return True
+
 
 class SupplyPlanResource(resources.ModelResource):
     class Meta:

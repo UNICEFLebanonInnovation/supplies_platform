@@ -11,10 +11,11 @@ class LocationResource(resources.ModelResource):
     class Meta:
         model = Location
         fields = (
+            'id',
             'name',
             'p_code',
             'type',
-            'parent',
+            # 'parent',
         )
         export_order = fields
 
@@ -37,5 +38,26 @@ class LocationAdmin(ImportExportModelAdmin):
     )
 
 
-admin.site.register(LocationType)
+class LocationTypeResource(resources.ModelResource):
+    class Meta:
+        model = LocationType
+        fields = (
+            'id',
+            'name',
+        )
+        export_order = fields
+
+
+class LocationTypeAdmin(ImportExportModelAdmin):
+    resource_class = LocationTypeResource
+
+    search_fields = (
+        'name',
+    )
+    list_display = (
+        'name',
+    )
+
+
+admin.site.register(LocationType, LocationTypeAdmin)
 admin.site.register(Location, LocationAdmin)

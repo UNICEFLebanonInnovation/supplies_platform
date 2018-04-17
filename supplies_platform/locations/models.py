@@ -32,5 +32,5 @@ class Location(MPTTModel):
         )
 
     class Meta:
-        unique_together = ('name', 'type')
+        unique_together = ('name', 'type', 'p_code')
         ordering = ['name']
