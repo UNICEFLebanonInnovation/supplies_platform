@@ -159,7 +159,7 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
                             quantity_requested, wave.supply_plan.item.code, wave_quantity_required))
                     )
 
-                if date_required_by > wave_date_required_by:
+                if date_required_by < wave_date_required_by:
                     raise ValidationError(
                         _(u'The required date ({}) should be after {}'.format(
                             date_required_by, wave_date_required_by))

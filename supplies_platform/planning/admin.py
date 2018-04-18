@@ -373,7 +373,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
-                'plan',
+                # 'plan',
                 'plan_partner',
                 'plan_partnership',
                 'plan_section',
@@ -457,7 +457,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             'approval_comments',
         ]
 
-        if has_group(request.user, 'ZONAL_FP') and obj and obj.status == obj.SUBMITTED:
+        if has_group(request.user, 'FIELD_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
             fields.remove('review_comments')
 

@@ -118,7 +118,10 @@ class SupplyPlan(TimeStampedModel):
         )
 
     def __unicode__(self):
-        return '{} - {}'.format(self.partnership, self.partner)
+        return '{} - {}'.format(
+            self.partner,
+            self.pca.number if self.pca else ''
+        )
 
 
 class SupplyPlanItem(models.Model):
@@ -261,6 +264,7 @@ class DistributionPlan(models.Model):
     DRAFT = u'draft'
     PLANNED = u'planned'
     SUBMITTED = u'submitted'
+    REVIEWED = u'reviewed'
     APPROVED = u'approved'
     COMPLETED = u'completed'
     CANCELLED = u'cancelled'
@@ -268,6 +272,7 @@ class DistributionPlan(models.Model):
         (DRAFT, u"Draft"),
         (PLANNED, u"Planned"),
         (SUBMITTED, u"Submitted"),
+        (REVIEWED, u"Reviewed"),
         (APPROVED, u"Approved"),
         (COMPLETED, u"Completed"),
         (CANCELLED, u"Cancelled"),

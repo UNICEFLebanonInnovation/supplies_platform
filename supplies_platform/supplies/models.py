@@ -31,10 +31,17 @@ class SupplyItem(models.Model):
     )
     price = models.FloatField(
         blank=True, null=True,
+        verbose_name='Unit price',
         help_text='$'
     )
     quantity_in_stock = models.PositiveIntegerField(blank=True, null=True,)
     section = models.ForeignKey(Section)
+
+    @property
+    def stock_value(self):
+        if self.price and self.quantity_in_stock:
+            return float(self.price * self.quantity_in_stock)
+        return 0.0
 
     def __unicode__(self):
         return '{} - {} - {} - {} - {}'.format(

@@ -19,6 +19,18 @@ class SupplyItemResource(resources.ModelResource):
 class SupplyItemAdmin(ImportExportModelAdmin):
     resource_class = SupplyItemResource
 
+    fields = (
+        'code',
+        'description',
+        'unit_of_measure',
+        'unit_weight',
+        'unit_volume',
+        'quantity_in_stock',
+        'price',
+        'stock_value',
+        'section',
+    )
+
     search_fields = (
         'code',
         'description',
@@ -32,6 +44,9 @@ class SupplyItemAdmin(ImportExportModelAdmin):
     )
     list_filter = (
         'section',
+    )
+    readonly_fields = (
+        'stock_value',
     )
 
 
