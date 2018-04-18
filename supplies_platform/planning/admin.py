@@ -301,7 +301,7 @@ class DistributionPlanItemInline(admin.StackedInline):
     suit_classes = u'suit-tab suit-tab-request'
 
     fields = (
-        'wave_number',
+        # 'wave_number',
         'wave',
         'site',
         'target_population',
@@ -325,7 +325,7 @@ class ReceivedItemInline(admin.StackedInline):
     suit_classes = u'suit-tab suit-tab-distribution'
 
     fields = (
-        'wave_number',
+        # 'wave_number',
         'wave',
         'quantity_received',
         'date_received',

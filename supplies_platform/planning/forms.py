@@ -150,12 +150,19 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
                 date_required_by = data.get('date_required_by', 0)
                 wave = data.get('wave', 0)
                 wave_quantity_required = wave.quantity_required
+                wave_date_required_by = wave.date_required_by
                 quantity_requested = data.get('quantity_requested', 0)
 
                 if quantity_requested > wave_quantity_required:
                     raise ValidationError(
                         _(u'The total quantity ({}) of {} exceeds the planned amount of {}'.format(
                             quantity_requested, wave.supply_plan.item.code, wave_quantity_required))
+                    )
+
+                if date_required_by > wave_date_required_by:
+                    raise ValidationError(
+                        _(u'The required date ({}) should be after {}'.format(
+                            date_required_by, wave_date_required_by))
                     )
 
                 if date_required_by > partnership_end_date:

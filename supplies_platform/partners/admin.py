@@ -172,6 +172,17 @@ class PCAAdmin(ImportExportModelAdmin):
         'end',
     )
 
+    list_filter = (
+        'partner',
+        'document_type',
+        'country_programme',
+    )
+
+    search_fields = (
+        'number',
+        # 'partner',
+    )
+
 
 class PartnerStaffMemberResource(resources.ModelResource):
     class Meta:

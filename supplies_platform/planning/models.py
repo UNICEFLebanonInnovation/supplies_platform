@@ -342,7 +342,7 @@ class DistributionPlanItem(models.Model):
     plan = models.ForeignKey(DistributionPlan, related_name='requests')
     wave_number = models.CharField(
         max_length=2,
-        null=True, blank=False,
+        null=True, blank=True,
         choices=Choices(
             '1', '2', '3', '4'
         )
@@ -400,8 +400,7 @@ class DistributionPlanItem(models.Model):
     )
 
     def __unicode__(self):
-        return u'Wave {}: Quantity: {} - Site: {}'.format(
-            self.wave_number,
+        return u'Quantity: {} - Site: {}'.format(
             self.quantity_requested,
             self.site,
         )
@@ -442,7 +441,7 @@ class DistributionPlanItemReceived(models.Model):
     plan = models.ForeignKey(DistributionPlan, related_name='received')
     wave_number = models.CharField(
         max_length=2,
-        null=True, blank=False,
+        null=True, blank=True,
         choices=Choices(
             '1', '2', '3', '4'
         )
@@ -462,7 +461,6 @@ class DistributionPlanItemReceived(models.Model):
     )
 
     def __unicode__(self):
-        return u'{} {}'.format(
-            self.wave_number,
+        return u'{}'.format(
             self.wave
         )
