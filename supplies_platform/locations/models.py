@@ -28,7 +28,7 @@ class Location(MPTTModel):
         return u'{} - {} ({})'.format(
             self.name,
             self.p_code if self.p_code else '000',
-            self.type.name
+            self.type.name if self.type else None
         )
 
     class Meta:
