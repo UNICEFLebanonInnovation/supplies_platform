@@ -22,7 +22,8 @@ from .models import (
     DistributionPlan,
     DistributionPlanItem,
     WavePlan,
-    DistributionPlanWave
+    DistributionPlanWave,
+    DistributedItem
 )
 
 
@@ -234,3 +235,33 @@ class DistributionPlanWaveFormSet(BaseInlineFormSet):
     #                 )
     #
     #     return cleaned_data
+
+
+class DistributionItemFormSet(BaseInlineFormSet):
+
+    def get_form_kwargs(self, index):
+        kwargs = super(DistributionItemFormSet, self).get_form_kwargs(index)
+        kwargs['parent_object'] = self.instance
+        return kwargs
+
+
+class DistributionItemForm(forms.ModelForm):
+
+    class Meta:
+        model = DistributedItem
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        """
+        Only show supply items already in the supply plan
+        """
+        if 'parent_object' in kwargs:
+            self.parent_object = kwargs.pop('parent_object')
+
+        super(DistributionItemForm, self).__init__(*args, **kwargs)
+
+        queryset = SupplyItem.objects.none()
+        if hasattr(self, 'parent_object'):
+            queryset = SupplyItem.objects.filter(id__in=[i.item_id for i in self.parent_object.plan.supply_plans.all()])
+
+        self.fields['supply_item'].queryset = queryset

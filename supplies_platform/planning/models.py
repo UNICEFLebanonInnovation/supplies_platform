@@ -469,3 +469,21 @@ class DistributionPlanItemReceived(models.Model):
         return u'{}'.format(
             self.wave
         )
+
+
+class DistributedItem(models.Model):
+    """
+    Distribution Fields
+    """
+    plan = models.ForeignKey(DistributionPlan, related_name='distributed')
+    supply_item = models.ForeignKey(SupplyItem, related_name='distributed_items')
+    sites = models.ManyToManyField(Location, blank=False)
+    quantity_distributed_per_site = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+
+    def __unicode__(self):
+        return u'{} - {}'.format(
+            self.plan,
+            self.supply_item
+        )

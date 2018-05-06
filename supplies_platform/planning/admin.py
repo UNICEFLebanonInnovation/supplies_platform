@@ -19,6 +19,7 @@ from .models import (
     DistributionPlanItem,
     DistributionPlanWave,
     DistributionPlanItemReceived,
+    DistributedItem,
 )
 from .forms import (
     SupplyPlanForm,
@@ -28,6 +29,8 @@ from .forms import (
     DistributionPlanItemFormSet,
     DistributionPlanWaveForm,
     DistributionPlanWaveFormSet,
+    DistributionItemForm,
+    DistributionItemFormSet,
 )
 
 
@@ -322,7 +325,7 @@ class ReceivedItemInline(admin.StackedInline):
     extra = 0
     verbose_name = 'Received items per wave'
     verbose_name_plural = 'Received items'
-    suit_classes = u'suit-tab suit-tab-distribution'
+    suit_classes = u'suit-tab suit-tab-received'
 
     fields = (
         # 'wave_number',
@@ -355,6 +358,26 @@ class ReceivedItemInline(admin.StackedInline):
         except Exception:
             pass
         return 0
+
+
+class DistributedItemInline(admin.StackedInline):
+    model = DistributedItem
+    max_num = 99
+    min_num = 0
+    extra = 0
+    verbose_name = 'Distributed item per sites'
+    verbose_name_plural = 'Distributed items'
+    suit_classes = u'suit-tab suit-tab-distribution'
+    form = DistributionItemForm
+    formset = DistributionItemFormSet
+
+    fields = (
+        'supply_item',
+        'sites',
+        'quantity_distributed_per_site',
+    )
+
+    filter_horizontal = ('sites',)
 
 
 class DistributionPlanResource(resources.ModelResource):
@@ -404,7 +427,8 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
     suit_form_tabs = (
                       ('general', 'Distribution Plan'),
                       ('request', 'Request Items Plan'),
-                      ('distribution', 'Received Items'),
+                      ('receiving', 'Received Items'),
+                      ('distribution', 'Distributed Items'),
                     )
 
     search_fields = (
@@ -422,7 +446,11 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
         'plan__section',
     )
 
-    inlines = [DistributionPlanItemInline, ReceivedItemInline]
+    inlines = [DistributionPlanItemInline, ReceivedItemInline, DistributedItemInline]
+
+    suit_form_includes = (
+        ('admin/planning/tpm.html', 'middle', 'general'),
+    )
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
