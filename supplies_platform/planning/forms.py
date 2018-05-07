@@ -247,6 +247,11 @@ class DistributionItemFormSet(BaseInlineFormSet):
 
 class DistributionItemForm(forms.ModelForm):
 
+    sites = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        widget=autocomplete.ModelSelect2Multiple(url='location_autocomplete')
+    )
+
     class Meta:
         model = DistributedItem
         fields = '__all__'
