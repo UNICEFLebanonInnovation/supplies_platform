@@ -8,18 +8,16 @@ from import_export import fields
 from import_export.admin import ImportExportModelAdmin
 import nested_admin
 
-from supplies_platform.partners.models import PCA, PartnerStaffMember
 from supplies_platform.users.util import has_group
-from supplies_platform.supplies.models import SupplyItem
 from .models import (
     SupplyPlan,
     WavePlan,
     SupplyPlanItem,
     DistributionPlan,
     DistributionPlanItem,
-    DistributionPlanWave,
     DistributionPlanItemReceived,
     DistributedItem,
+    DistributedItemSite,
 )
 from .forms import (
     SupplyPlanForm,
@@ -27,10 +25,9 @@ from .forms import (
     WavePlanFormSet,
     DistributionPlanItemForm,
     DistributionPlanItemFormSet,
-    DistributionPlanWaveForm,
-    DistributionPlanWaveFormSet,
     DistributionItemForm,
     DistributionItemFormSet,
+    DistributedItemSiteForm,
 )
 
 
@@ -271,26 +268,6 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         return qs
 
 
-class DistributionPlanWaveInline(nested_admin.NestedStackedInline):
-    model = DistributionPlanWave
-    form = DistributionPlanWaveForm
-    formset = DistributionPlanWaveFormSet
-    verbose_name = 'Item'
-    verbose_name_plural = 'Items'
-    min_num = 0
-    max_num = 99
-    extra = 0
-    fk_name = 'plan'
-    suit_classes = u'suit-tab suit-tab-request'
-
-    fields = (
-        'supply_item',
-        'quantity_required',
-        # 'delivery_location',
-        'date_distributed_by',
-    )
-
-
 class DistributionPlanItemInline(admin.StackedInline):
     model = DistributionPlanItem
     max_num = 99
@@ -300,11 +277,9 @@ class DistributionPlanItemInline(admin.StackedInline):
     verbose_name_plural = 'Requests per wave'
     form = DistributionPlanItemForm
     formset = DistributionPlanItemFormSet
-    # fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-request'
 
     fields = (
-        # 'wave_number',
         'wave',
         'site',
         'target_population',
@@ -315,39 +290,35 @@ class DistributionPlanItemInline(admin.StackedInline):
         'date_distributed_by',
     )
 
-    # inlines = [DistributionPlanWaveInline, ]
 
-
-class ReceivedItemInline(admin.StackedInline):
+class ReceivedItemInline(admin.TabularInline):
     model = DistributionPlanItemReceived
-    max_num = 99
+    max_num = 0
     min_num = 0
     extra = 0
-    verbose_name = 'Received items per wave'
+    verbose_name = 'Received item'
     verbose_name_plural = 'Received items'
-    suit_classes = u'suit-tab suit-tab-received'
+    suit_classes = u'suit-tab suit-tab-receiving'
 
     fields = (
-        # 'wave_number',
-        'wave',
+        'supply_item',
+        'quantity_requested',
         'quantity_received',
         'date_received',
         'quantity_balance',
-        'quantity_distributed',
-        'date_distributed',
-        'quantity_distributed_balance',
     )
 
     readonly_fields = (
+        'supply_item',
+        'quantity_requested',
         'quantity_balance',
-        'quantity_distributed_balance',
     )
 
     def quantity_balance(self, obj):
         try:
-            if obj.wave and obj.quantity_received:
-                return obj.wave.quantity_requested - obj.quantity_received
-        except Exception:
+            if obj and obj.quantity_received:
+                return obj.quantity_requested - obj.quantity_received
+        except Exception as ex:
             pass
         return 0
 
@@ -360,24 +331,41 @@ class ReceivedItemInline(admin.StackedInline):
         return 0
 
 
-class DistributedItemInline(admin.StackedInline):
-    model = DistributedItem
+class DistributedItemSiteInline(nested_admin.NestedStackedInline):
+    model = DistributedItemSite
     max_num = 99
     min_num = 0
-    extra = 0
-    verbose_name = 'Distributed item per sites'
-    verbose_name_plural = 'Distributed items'
+    extra = 1
+    verbose_name = 'Site'
+    verbose_name_plural = 'Sites'
+    fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-distribution'
-    form = DistributionItemForm
-    formset = DistributionItemFormSet
+    form = DistributedItemSiteForm
+    # formset = DistributedItemSiteFormSet
 
     fields = (
-        'supply_item',
-        'sites',
+        'site',
         'quantity_distributed_per_site',
     )
 
-    filter_horizontal = ('sites',)
+
+class DistributedItemInline(nested_admin.NestedStackedInline):
+    model = DistributedItem
+    max_num = 0
+    min_num = 0
+    extra = 0
+    verbose_name = 'Distributed item per site'
+    verbose_name_plural = 'Distributed items'
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-distribution'
+
+    fields = (
+        'supply_item',
+    )
+    readonly_fields = (
+        'supply_item',
+    )
+    inlines = [DistributedItemSiteInline, ]
 
 
 class DistributionPlanResource(resources.ModelResource):
@@ -389,7 +377,7 @@ class DistributionPlanResource(resources.ModelResource):
         export_order = fields
 
 
-class DistributionPlanAdmin(ImportExportModelAdmin):
+class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     resource_class = DistributionPlanResource
 
     fieldsets = [
@@ -413,6 +401,15 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
                 'review_comments',
             ]
         }),
+        ('Clearness', {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'cleared',
+                'cleared_by',
+                'cleared_date',
+                'cleared_comments',
+            ]
+        }),
         ('Approval', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
@@ -420,6 +417,12 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
                 'approved_by',
                 'approval_date',
                 'approval_comments',
+            ]
+        }),
+        ('Delivery', {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'delivery_expected_date',
             ]
         }),
     ]
@@ -448,9 +451,9 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
 
     inlines = [DistributionPlanItemInline, ReceivedItemInline, DistributedItemInline]
 
-    suit_form_includes = (
-        ('admin/planning/tpm.html', 'middle', 'general'),
-    )
+    # suit_form_includes = (
+    #     ('admin/planning/tpm.html', 'middle', 'general'),
+    # )
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
@@ -460,8 +463,8 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             form.base_fields['status'].choices = (
                 (DistributionPlan.DRAFT, u"Draft"),
                 (DistributionPlan.PLANNED, u"Planned"),
-                (DistributionPlan.SUBMITTED, u"Submitted"),
-                (DistributionPlan.COMPLETED, u"Completed"),
+                (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
+                (DistributionPlan.COMPLETED, u"Distribution Completed"),
                 (DistributionPlan.CANCELLED, u"Cancelled"),
             )
 
@@ -479,10 +482,15 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             'review_date',
             'reviewed_by',
             'review_comments',
+            'cleared',
+            'cleared_by',
+            'cleared_date',
+            'cleared_comments',
             'approved',
             'approved_by',
             'approval_date',
             'approval_comments',
+            'delivery_expected_date',
         ]
 
         if has_group(request.user, 'FIELD_FP') and obj and obj.status == obj.SUBMITTED:
@@ -490,8 +498,16 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             fields.remove('review_comments')
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.REVIEWED:
+            fields.remove('cleared')
+            fields.remove('cleared_comments')
+
+        if has_group(request.user, 'UNICEF_PA') and obj and obj.status == obj.CLEARED:
             fields.remove('approved')
             fields.remove('approval_comments')
+
+        # if has_group(request.user, 'SUPPLY_FP'):
+        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.APPROVED:
+            fields.remove('delivery_expected_date')
 
         if has_group(request.user, 'PARTNER'):
             fields.remove('status')
@@ -506,11 +522,36 @@ class DistributionPlanAdmin(ImportExportModelAdmin):
             obj.review_date = datetime.datetime.now()
             obj.reviewed_by = request.user
             obj.status = obj.REVIEWED
+            obj.to_cleared = True
+        if obj and obj.cleared is True and not obj.cleared_date:
+            obj.cleared_date = datetime.datetime.now()
+            obj.cleared_by = request.user
+            obj.status = obj.CLEARED
             obj.to_approve = True
         if obj and obj.approved is True and not obj.approval_date:
             obj.approval_date = datetime.datetime.now()
             obj.approved_by = request.user
             obj.status = obj.APPROVED
+        if obj and obj.delivery_expected_date and not obj.to_delivery:
+        # if True:
+            obj.to_delivery = True
+            items = obj.requests.all()
+            for wave_item in items:
+                item = wave_item.wave.supply_plan.item
+                instance, created = DistributionPlanItemReceived.objects.get_or_create(
+                    plan=obj,
+                    supply_item=item
+                )
+                DistributedItem.objects.get_or_create(
+                    plan=obj,
+                    supply_item=item
+                )
+                quantity_requested = wave_item.quantity_requested
+                if not created and quantity_requested and instance.quantity_requested:
+                    quantity_requested = instance.quantity_requested + quantity_requested
+                instance.quantity_requested = quantity_requested
+                instance.save()
+
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):

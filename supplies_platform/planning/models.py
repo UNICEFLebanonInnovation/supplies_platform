@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.postgres.fields import ArrayField, JSONField
+from django.conf import settings
 
 from model_utils.choices import Choices
 from model_utils.models import TimeStampedModel
-
-from django.conf import settings
 from smart_selects.db_fields import ChainedForeignKey
 
 from supplies_platform.locations.models import Location
@@ -265,16 +265,18 @@ class DistributionPlan(models.Model):
     PLANNED = u'planned'
     SUBMITTED = u'submitted'
     REVIEWED = u'reviewed'
+    CLEARED = u'cleared'
     APPROVED = u'approved'
     COMPLETED = u'completed'
     CANCELLED = u'cancelled'
     STATUS = (
         (DRAFT, u"Draft"),
         (PLANNED, u"Planned"),
-        (SUBMITTED, u"Submitted"),
+        (SUBMITTED, u"Submitted/Plan completed"),
         (REVIEWED, u"Reviewed"),
+        (CLEARED, u"Cleared"),
         (APPROVED, u"Approved"),
-        (COMPLETED, u"Completed"),
+        (COMPLETED, u"Distribution Completed"),
         (CANCELLED, u"Cancelled"),
     )
 
@@ -310,6 +312,19 @@ class DistributionPlan(models.Model):
     validation_comments = models.TextField(
         null=True, blank=True,
     )
+    to_cleared = models.BooleanField(blank=True, default=False)
+    cleared = models.BooleanField(blank=True, default=False)
+    cleared_date = models.DateField(
+        null=True, blank=True
+    )
+    cleared_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    cleared_comments = models.TextField(
+        null=True, blank=True,
+    )
     to_approve = models.BooleanField(blank=True, default=False)
     approved = models.BooleanField(blank=True, default=False)
     approval_date = models.DateField(
@@ -326,6 +341,10 @@ class DistributionPlan(models.Model):
     comments = models.TextField(
         null=True, blank=True,
     )
+    to_delivery = models.BooleanField(blank=True, default=False)
+    delivery_expected_date = models.DateField(
+        null=True, blank=True
+    )
 
     @property
     def plan_partner(self):
@@ -341,9 +360,7 @@ class DistributionPlan(models.Model):
 
 
 class DistributionPlanItem(models.Model):
-    """
-    Distribution Fields
-    """
+
     plan = models.ForeignKey(DistributionPlan, related_name='requests')
     wave_number = models.CharField(
         max_length=2,
@@ -440,44 +457,31 @@ class DistributionPlanWave(models.Model):
 
 
 class DistributionPlanItemReceived(models.Model):
-    """
-    Distribution Fields
-    """
+
     plan = models.ForeignKey(DistributionPlan, related_name='received')
-    wave_number = models.CharField(
-        max_length=2,
-        null=True, blank=True,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
+    supply_item = models.ForeignKey(SupplyItem, related_name='received_items')
+    quantity_requested = models.PositiveIntegerField(
+        null=True, blank=True
     )
-    wave = models.ForeignKey(DistributionPlanItem, null=True, blank=False)
     quantity_received = models.PositiveIntegerField(
         null=True, blank=True
     )
     date_received = models.DateField(
         null=True, blank=True,
     )
-    date_distributed = models.DateField(
-        null=True, blank=True,
-    )
-    quantity_distributed = models.PositiveIntegerField(
-        null=True, blank=True
-    )
 
     def __unicode__(self):
-        return u'{}'.format(
-            self.wave
+        return u'{} - {} - {}'.format(
+            self.plan,
+            self.supply_item,
+            self.quantity_received
         )
 
 
 class DistributedItem(models.Model):
-    """
-    Distribution Fields
-    """
+
     plan = models.ForeignKey(DistributionPlan, related_name='distributed')
     supply_item = models.ForeignKey(SupplyItem, related_name='distributed_items')
-    sites = models.ManyToManyField(Location, blank=False)
     quantity_distributed_per_site = models.PositiveIntegerField(
         null=True, blank=True
     )
@@ -486,4 +490,19 @@ class DistributedItem(models.Model):
         return u'{} - {}'.format(
             self.plan,
             self.supply_item
+        )
+
+
+class DistributedItemSite(models.Model):
+
+    plan = models.ForeignKey(DistributedItem, related_name='distributed_sites')
+    site = models.ForeignKey(Location, blank=False)
+    quantity_distributed_per_site = models.PositiveIntegerField(
+        null=True, blank=False
+    )
+
+    def __unicode__(self):
+        return u'{} - {}'.format(
+            self.plan.supply_item,
+            self.site
         )

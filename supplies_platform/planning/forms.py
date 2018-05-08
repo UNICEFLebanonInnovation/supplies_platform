@@ -17,13 +17,10 @@ from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
 from .models import (
     SupplyPlan,
-    SupplyPlanItem,
-    WavePlan,
-    DistributionPlan,
     DistributionPlanItem,
     WavePlan,
-    DistributionPlanWave,
-    DistributedItem
+    DistributedItem,
+    DistributedItemSite,
 )
 
 
@@ -175,68 +172,6 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
         return cleaned_data
 
 
-class DistributionPlanWaveForm(forms.ModelForm):
-
-    # delivery_location = forms.ModelChoiceField(
-    #     queryset=Location.objects.all(),
-    #     widget=autocomplete.ModelSelect2(url='location_autocomplete')
-    # )
-
-    class Meta:
-        model = DistributionPlanWave
-        fields = '__all__'
-
-    # def __init__(self, *args, **kwargs):
-    #     """
-    #     Only show supply items already in the supply plan
-    #     """
-    #     if 'parent_object' in kwargs:
-    #         self.parent_object = kwargs.pop('parent_object')
-    #
-    #     super(DistributionPlanWaveForm, self).__init__(*args, **kwargs)
-    #
-    #     queryset = SupplyItem.objects.all()
-    #     if hasattr(self, 'parent_object'):
-    #         queryset = SupplyPlanItem.objects.filter(supply_plan_id=self.parent_object.plan.plan_id)
-    #
-    #     self.fields['supply_item'].queryset = queryset
-
-
-class DistributionPlanWaveFormSet(BaseInlineFormSet):
-
-    def get_form_kwargs(self, index):
-        kwargs = super(DistributionPlanWaveFormSet, self).get_form_kwargs(index)
-        kwargs['parent_object'] = self.instance
-        return kwargs
-
-    # def clean(self):
-    #     """
-    #     Ensure distribution plans are inline with overall supply plan
-    #     """
-    #     cleaned_data = super(DistributionPlanWaveFormSet, self).clean()
-    #
-    #     if self.instance:
-    #         print(self.insatance.plan_id)
-    #         for plan in self.instance.supply_plans_waves.all():
-    #             total_quantity = 0
-    #             for form in self.forms:
-    #                 if form.cleaned_data.get('DELETE', False):
-    #                     continue
-    #                 data = form.cleaned_data
-    #                 # if plan.item == data.get('item', 0):
-    #                 total_quantity += data.get('quantity_required', 0)
-    #
-    #             print(total_quantity)
-    #
-    #             if total_quantity > self.instance.quantity:
-    #                 raise ValidationError(
-    #                     _(u'The total quantity ({}) of {} exceeds the planned amount of {}'.format(
-    #                         total_quantity, self.instance.item, self.instance.quantity))
-    #                 )
-    #
-    #     return cleaned_data
-
-
 class DistributionItemFormSet(BaseInlineFormSet):
 
     def get_form_kwargs(self, index):
@@ -246,11 +181,6 @@ class DistributionItemFormSet(BaseInlineFormSet):
 
 
 class DistributionItemForm(forms.ModelForm):
-
-    sites = forms.ModelChoiceField(
-        queryset=Location.objects.all(),
-        widget=autocomplete.ModelSelect2Multiple(url='location_autocomplete')
-    )
 
     class Meta:
         model = DistributedItem
@@ -270,3 +200,16 @@ class DistributionItemForm(forms.ModelForm):
             queryset = SupplyItem.objects.filter(id__in=[i.item_id for i in self.parent_object.plan.supply_plans.all()])
 
         self.fields['supply_item'].queryset = queryset
+
+
+class DistributedItemSiteForm(forms.ModelForm):
+
+    site = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        widget=autocomplete.ModelSelect2(url='location_autocomplete')
+    )
+
+    class Meta:
+        model = DistributedItemSite
+        fields = '__all__'
+

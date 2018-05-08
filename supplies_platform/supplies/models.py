@@ -44,10 +44,10 @@ class SupplyItem(models.Model):
         return 0.0
 
     def __unicode__(self):
-        return '{} - {} - {} - {} - {}'.format(
+        return '{} - {}'.format(
             self.code,
             self.description,
-            self.price,
-            self.quantity_in_stock,
-            self.section
+            # self.price,
+            # self.quantity_in_stock,
+            # self.section
         )
