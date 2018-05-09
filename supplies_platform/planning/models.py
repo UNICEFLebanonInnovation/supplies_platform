@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import datetime
+
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.conf import settings
@@ -31,6 +33,11 @@ class SupplyPlan(TimeStampedModel):
         (APPROVED, u"Approved"),
         (COMPLETED, u"Completed"),
         (CANCELLED, u"Cancelled"),
+    )
+
+    reference_number = models.CharField(
+        max_length=100,
+        null=True, blank=True,
     )
 
     partnership = models.CharField(
@@ -118,10 +125,26 @@ class SupplyPlan(TimeStampedModel):
         )
 
     def __unicode__(self):
-        return '{} - {}'.format(
+        return '{} - {} - {}'.format(
+            self.reference_number,
             self.partner,
-            self.pca.number if self.pca else ''
+            self.section
         )
+
+    def save(self, **kwargs):
+        if not self.reference_number:
+            year = datetime.date.today().year
+            objects = list(SupplyPlan.objects.filter(
+                created__year=year,
+            ).order_by('created').values_list('id', flat=True))
+            sequence = '{0:02d}'.format(objects.index(self.id) + 1 if self.id in objects else len(objects) + 1)
+            self.reference_number = '{}{}{}'.format(
+                'SP',
+                year,
+                sequence
+            )
+
+        super(SupplyPlan, self).save(**kwargs)
 
 
 class SupplyPlanItem(models.Model):
@@ -259,7 +282,7 @@ class WavePlan(models.Model):
         )
 
 
-class DistributionPlan(models.Model):
+class DistributionPlan(TimeStampedModel):
 
     DRAFT = u'draft'
     PLANNED = u'planned'
@@ -280,6 +303,10 @@ class DistributionPlan(models.Model):
         (CANCELLED, u"Cancelled"),
     )
 
+    reference_number = models.CharField(
+        max_length=100,
+        null=True, blank=True,
+    )
     plan = models.ForeignKey(SupplyPlan)
     status = models.CharField(
         max_length=32,
@@ -357,6 +384,29 @@ class DistributionPlan(models.Model):
     @property
     def plan_section(self):
         return self.plan.section
+
+    def __unicode__(self):
+        return '{} - {} - {}'.format(
+            self.reference_number,
+            self.plan.partner,
+            self.plan.section
+        )
+
+    def save(self, **kwargs):
+        if not self.reference_number:
+            year = datetime.date.today().year
+            objects = list(DistributionPlan.objects.filter(
+                created__year=year,
+            ).order_by('created').values_list('id', flat=True))
+            sequence = '{0:02d}'.format(objects.index(self.id) + 1 if self.id in objects else len(objects) + 1)
+            self.reference_number = '{}/{}{}{}'.format(
+                self.plan.reference_number,
+                'DP',
+                year,
+                sequence
+            )
+
+        super(DistributionPlan, self).save(**kwargs)
 
 
 class DistributionPlanItem(models.Model):
@@ -499,6 +549,14 @@ class DistributedItemSite(models.Model):
     site = models.ForeignKey(Location, blank=False)
     quantity_distributed_per_site = models.PositiveIntegerField(
         null=True, blank=False
+    )
+    distribution_date = models.DateField(
+        null=True, blank=True
+    )
+    tpm_visit = models.BooleanField(
+        blank=True, default=False,
+        verbose_name=u'TPM Visit?',
+        help_text=u'TPM visit for this location',
     )
 
     def __unicode__(self):

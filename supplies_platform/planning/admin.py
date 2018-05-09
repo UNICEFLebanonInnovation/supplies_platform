@@ -114,6 +114,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
+                'reference_number',
                 'section',
                 'partner',
                 'pca',
@@ -160,6 +161,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         'pca',
     )
     list_display = (
+        'reference_number',
         'section',
         'partner',
         'pca',
@@ -196,6 +198,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
+            'reference_number',
             'partnership_start_date',
             'partnership_end_date',
             'status',
@@ -341,12 +344,24 @@ class DistributedItemSiteInline(nested_admin.NestedStackedInline):
     fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-distribution'
     form = DistributedItemSiteForm
-    # formset = DistributedItemSiteFormSet
 
     fields = (
         'site',
         'quantity_distributed_per_site',
+        'distribution_date',
+        'tpm_visit',
     )
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'tpm_visit',
+        ]
+
+        if has_group(request.user, 'UNICEF_PO') and obj and obj.status == DistributionPlan.COMPLETED:
+            fields.remove('tpm_visit')
+
+        return fields
 
 
 class DistributedItemInline(nested_admin.NestedStackedInline):
@@ -384,7 +399,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
-                # 'plan',
+                'reference_number',
                 'plan_partner',
                 'plan_partnership',
                 'plan_section',
@@ -438,6 +453,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         'plan__partnership',
     )
     list_display = (
+        'reference_number',
         'plan_partner',
         'plan_partnership',
         'plan_section',
@@ -473,6 +489,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
+            'reference_number',
             'plan',
             'plan_partner',
             'plan_partnership',
