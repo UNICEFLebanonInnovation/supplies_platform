@@ -551,7 +551,7 @@ class DistributedItemSite(models.Model):
         null=True, blank=False
     )
     distribution_date = models.DateField(
-        null=True, blank=True
+        null=True, blank=False
     )
     tpm_visit = models.BooleanField(
         blank=True, default=False,

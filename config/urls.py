@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^nested_admin/', include('nested_admin.urls')),
     url(r'^chaining/', include('smart_selects.urls')),
     url(r'^location-autocomplete/$', LocationAutocomplete.as_view(), name='location_autocomplete'),
+    url(r'^tpm/', include('supplies_platform.tpm.urls', namespace='tpm')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

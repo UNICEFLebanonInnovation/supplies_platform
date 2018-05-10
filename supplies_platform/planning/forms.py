@@ -15,6 +15,7 @@ from django.core.exceptions import (
 from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
+from supplies_platform.tpm.models import TPMVisit
 from .models import (
     SupplyPlan,
     DistributionPlanItem,
@@ -200,6 +201,26 @@ class DistributionItemForm(forms.ModelForm):
             queryset = SupplyItem.objects.filter(id__in=[i.item_id for i in self.parent_object.plan.supply_plans.all()])
 
         self.fields['supply_item'].queryset = queryset
+
+
+class DistributedItemSiteFormSet(BaseInlineFormSet):
+    def save_existing_objects(self, commit=True):
+        saved_instances = super(DistributedItemSiteFormSet, self).save_existing_objects(commit)
+        if commit:
+            for obj in saved_instances:
+                if obj.tpm_visit:
+                    plan = obj.plan.plan
+                    instance, created = TPMVisit.objects.get_or_create(
+                        distribution_plan=plan,
+                        supply_plan=plan.plan,
+                        supply_item=obj.plan.supply_item,
+                        site=obj.site
+                    )
+                    if created:
+                        instance.quantity_distributed = obj.quantity_distributed_per_site
+                        instance.distribution_date = obj.distribution_date
+                        instance.save()
+        return saved_instances
 
 
 class DistributedItemSiteForm(forms.ModelForm):

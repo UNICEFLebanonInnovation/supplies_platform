@@ -21,6 +21,12 @@ class TPMVisit(TimeStampedModel):
     distribution_plan = models.ForeignKey(DistributionPlan, related_name='+')
     supply_item = models.ForeignKey(SupplyItem, blank=False, related_name='+')
     site = models.ForeignKey(Location, blank=False, related_name='+')
+    quantity_distributed = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    distribution_date = models.DateField(
+        null=True, blank=True
+    )
 
     quantity_assessment = JSONField(blank=True, null=True)
     quantity_assessment_completed = models.BooleanField(blank=True, default=False)

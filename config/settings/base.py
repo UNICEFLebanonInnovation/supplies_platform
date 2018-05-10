@@ -58,6 +58,14 @@ THIRD_PARTY_APPS = [
     'smart_selects',
     'dal',
     'dal_select2',
+
+    'rest_framework',
+    'rest_framework_swagger',
+    'rest_framework.authtoken',
+
+    'bootstrap3',
+    'bootstrap3_datetime',
+    'django_tables2',
 ]
 
 # Apps specific for this project go here.

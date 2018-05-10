@@ -9,6 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 import nested_admin
 
 from supplies_platform.users.util import has_group
+from supplies_platform.tpm.models import TPMVisit
 from .models import (
     SupplyPlan,
     WavePlan,
@@ -28,6 +29,7 @@ from .forms import (
     DistributionItemForm,
     DistributionItemFormSet,
     DistributedItemSiteForm,
+    DistributedItemSiteFormSet,
 )
 
 
@@ -334,16 +336,18 @@ class ReceivedItemInline(admin.TabularInline):
         return 0
 
 
-class DistributedItemSiteInline(nested_admin.NestedStackedInline):
+# class DistributedItemSiteInline(nested_admin.NestedStackedInline):
+class DistributedItemSiteInline(nested_admin.NestedTabularInline):
     model = DistributedItemSite
     max_num = 99
     min_num = 0
-    extra = 1
+    extra = 0
     verbose_name = 'Site'
     verbose_name_plural = 'Sites'
     fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-distribution'
     form = DistributedItemSiteForm
+    formset = DistributedItemSiteFormSet
 
     fields = (
         'site',
@@ -355,10 +359,10 @@ class DistributedItemSiteInline(nested_admin.NestedStackedInline):
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
-            'tpm_visit',
+            # 'tpm_visit',
         ]
 
-        if has_group(request.user, 'UNICEF_PO') and obj and obj.status == DistributionPlan.COMPLETED:
+        if has_group(request.user, 'UNICEF_PO') and obj and obj.plan.plan.status == DistributionPlan.COMPLETED:
             fields.remove('tpm_visit')
 
         return fields
@@ -522,7 +526,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             fields.remove('approved')
             fields.remove('approval_comments')
 
-        # if has_group(request.user, 'SUPPLY_FP'):
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.APPROVED:
             fields.remove('delivery_expected_date')
 
