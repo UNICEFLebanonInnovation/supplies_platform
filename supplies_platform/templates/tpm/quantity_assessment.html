@@ -1,0 +1,13 @@
+{% load util_tags %}
+{% if request.user|has_group:"UNICEF_PO" %}
+  {% if not record.quantity_assessment %}
+  <a href="/tpm/assessment/{{ record.id }}/?slug=quantity" class="btn btn-info">
+      <i class="icon-edit-sign icon-white"></i>
+      Fill in
+  </a>
+  {% else %}
+      Completed
+  {% endif %}
+{% else %}
+    Not allowed
+{% endif %}

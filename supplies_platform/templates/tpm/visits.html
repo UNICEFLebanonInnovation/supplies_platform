@@ -4,12 +4,13 @@
 {% load render_table from django_tables2 %}
 {% load bootstrap3 %}
 {% bootstrap_css %}
+{% load util_tags %}
 
 {% block extra_head %}
     <link href="{% static 'django_tables2/bootstrap.css' %}" rel="stylesheet" />
 {% endblock %}
 
-{% block modal %}
+{% block content %}
 <section>
 
       <section id="page-title" class="inline-form inner-section ui-menu-color02">
@@ -23,7 +24,108 @@
     </section>
 
     <section style="padding-top:10px;">
-          {% render_table table 'django_tables2/bootstrap.html' %}
+        {% csrf_token %}
+        {% render_table table 'django_tables2/bootstrap.html' %}
     </section>
 </section>
 {% endblock %}
+
+{% block custom_javascript %}
+    {% get_user_token request.user.id as user_token %}
+    <script type="text/javascript" language="javascript" src="{% static 'js/jquery-1.12.3.min.js' %}"></script>
+    <script type="text/javascript" language="javascript" src="{% static 'js/jquery-ui-1.12.1.js' %}"></script>
+    <script>
+        var tpm_url = '/api/tpm-visits/';
+        var user_token = '{{ user_token }}';
+        var user_id = '{{ request.user.id }}';
+        var user_email = '{{ request.user }}';
+        var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+
+
+        $(document).ready(function() {
+
+            $('.assign-me').dblclick(function(){
+                assign_to_me($(this));
+            });
+
+            $('.assign-tpm').dblclick(function(){
+                var itemref = $(this).attr('itemref');
+                $('.assign-tpm-block').addClass('d-none');
+                $('#assign-tpm-block-'+itemref).removeClass('d-none');
+            });
+
+            $('.save-assign-btn').click(function(){
+                var item = $(this);
+                var itemref = item.attr('itemref');
+                if($('#asisgned-tpm-'+itemref).val()) {
+                    assign_to_tpm(item, $('#asisgned-tpm-'+itemref).val(), $('#asisgned-tpm-'+itemref).find(':selected').text());
+                }
+            });
+
+            $('.cancel-assign-btn').click(function(){
+                var itemref = $(this).attr('itemref');
+                $('#assign-tpm-block-'+itemref).addClass('d-none');
+                $('#assign-btn-'+itemref).removeClass('d-none');
+            });
+
+        });
+
+        function getHeader()
+        {
+            var header = {
+                'Authorization': 'Token '+user_token,
+                'HTTP_REFERER': $(location).attr('href'),
+                'Cookie': 'token=Token '+user_token,
+                'X-CSRFToken': csrftoken
+            };
+            return header;
+        }
+
+        function assign_to_me(item)
+        {
+            var data = {assigned_to_officer:user_id}
+            $.ajax({
+                type: "PATCH",
+                url: tpm_url+item.attr('itemref')+'/',
+                data: data,
+                cache: false,
+                headers: getHeader(),
+                dataType: 'json',
+                success: function (response, result, jqXHR) {
+                    if(jqXHR.status == 200){
+                        item.find('.assigned_to_me').text(user_email);
+                        item.removeClass('btn-info');
+                        item.addClass('btn-success');
+                    }
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+            });
+        }
+
+        function assign_to_tpm(item, user, user_fullname)
+        {
+            var data = {assigned_to_tpm:user}
+            var itemref = item.attr('itemref')
+            $.ajax({
+                type: "PATCH",
+                url: tpm_url+itemref+'/',
+                data: data,
+                cache: false,
+                headers: getHeader(),
+                dataType: 'json',
+                success: function (response, result, jqXHR) {
+                    if(jqXHR.status == 200){
+                        $('#assign-btn-'+itemref).find('.assigned_to_tpm_name').text(user_fullname);
+                        $('#assign-tpm-block-'+itemref).addClass('d-none');
+                    }
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+            });
+        }
+
+    </script>
+{% endblock custom_javascript %}

@@ -13,6 +13,7 @@ from supplies_platform.users.models import User
 from supplies_platform.supplies.models import SupplyItem
 from supplies_platform.planning.models import DistributionPlan
 from supplies_platform.planning.models import SupplyPlan
+from supplies_platform.users.util import generate_hash
 
 
 class TPMVisit(TimeStampedModel):
@@ -77,3 +78,44 @@ class TPMVisit(TimeStampedModel):
     @property
     def supply_plan_section(self):
         return self.supply_plan.section
+
+
+class AssessmentHash(models.Model):
+
+    hashed = models.CharField(max_length=100, unique=True)
+    tpm_visit = models.CharField(max_length=20)
+    assessment_slug = models.CharField(max_length=50)
+    user = models.CharField(max_length=20)
+    timestamp = models.CharField(max_length=100)
+
+    class Meta:
+        ordering = ['id']
+
+    @property
+    def name(self):
+        return '{}{}{}{}'.format(
+            self.tpm_visit,
+            self.assessment_slug,
+            self.user,
+            self.timestamp,
+        )
+
+    def __unicode__(self):
+        return '{}-{}-{}-{}-{}'.format(
+            self.hashed,
+            self.tpm_visit,
+            self.assessment_slug,
+            self.user,
+            self.timestamp,
+        )
+
+    def save(self, **kwargs):
+        """
+        Generate unique Hash for every assessment
+        :param kwargs:
+        :return:
+        """
+        if self.pk is None:
+            self.hashed = generate_hash(self.name)
+
+        super(AssessmentHash, self).save(**kwargs)

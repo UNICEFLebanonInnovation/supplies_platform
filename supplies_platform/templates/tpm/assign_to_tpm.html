@@ -1,0 +1,27 @@
+{% load util_tags %}
+{% get_users 'TPM_COMPANY' as users %}
+{% if request.user|has_group:"UNICEF_PO" %}
+<a class="btn btn-info assign-tpm" itemref="{{ record.id }}" id="assign-btn-{{ record.id }}">
+  <i class="icon-edit-sign icon-white"></i>
+  <span class="assigned_to_tpm_name">{% if not record.assigned_to_tpm %}Assign to TPM{% else %}{{ record.assigned_to_tpm }}{% endif %}</span>
+</a>
+
+<div class="assign-tpm-block d-none" id="assign-tpm-block-{{ record.id }}">
+    <select id="asisgned-tpm-{{ record.id }}">
+      <option value="">Select</option>
+      {% for item in users %}
+        <option value="{{ item.id  }}">{{ item }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-success save-assign-btn" itemref="{{ record.id }}" id="save-tpm-btn-{{ record.id }}">
+        Save
+    </button>
+    <button class="btn btn-warning cancel-assign-btn" itemref="{{ record.id }}" id="cancel-tpm-btn-{{ record.id }}">
+        Cancel
+    </button>
+</div>
+
+
+{% else %}
+    {{ record.assigned_to_tpm }}
+{% endif %}

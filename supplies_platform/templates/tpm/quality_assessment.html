@@ -1,0 +1,13 @@
+{% load util_tags %}
+{% if request.user|has_group:"TPM_COMPANY" %}
+  {% if not record.quality_assessment %}
+    <a href="/tpm/assessment/{{ record.id }}/?slug=quality" class="btn btn-info">
+        <i class="icon-edit-sign icon-white"></i>
+        Fill in
+    </a>
+  {% else %}
+    Competed
+  {% endif %}
+{% else %}
+    Not allowed
+{% endif %}
