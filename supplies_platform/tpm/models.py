@@ -57,8 +57,8 @@ class TPMVisit(TimeStampedModel):
 
     class Meta:
         ordering = ['created']
-        verbose_name = 'TPM Visit'
-        verbose_name_plural = 'TPM Visits'
+        verbose_name = 'SM Visit'
+        verbose_name_plural = 'SM Visits'
 
     def __unicode__(self):
         return u'{} - {} - {}'.format(

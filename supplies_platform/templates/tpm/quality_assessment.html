@@ -1,9 +1,13 @@
 {% load util_tags %}
-{% if request.user|has_group:"TPM_COMPANY" %}
+{% if request.user|has_group:"UNICEF_PO" %}
   {% if not record.quality_assessment %}
-    <a href="/tpm/assessment/{{ record.id }}/?slug=quality" class="btn btn-info">
+    <a href="/tpm/assessment/{{ record.id }}/?slug=quality&mode=online" class="btn btn-info">
         <i class="icon-edit-sign icon-white"></i>
-        Fill in
+        Online
+    </a>
+    <a href="/tpm/assessment/{{ record.id }}/?slug=quality&mode=offline" class="btn btn-info" target="_blank">
+        <i class="icon-edit-sign icon-white"></i>
+        Offline
     </a>
   {% else %}
     Competed

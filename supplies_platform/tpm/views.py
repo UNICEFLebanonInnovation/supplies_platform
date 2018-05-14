@@ -60,6 +60,7 @@ class TPMAssessment(SingleObjectMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         tpm_visit = self.get_object()
         assessment_slug = self.request.GET.get('slug')
+        assessment_mode = self.request.GET.get('mode')
 
         hashing = AssessmentHash.objects.create(
             tpm_visit=tpm_visit.id,
@@ -69,14 +70,26 @@ class TPMAssessment(SingleObjectMixin, RedirectView):
         )
         assessment_form = ''
         if assessment_slug == 'quality':
-            assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'
+            if assessment_mode == 'online':
+                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'  # Online only
+            else:
+                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8V'  # Online / Offline
         if assessment_slug == 'quantity':
-            assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8V'
+            if assessment_mode == 'online':
+                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8V'  # Online only
+            else:
+                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8O'  # Online / Offline
 
-        url = '{form}?d[supply]={supply}' \
+        url = '{form}?d[supply]={supply}&d[partnership]={partnership}&d[supply_item]={supply_item}' \
+              '&d[location]={location}&d[quantity]={quantity}&d[distribution_date]={distribution_date}' \
               '&returnURL={callback}'.format(
                 form=assessment_form,
                 supply=hashing.hashed,
+                partnership=tpm_visit.supply_plan.pca,
+                supply_item=tpm_visit.supply_item,
+                location=tpm_visit.site,
+                quantity=tpm_visit.quantity_distributed,
+                distribution_date=tpm_visit.distribution_date,
                 callback=self.request.META.get('HTTP_REFERER', reverse('tpm:visits', args={}))
         )
         return url

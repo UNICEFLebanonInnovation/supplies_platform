@@ -28,15 +28,15 @@ class TPMVisitTable(tables.Table):
     assign_to = tables.TemplateColumn(verbose_name='Assign to me', orderable=False,
                                         template_name='tpm/assign_to.html',
                                         attrs={'url': '/tpm/visits/'})
-    assign_to_tpm = tables.TemplateColumn(verbose_name='Assign to TPM', orderable=False,
-                                        template_name='tpm/assign_to_tpm.html',
-                                        attrs={'url': '/tpm/visits/'})
+    # assign_to_tpm = tables.TemplateColumn(verbose_name='Assign to TPM', orderable=False,
+    #                                     template_name='tpm/assign_to_tpm.html',
+    #                                     attrs={'url': '/tpm/visits/'})
 
     class Meta:
         model = TPMVisit
         fields = (
             'assign_to',
-            'assign_to_tpm',
+            'assigned_to_tpm',
             'partner',
             'partnership',
             'section',

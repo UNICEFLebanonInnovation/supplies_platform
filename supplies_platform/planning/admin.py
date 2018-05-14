@@ -111,7 +111,7 @@ class SupplyPlanResource(resources.ModelResource):
 
 class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     resource_class = SupplyPlanResource
-    # form = SupplyPlanForm
+    form = SupplyPlanForm
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
@@ -121,6 +121,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'partner',
                 'pca',
                 'status',
+                'tpm_focal_point',
                 'comments',
                 'partnership_start_date',
                 'partnership_end_date',
@@ -129,7 +130,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'created_by',
             ]
         }),
-        ('Review', {
+        ('Review by UNICEF Supply Beirut focal point', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'reviewed',
@@ -138,7 +139,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'review_comments',
             ]
         }),
-        ('Approval', {
+        ('Approval by UNICEF budget owner', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'approved',
@@ -306,6 +307,7 @@ class ReceivedItemInline(admin.TabularInline):
     suit_classes = u'suit-tab suit-tab-receiving'
 
     fields = (
+        'wave_number',
         'supply_item',
         'quantity_requested',
         'quantity_received',
@@ -314,6 +316,7 @@ class ReceivedItemInline(admin.TabularInline):
     )
 
     readonly_fields = (
+        'wave_number',
         'supply_item',
         'quantity_requested',
         'quantity_balance',
@@ -359,10 +362,11 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
-           # 'tpm_visit',
+           'tpm_visit',
         ]
 
-        if has_group(request.user, 'UNICEF_PO') and obj and obj.plan.plan.status == DistributionPlan.COMPLETED:
+        if (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')) \
+            and obj and obj.plan.plan.status == DistributionPlan.COMPLETED:
             fields.remove('tpm_visit')
 
         return fields
@@ -411,7 +415,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'comments'
             ]
         }),
-        ('Review', {
+        ('Review by UNICEF field focal point', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'reviewed',
@@ -420,7 +424,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'review_comments',
             ]
         }),
-        ('Clearness', {
+        ('Clearness by UNICEF Supply Beirut focal point', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'cleared',
@@ -429,7 +433,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'cleared_comments',
             ]
         }),
-        ('Approval', {
+        ('Approval by UNICEF programme officer (PD focal point)', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'approved',
@@ -438,7 +442,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'approval_comments',
             ]
         }),
-        ('Delivery', {
+        ('Delivery by UNICEF Supply Beirut focal point', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'delivery_expected_date',
@@ -475,20 +479,20 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
     #     ('admin/planning/tpm.html', 'middle', 'general'),
     # )
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
-        form.request = request
-        user = request.user
-        if has_group(request.user, 'PARTNER'):
-            form.base_fields['status'].choices = (
-                (DistributionPlan.DRAFT, u"Draft"),
-                (DistributionPlan.PLANNED, u"Planned"),
-                (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
-                (DistributionPlan.COMPLETED, u"Distribution Completed"),
-                (DistributionPlan.CANCELLED, u"Cancelled"),
-            )
-
-        return form
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
+    #     form.request = request
+    #     user = request.user
+    #     if has_group(request.user, 'PARTNER'):
+    #         form.base_fields['status'].choices = (
+    #             (DistributionPlan.DRAFT, u"Draft"),
+    #             (DistributionPlan.PLANNED, u"Planned"),
+    #             (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
+    #             (DistributionPlan.COMPLETED, u"Distribution Completed"),
+    #             (DistributionPlan.CANCELLED, u"Cancelled"),
+    #         )
+    #
+    #     return form
 
     def get_readonly_fields(self, request, obj=None):
 
@@ -535,7 +539,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         return fields
 
     def save_model(self, request, obj, form, change):
-        if not change:
+        if not change and obj and obj.status == obj.DRAFT:
             obj.created_by = request.user
             obj.to_review = True
         if obj and obj.reviewed is True and not obj.review_date:
@@ -558,19 +562,16 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             items = obj.requests.all()
             for wave_item in items:
                 item = wave_item.wave.supply_plan.item
-                instance, created = DistributionPlanItemReceived.objects.get_or_create(
+                DistributionPlanItemReceived.objects.get_or_create(
+                    wave_number=wave_item.wave.wave_number,
                     plan=obj,
-                    supply_item=item
+                    supply_item=item,
+                    quantity_requested=wave_item.quantity_requested
                 )
                 DistributedItem.objects.get_or_create(
                     plan=obj,
                     supply_item=item
                 )
-                quantity_requested = wave_item.quantity_requested
-                if not created and quantity_requested and instance.quantity_requested:
-                    quantity_requested = instance.quantity_requested + quantity_requested
-                instance.quantity_requested = quantity_requested
-                instance.save()
 
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
@@ -580,6 +581,8 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             qs = qs.filter(plan__partner_id=request.user.partner_id)
         if has_group(request.user, 'FIELD_FP'):
             qs = qs.filter(status__in=['reviewed', 'submitted'])
+        if has_group(request.user, 'UNICEF_PA'):
+            qs = qs.filter(plan__section=request.user.section)
         return qs
 
 

@@ -16,6 +16,7 @@ from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
 from supplies_platform.tpm.models import TPMVisit
+from supplies_platform.users.models import User
 from .models import (
     SupplyPlan,
     DistributionPlanItem,
@@ -26,6 +27,11 @@ from .models import (
 
 
 class SupplyPlanForm(forms.ModelForm):
+
+    tpm_focal_point = forms.ModelChoiceField(
+        required=False, label='TPM focal point',
+        queryset=User.objects.filter(groups__name='TPM_COMPANY')
+    )
 
     class Meta:
         model = SupplyPlan
@@ -100,8 +106,14 @@ class DistributionPlanItemForm(forms.ModelForm):
         widget=autocomplete.ModelSelect2(url='location_autocomplete')
     )
     delivery_location = forms.ModelChoiceField(
+        required=False,
         queryset=Location.objects.all(),
+        help_text=u'Leave it empty if the same save the Site above',
         widget=autocomplete.ModelSelect2(url='location_autocomplete')
+    )
+    contact_person = forms.ModelChoiceField(
+        required=False,
+        queryset=PartnerStaffMember.objects.all()
     )
 
     class Meta:
@@ -125,6 +137,9 @@ class DistributionPlanItemForm(forms.ModelForm):
 
         self.fields['wave'].queryset = queryset
         self.fields['contact_person'].queryset = queryset1
+
+        if queryset1.count() == 1:
+            self.fields['contact_person'].initial = queryset1.first
 
 
 class DistributionPlanItemFormSet(BaseInlineFormSet):
@@ -219,6 +234,7 @@ class DistributedItemSiteFormSet(BaseInlineFormSet):
                     if created:
                         instance.quantity_distributed = obj.quantity_distributed_per_site
                         instance.distribution_date = obj.distribution_date
+                        instance.assigned_to_tpm = plan.plan.tpm_focal_point
                         instance.save()
         return saved_instances
 

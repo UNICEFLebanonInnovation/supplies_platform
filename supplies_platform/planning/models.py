@@ -109,6 +109,12 @@ class SupplyPlan(TimeStampedModel):
     comments = models.TextField(
         null=True, blank=True,
     )
+    tpm_focal_point = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+',
+        verbose_name='TPM focal point',
+    )
 
     @property
     def total_budget(self):
@@ -437,7 +443,8 @@ class DistributionPlanItem(models.Model):
     delivery_location = models.ForeignKey(
         Location,
         null=True, blank=True,
-        related_name='delivery_location'
+        related_name='delivery_location',
+        help_text=u'Leave it empty if the same save the Site above',
     )
     contact_person = models.ForeignKey(
         PartnerStaffMember,
@@ -478,34 +485,6 @@ class DistributionPlanItem(models.Model):
         )
 
 
-class DistributionPlanWave(models.Model):
-    plan = models.ForeignKey(DistributionPlanItem, related_name='supply_waves')
-    # supply_item = models.ForeignKey(SupplyPlanItem, related_name='supply_items')
-    supply_item = models.ForeignKey(SupplyItem, related_name='supply_items')
-    quantity_required = models.PositiveIntegerField(
-        help_text=u'Quantity required for this wave',
-        null=True, blank=False
-    )
-    delivery_location = models.ForeignKey(
-        Location,
-        null=True, blank=True,
-        related_name='item_delivery_location'
-    )
-    date_required_by = models.DateField(
-        null=True, blank=False
-    )
-    date_distributed_by = models.DateField(
-        verbose_name=u'planned distribution date',
-        null=True, blank=True
-    )
-
-    def __unicode__(self):
-        return u'{} - ({})'.format(
-            self.supply_item.__unicode__(),
-            self.quantity_required
-        )
-
-
 class DistributionPlanItemReceived(models.Model):
 
     plan = models.ForeignKey(DistributionPlan, related_name='received')
@@ -518,6 +497,10 @@ class DistributionPlanItemReceived(models.Model):
     )
     date_received = models.DateField(
         null=True, blank=True,
+    )
+    wave_number = models.CharField(
+        max_length=2,
+        null=True, blank=False,
     )
 
     def __unicode__(self):
@@ -555,8 +538,8 @@ class DistributedItemSite(models.Model):
     )
     tpm_visit = models.BooleanField(
         blank=True, default=False,
-        verbose_name=u'TPM Visit?',
-        help_text=u'TPM visit for this location',
+        verbose_name=u'SM Visit?',
+        help_text=u'SM visit for this location',
     )
 
     def __unicode__(self):
