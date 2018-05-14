@@ -12,7 +12,8 @@ from prettyjson import PrettyJSONWidget
 
 from supplies_platform.users.util import has_group
 from .models import (
-    TPMVisit
+    TPMVisit,
+    AssessmentHash
 )
 
 
@@ -148,3 +149,4 @@ class TPMVisitAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(TPMVisit, TPMVisitAdmin)
+admin.site.register(AssessmentHash)

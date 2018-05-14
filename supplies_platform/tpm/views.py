@@ -93,6 +93,7 @@ class TPMVisitSubmission(SingleObjectMixin, View):
         hashing = AssessmentHash.objects.get(hashed=payload['supply'])
 
         tpm_visit = TPMVisit.objects.get(id=int(hashing.tpm_visit))
+
         if hashing.assessment_slug == 'quantity':
             tpm_visit.quantity_assessment_completed = True
             tpm_visit.quantity_assessment = payload
