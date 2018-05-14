@@ -217,6 +217,7 @@ SUIT_CONFIG = {
     'MENU_OPEN_FIRST_CHILD': True, # Default True
     'MENU_EXCLUDE': ('auth.group',),
     'MENU': (
+        {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
         {'app': 'users', 'label': 'Users', 'icon':'icon-user'},
         {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-globe'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
