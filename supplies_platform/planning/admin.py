@@ -580,6 +580,8 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             qs = qs.filter(plan__partner_id=request.user.partner_id)
         if has_group(request.user, 'FIELD_FP'):
             qs = qs.filter(status__in=['reviewed', 'submitted'])
+        if has_group(request.user, 'UNICEF_PA'):
+            qs = qs.filter(status__in=['reviewed'], plan__section=request.user.section)
         return qs
 
 
