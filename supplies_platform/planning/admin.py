@@ -359,7 +359,7 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
-            'tpm_visit',
+           # 'tpm_visit',
         ]
 
         if has_group(request.user, 'UNICEF_PO') and obj and obj.plan.plan.status == DistributionPlan.COMPLETED:
