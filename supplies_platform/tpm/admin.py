@@ -129,7 +129,7 @@ class TPMVisitAdmin(ImportExportModelAdmin):
         #     fields.remove('cleared')
         #     fields.remove('cleared_comments')
         #
-        # if has_group(request.user, 'UNICEF_PA') and obj and obj.status == obj.CLEARED:
+        # if has_group(request.user, 'UNICEF_PD') and obj and obj.status == obj.CLEARED:
         #     fields.remove('approved')
         #     fields.remove('approval_comments')
         #

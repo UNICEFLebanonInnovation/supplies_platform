@@ -79,17 +79,17 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
     )
 
     # def get_readonly_fields(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.status in ['SUBMITTED', 'APPROVED']:
+    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.status in ['SUBMITTED', 'APPROVED']:
     #         return self.fields
     #     return self.readonly_fields
     #
     # def has_add_permission(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
+    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
     #         return False
     #     return True
     #
     # def has_change_permission(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PA') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
+    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
     #         return False
     #     return True
 
@@ -226,7 +226,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
             fields.remove('approved')
             fields.remove('approval_comments')
 
-        if has_group(request.user, 'UNICEF_PA'):
+        if has_group(request.user, 'UNICEF_PD'):
             fields.remove('status')
 
         return fields
@@ -236,7 +236,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         form.request = request
         user = request.user
         form.base_fields['section'].initial = user.section
-        if has_group(request.user, 'UNICEF_PA'):
+        if has_group(request.user, 'UNICEF_PD'):
             form.base_fields['status'].choices = (
                 (SupplyPlan.DRAFT, u"Draft"),
                 (SupplyPlan.PLANNED, u"Planned"),
@@ -267,7 +267,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
 
     def get_queryset(self, request):
         qs = super(SupplyPlanAdmin, self).get_queryset(request)
-        if has_group(request.user, 'UNICEF_PA'):
+        if has_group(request.user, 'UNICEF_PD'):
             qs = qs.filter(created_by=request.user)
         if has_group(request.user, 'BUDGET_OWNER'):
             qs = qs.filter(status__in=['reviewed', 'approved'])
@@ -526,7 +526,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             fields.remove('cleared')
             fields.remove('cleared_comments')
 
-        if has_group(request.user, 'UNICEF_PA') and obj and obj.status == obj.CLEARED:
+        if has_group(request.user, 'UNICEF_PD') and obj and obj.status == obj.CLEARED:
             fields.remove('approved')
             fields.remove('approval_comments')
 
@@ -581,7 +581,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             qs = qs.filter(plan__partner_id=request.user.partner_id)
         if has_group(request.user, 'FIELD_FP'):
             qs = qs.filter(status__in=['reviewed', 'submitted'])
-        if has_group(request.user, 'UNICEF_PA'):
+        if has_group(request.user, 'UNICEF_PD'):
             qs = qs.filter(plan__section=request.user.section)
         return qs
 
