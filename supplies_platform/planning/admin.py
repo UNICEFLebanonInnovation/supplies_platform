@@ -556,6 +556,18 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             obj.approval_date = datetime.datetime.now()
             obj.approved_by = request.user
             obj.status = obj.APPROVED
+        if obj and obj.status == obj.RECEIVED and not obj.item_received:
+            obj.item_received_date = datetime.datetime.now()
+            items = obj.requests.all()
+            for wave_item in items:
+                item = wave_item.wave.supply_plan.item
+                DistributedItem.objects.get_or_create(
+                    plan=obj,
+                    supply_item=item
+                )
+        if obj and obj.status == obj.COMPLETED and not obj.item_distributed:
+            obj.item_distributed_date = datetime.datetime.now()
+            #  todo send notification
         if obj and obj.delivery_expected_date and not obj.to_delivery:
         # if True:
             obj.to_delivery = True
@@ -567,10 +579,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                     plan=obj,
                     supply_item=item,
                     quantity_requested=wave_item.quantity_requested
-                )
-                DistributedItem.objects.get_or_create(
-                    plan=obj,
-                    supply_item=item
                 )
 
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)

@@ -297,6 +297,7 @@ class DistributionPlan(TimeStampedModel):
     CLEARED = u'cleared'
     APPROVED = u'approved'
     COMPLETED = u'completed'
+    RECEIVED = u'received'
     CANCELLED = u'cancelled'
     STATUS = (
         (DRAFT, u"Draft"),
@@ -305,6 +306,7 @@ class DistributionPlan(TimeStampedModel):
         (REVIEWED, u"Reviewed"),
         (CLEARED, u"Cleared"),
         (APPROVED, u"Approved"),
+        (RECEIVED, u"Received"),
         (COMPLETED, u"Distribution Completed"),
         (CANCELLED, u"Cancelled"),
     )
@@ -313,7 +315,7 @@ class DistributionPlan(TimeStampedModel):
         max_length=100,
         null=True, blank=True,
     )
-    plan = models.ForeignKey(SupplyPlan)
+    plan = models.ForeignKey(SupplyPlan, related_name='plan')
     status = models.CharField(
         max_length=32,
         choices=STATUS,
@@ -376,6 +378,14 @@ class DistributionPlan(TimeStampedModel):
     )
     to_delivery = models.BooleanField(blank=True, default=False)
     delivery_expected_date = models.DateField(
+        null=True, blank=True
+    )
+    item_received = models.BooleanField(blank=True, default=False)
+    item_received_date = models.DateField(
+        null=True, blank=True
+    )
+    item_distributed = models.BooleanField(blank=True, default=False)
+    item_distributed_date = models.DateField(
         null=True, blank=True
     )
 

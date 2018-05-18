@@ -36,7 +36,7 @@ class TPMListView(LoginRequiredMixin,
 
     table_class = TPMVisitTable
     model = TPMVisit
-    template_name = 'tpm/visits.html'
+    template_name = 'tpm/visits2.html'
     table = BootstrapTable(TPMVisit.objects.all(), order_by='-id')
 
     filterset_class = TPMVisitFilter

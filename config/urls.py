@@ -29,6 +29,8 @@ urlpatterns = [
     url(r'^chaining/', include('smart_selects.urls')),
     url(r'^location-autocomplete/$', LocationAutocomplete.as_view(), name='location_autocomplete'),
     url(r'^tpm/', include('supplies_platform.tpm.urls', namespace='tpm')),
+    url(r'^planning/', include('supplies_platform.planning.urls', namespace='planning')),
+    url(r'^dashboard/', include('supplies_platform.dashboard.urls', namespace='dashboard')),
 
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/docs/', schema_view),

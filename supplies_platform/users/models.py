@@ -9,6 +9,8 @@ from supplies_platform.partners.models import PartnerOrganization
 
 class Section(models.Model):
     name = models.CharField(max_length=256)
+    code = models.CharField(max_length=10, null=True, blank=True)
+    color = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return self.name
