@@ -1,20 +1,18 @@
 from __future__ import unicode_literals, absolute_import, division
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
 from django.contrib.gis.db import models
-from django.db.models.signals import post_save
-from django.utils.encoding import force_text
 
 from model_utils.models import TimeStampedModel
-from model_utils import Choices
+
+from supplies_platform.partners.models import PartnerOrganization
 
 
 class Notification(TimeStampedModel):
 
     name = models.CharField(
         max_length=500,
-        blank=False, null=True
+        blank=True, null=True
     )
     subject = models.CharField(
         max_length=500,
@@ -25,16 +23,26 @@ class Notification(TimeStampedModel):
         blank=True, null=True
     )
     model = models.CharField(
-        max_length=50,
+        max_length=100,
         blank=True, null=True
     )
     user_group = models.CharField(
-        max_length=50,
+        max_length=100,
         blank=True, null=True
     )
     object_id = models.CharField(
         max_length=50,
         blank=True, null=True
+    )
+    send_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True, null=True,
+        related_name='+',
+    )
+    partner = models.ForeignKey(
+        PartnerOrganization,
+        blank=True, null=True,
+        related_name='+',
     )
     status = models.BooleanField(blank=True, default=False)
     description = models.TextField(max_length=500, blank=True, null=True)

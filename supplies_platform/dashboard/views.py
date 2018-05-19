@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from braces.views import GroupRequiredMixin, SuperuserRequiredMixin
 
-from supplies_platform.planning.models import SupplyPlan
+from supplies_platform.planning.models import SupplyPlan, DistributionPlan
 from supplies_platform.backends.models import Notification
 
 
@@ -26,11 +26,15 @@ class IndexView(LoginRequiredMixin,
             content_type__model__in=['user', 'groups', 'group', 'section',
                                      'location', 'location type']).order_by('-action_time')[0:100]
         notifications = Notification.objects.filter(
-            user_group__in=['SUPPLY_ADMIN',]
+            # user_group__in=['SUPPLY_ADMIN',]
         ).order_by('-created')[0:20]
+        plannings = SupplyPlan.objects.all()
+        distributions = DistributionPlan.objects.all()
         return {
-            'plans': SupplyPlan.objects.all(),
+            'plans': plannings,
             'feeds': feeds,
-            'notifications': notifications
-            # 'feeds': feeds.order_by('-action_time')
+            'notifications': notifications,
+            'nbr_planned': plannings.filter(status='submitted').count(),
+            'nbr_dist_planned': distributions.filter(status='submitted').count(),
+            'nbr_dist_ready': distributions.filter(to_delivery=True, item_received=False).count()
         }

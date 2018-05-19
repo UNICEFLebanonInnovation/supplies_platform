@@ -68,6 +68,9 @@ class SupplyPlan(TimeStampedModel):
         choices=STATUS,
         default=DRAFT,
     )
+    submission_date = models.DateField(
+        null=True, blank=True
+    )
     to_review = models.BooleanField(blank=True, default=False)
     reviewed = models.BooleanField(blank=True, default=False)
     review_date = models.DateField(

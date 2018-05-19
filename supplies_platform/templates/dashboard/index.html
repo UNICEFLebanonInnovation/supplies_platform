@@ -1,4 +1,5 @@
 {% load static %}
+{% load util_tags %}
 <!DOCTYPE html>
 <!-- saved from url=(0022) -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -45,8 +46,13 @@
     <link href="{% static 'css/tracking.css' %}" rel="stylesheet">
     <!-- END THEME STYLES -->
   <style type="text/css">/* Chart.js */
-@-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}</style></head>
-  <body class="  pace-done"><div class="pace  pace-inactive"><div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+    @-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}
+    a.toggle-status:hover .dropdown-item-body { color: white !important;}
+  </style>
+</head>
+
+  <body class="  pace-done">
+  <div class="pace  pace-inactive"><div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
   <div class="pace-progress-inner"></div>
 </div>
 <div class="pace-activity"></div></div>
@@ -146,13 +152,14 @@
                     <div class="dropdown-scroll has-scrollable ps">
                       {% for item in notifications %}
                       <!-- .dropdown-item -->
-                      <a href="" class="dropdown-item unread">
+                      <a class="dropdown-item {% if item.status == 'true' %}read{% else %}unread{% endif %} toggle-status" itemid="{{ item.id }}">
                         <div class="user-avatar">
-                          {% if item.status %}
-                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt=""> </div>
+                          {% if item.status == 'true' %}
+                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt="">
                           {% else %}
-                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt=""> </div>
+                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt="">
                           {% endif %}
+                        </div>
                         <div class="dropdown-item-body">
                           <p class="subject"> {{ item.subject }} </p>
                           <p class="text text-truncate"> {{ item.description }} </p>
@@ -384,13 +391,13 @@
                       <a href="" class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-primary">
-                            <span class="oi oi-media-record pulse mr-1"></span> ONGOING TASKS</span>
+                            <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
                         </div>
                         <p class="metric-value h3">
                           <sub>
                             <i class="oi oi-timer"></i>
                           </sub>
-                          <span class="value">8</span>
+                          <span class="value">{{ nbr_planned }}</span>
                         </p>
                       </a>
                       <!-- /.metric -->
@@ -401,13 +408,13 @@
                       <a href="" class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-success">
-                            <span class="oi oi-media-record pulse mr-1"></span> ONGOING TASKS</span>
+                            <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
                         </div>
                         <p class="metric-value h3">
                           <sub>
                             <i class="oi oi-timer"></i>
                           </sub>
-                          <span class="value">8</span>
+                          <span class="value">{{ nbr_dist_planned }}</span>
                         </p>
                       </a>
                       <!-- /.metric -->
@@ -418,13 +425,13 @@
                       <a href="" class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-warning">
-                            <span class="oi oi-media-record pulse mr-1"></span> ONGOING TASKS</span>
+                            <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
                         </div>
                         <p class="metric-value h3">
                           <sub>
                             <i class="oi oi-warning"></i>
                           </sub>
-                          <span class="value">8</span>
+                          <span class="value">{{ nbr_dist_ready }}</span>
                         </p>
                       </a>
                       <!-- /.metric -->
@@ -435,7 +442,7 @@
                       <a href="" class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-danger">
-                            <span class="oi oi-media-record pulse mr-1"></span> ONGOING TASKS</span>
+                            <span class="oi oi-media-record pulse mr-1"></span> LATE ON DISTRIBUTION</span>
                         </div>
                         <p class="metric-value h3">
                           <sub>
@@ -583,5 +590,83 @@
       gtag('js', new Date());
       gtag('config', 'UA-116692175-1');
     </script>
+
+{% csrf_token %}
+{% get_user_token request.user.id as user_token %}
+<!--<script type="text/javascript" language="javascript" src="{% static 'js/jquery-1.12.3.min.js' %}"></script>-->
+<!--<script type="text/javascript" language="javascript" src="{% static 'js/jquery-ui-1.12.1.js' %}"></script>-->
+
+<script type="text/javascript">
+    var notification_url = '/api/notifications/';
+    var user_token = '{{ user_token }}';
+    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+    var read_message_icon = '{% static 'dashboard/email-read-icon.png' %}';
+    var unread_message_icon = '{% static 'dashboard/email-unread-icon.png' %}';
+
+    $(document).ready(function() {
+        $('.toggle-status').click(function(e){
+            e.preventDefault();
+            var item = $(this);
+            var itemid = $(this).attr('itemid');
+            var img = $(this).find('img');
+
+            if($(this).hasClass('unread')) {
+                var callback = function() {
+                    item.removeClass('unread');
+                    item.addClass('read');
+                    img.attr('src', read_message_icon)
+
+                    <!--num.text(block_notif.find('.unread-notification').length);-->
+                }
+                toggle_notification_status(itemid, true, callback);
+            }else{
+                var callback = function() {
+                    item.removeClass('read');
+                    item.addClass('unread');
+                    img.attr('src', unread_message_icon)
+
+                    <!--num.text(block_notif.find('.unread-notification').length);-->
+                }
+                toggle_notification_status(itemid, false, callback);
+            }
+        });
+    });
+
+    function getHeader()
+    {
+        var header = {
+            'Authorization': 'Token '+user_token,
+            'HTTP_REFERER': $(location).attr('href'),
+            'Cookie': 'token=Token '+user_token,
+            'X-CSRFToken': csrftoken
+        };
+        return header;
+    }
+
+    function toggle_notification_status(itemid, status, callback)
+    {
+        var data = {status: status};
+
+        $.ajax({
+            type: "PUT",
+            url: notification_url+itemid+'/',
+            data: data,
+            cache: false,
+            headers: getHeader(),
+            dataType: 'json',
+            success: function (response, result, jqXHR) {
+                if(jqXHR.status == 200){
+                    if(callback){
+                        callback();
+                    }
+                }
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+</script>
+
 
 </body></html>

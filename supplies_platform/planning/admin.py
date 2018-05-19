@@ -8,6 +8,7 @@ from import_export import fields
 from import_export.admin import ImportExportModelAdmin
 import nested_admin
 
+from supplies_platform.backends.utils import send_notification
 from supplies_platform.users.util import has_group
 from supplies_platform.tpm.models import TPMVisit
 from .models import (
@@ -128,6 +129,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'total_budget',
                 'created',
                 'created_by',
+                'submission_date',
             ]
         }),
         ('Review by UNICEF Supply Beirut focal point', {
@@ -207,6 +209,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
             'status',
             'created',
             'created_by',
+            'submission_date',
             'reviewed',
             'review_date',
             'reviewed_by',
@@ -252,17 +255,22 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
+        if obj and obj.status == obj.SUBMITTED and not obj.submission_date:
+            obj.submission_date = datetime.datetime.now()
             obj.to_review = True
+            send_notification('SUPPLY_ADMIN', 'TO REVIEW', obj)
         if obj and obj.reviewed is True and not obj.review_date:
             obj.review_date = datetime.datetime.now()
             obj.reviewed_by = request.user
             obj.status = obj.REVIEWED
             obj.to_approve = True
+            send_notification('BUDGET_OWNER', 'TO APPROVE', obj)
         if obj and obj.approved is True and not obj.approval_date:
             obj.approval_date = datetime.datetime.now()
             obj.approved_by = request.user
             obj.status = obj.APPROVED
             DistributionPlan.objects.create(plan=obj)
+            send_notification('PARTNER', 'TO APPROVE', obj, obj.partner)
         super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
@@ -542,21 +550,25 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         if not change and obj and obj.status == obj.DRAFT:
             obj.created_by = request.user
             obj.to_review = True
+            send_notification('FIELD_FP', 'TO REVIEW', obj)
         if obj and obj.reviewed is True and not obj.review_date:
             obj.review_date = datetime.datetime.now()
             obj.reviewed_by = request.user
             obj.status = obj.REVIEWED
             obj.to_cleared = True
+            send_notification('SUPPLY_ADMIN', 'TO CLEARANCE', obj)
         if obj and obj.cleared is True and not obj.cleared_date:
             obj.cleared_date = datetime.datetime.now()
             obj.cleared_by = request.user
             obj.status = obj.CLEARED
             obj.to_approve = True
+            send_notification('UNICEF_PD', 'TO APPROVE', obj)
         if obj and obj.approved is True and not obj.approval_date:
             obj.approval_date = datetime.datetime.now()
             obj.approved_by = request.user
             obj.status = obj.APPROVED
         if obj and obj.status == obj.RECEIVED and not obj.item_received:
+            obj.item_received = True
             obj.item_received_date = datetime.datetime.now()
             items = obj.requests.all()
             for wave_item in items:
@@ -565,11 +577,13 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                     plan=obj,
                     supply_item=item
                 )
+            send_notification('SUPPLY_ADMIN', 'ITEMS RECEIVED', obj)
         if obj and obj.status == obj.COMPLETED and not obj.item_distributed:
+            obj.item_distributed = True
             obj.item_distributed_date = datetime.datetime.now()
-            #  todo send notification
+            send_notification('SUPPLY_ADMIN', 'ITEMS DISTRIBUTED', obj)
+            send_notification('UNICEF_PD', 'ITEMS DISTRIBUTED', obj)
         if obj and obj.delivery_expected_date and not obj.to_delivery:
-        # if True:
             obj.to_delivery = True
             items = obj.requests.all()
             for wave_item in items:
@@ -580,7 +594,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                     supply_item=item,
                     quantity_requested=wave_item.quantity_requested
                 )
-
+            send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, obj.plan.partner)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
