@@ -79,6 +79,10 @@ class TPMVisit(TimeStampedModel):
     def supply_plan_section(self):
         return self.supply_plan.section
 
+    @property
+    def supply_plan_tpm(self):
+        return self.supply_plan.tpm_focal_point
+
 
 class AssessmentHash(models.Model):
 

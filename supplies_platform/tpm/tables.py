@@ -18,6 +18,7 @@ class TPMVisitTable(tables.Table):
     partner = tables.Column(verbose_name='Partner', orderable=False, accessor='supply_plan_partner')
     partnership = tables.Column(verbose_name='Partnership', orderable=False, accessor='supply_plan_partnership')
     section = tables.Column(verbose_name='Section', orderable=False, accessor='supply_plan_section')
+    assign_to_tpm = tables.Column(verbose_name='Assign to TPM', orderable=False, accessor='supply_plan_tpm')
 
     quantity_assessment = tables.TemplateColumn(verbose_name='Quantity Assessment', orderable=False,
                                                 template_name='tpm/quantity_assessment.html',
@@ -36,7 +37,7 @@ class TPMVisitTable(tables.Table):
         model = TPMVisit
         fields = (
             'assign_to',
-            'assigned_to_tpm',
+            'assign_to_tpm',
             'partner',
             'partnership',
             'section',

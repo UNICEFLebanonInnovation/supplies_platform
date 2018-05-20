@@ -65,7 +65,7 @@
           <!-- .top-bar-brand -->
           <div class="top-bar-brand">
             <a href="">
-              <img src="{% static 'images/logo_transparant.png' %}" height="32" alt="">
+              <img src="{% static 'images/logo_transparant.png' %}" height="50" width="150" alt="">
             </a>
           </div>
           <!-- /.top-bar-brand -->
@@ -111,7 +111,7 @@
                   <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
                     <h6 class="dropdown-header stop-propagation">
                       <span>Activities
-                        <span class="badge">(2)</span>
+                        <span class="badge"></span>
                       </span>
                     </h6>
                     <!-- .dropdown-scroll -->
@@ -146,7 +146,7 @@
                   <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
                     <h6 class="dropdown-header stop-propagation">
                       <span>Messages</span>
-                      <a>{{ unread_messages }} Unread message(s)</a>
+                      <a><span class="ttl-unread-messages">{{ unread_messages }}</span> Unread message(s)</a>
                       <!--<a href="">Mark all as read</a>-->
                     </h6>
                     <!-- .dropdown-scroll -->
@@ -333,7 +333,7 @@
                 {% for item in feeds %}
 
                 <li class="menu-item" style="border-left: 5px solid #346cb0; margin-top:5px; margin-bottom: 5px; box-shadow: 10px 1px 5px #888888;">
-                  <a class="menu-link">
+                  <span class="menu-link">
                     {% if item.action_flag == 1 %}
                     <span class="menu-icon oi oi-task"></span>
                     {% elif item.action_flag == 2 %}
@@ -347,7 +347,7 @@
                     <div class="text-muted"><span class="menu-icon oi oi-person"></span> {{ item.user }}</div>
                     <div class="text-muted"><span class="menu-icon oi oi-timer"></span>{{ item.action_time  }}</div>
                     <!--<span class="text-muted">{{ item.change_message }}</span>-->
-                  </a>
+                  </span>
                 </li>
 
                 {% endfor %}
@@ -389,7 +389,7 @@
 
                     <div class="col-lg-3">
                       <!-- .metric -->
-                      <a href="" class="metric metric-bordered">
+                      <span class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-primary">
                             <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
@@ -400,13 +400,13 @@
                           </sub>
                           <span class="value">{{ nbr_planned }}</span>
                         </p>
-                      </a>
+                      </span>
                       <!-- /.metric -->
                     </div>
 
                     <div class="col-lg-3">
                       <!-- .metric -->
-                      <a href="" class="metric metric-bordered">
+                      <span class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-success">
                             <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
@@ -417,13 +417,47 @@
                           </sub>
                           <span class="value">{{ nbr_dist_planned }}</span>
                         </p>
-                      </a>
+                      </span>
                       <!-- /.metric -->
                     </div>
 
                     <div class="col-lg-3">
                       <!-- .metric -->
-                      <a href="" class="metric metric-bordered">
+                      <span class="metric metric-bordered">
+                        <div class="metric-badge">
+                          <span class="badge badge-lg badge-success">
+                            <span class="oi oi-media-record pulse mr-1"></span> APPROVED DISTRIBUTION PLAN </span>
+                        </div>
+                        <p class="metric-value h3">
+                          <sub>
+                            <i class="oi oi-timer"></i>
+                          </sub>
+                          <span class="value">{{ nbr_dist_approved }}</span>
+                        </p>
+                      </span>
+                      <!-- /.metric -->
+                    </div>
+
+                    <div class="col-lg-3">
+                      <!-- .metric -->
+                      <span class="metric metric-bordered">
+                        <div class="metric-badge">
+                          <span class="badge badge-lg badge-warning">
+                            <span class="oi oi-media-record pulse mr-1"></span> WAVES DELAYED FOR DELIVERY </span>
+                        </div>
+                        <p class="metric-value h3">
+                          <sub>
+                            <i class="oi oi-timer"></i>
+                          </sub>
+                          <span class="value">{{ nbr_delayed_delivery }}</span>
+                        </p>
+                      </span>
+                      <!-- /.metric -->
+                    </div>
+
+                    <div class="col-lg-3">
+                      <!-- .metric -->
+                      <span class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-warning">
                             <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
@@ -434,24 +468,24 @@
                           </sub>
                           <span class="value">{{ nbr_dist_ready }}</span>
                         </p>
-                      </a>
+                      </span>
                       <!-- /.metric -->
                     </div>
 
                     <div class="col-lg-3">
                       <!-- .metric -->
-                      <a href="" class="metric metric-bordered">
+                      <span class="metric metric-bordered">
                         <div class="metric-badge">
                           <span class="badge badge-lg badge-danger">
-                            <span class="oi oi-media-record pulse mr-1"></span> LATE ON DISTRIBUTION</span>
+                            <span class="oi oi-media-record pulse mr-1"></span> WAVES NOT RECEIVED </span>
                         </div>
                         <p class="metric-value h3">
                           <sub>
                             <i class="oi oi-warning"></i>
                           </sub>
-                          <span class="value">{{ nbr_late_dist }}</span>
+                          <span class="value">{{ nbr_not_received }}</span>
                         </p>
-                      </a>
+                      </span>
                       <!-- /.metric -->
                     </div>
                     <!-- /metric column -->
@@ -625,8 +659,6 @@
                     item.removeClass('unread');
                     item.addClass('read');
                     img.attr('src', read_message_icon)
-
-                    <!--num.text(block_notif.find('.unread-notification').length);-->
                 }
                 toggle_notification_status(itemid, true, callback);
             }else{
@@ -634,8 +666,6 @@
                     item.removeClass('read');
                     item.addClass('unread');
                     img.attr('src', unread_message_icon)
-
-                    <!--num.text(block_notif.find('.unread-notification').length);-->
                 }
                 toggle_notification_status(itemid, false, callback);
             }

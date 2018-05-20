@@ -1,12 +1,24 @@
 {% load util_tags %}
-{% if request.user|has_group:"UNICEF_PO" and not record.assigned_to_officer %}
-<a class="btn btn-info assign-me" itemref="{{ record.id }}">
-    <i class="icon-edit-sign icon-white"></i>
-    <span class="assigned_to_me">Assign to me?</span>
-</a>
+{% if request.user|has_group:"UNICEF_PO" %}
+    {% if record.assigned_to_officer and not record.assigned_to_officer == 'None' %}
+
+        <a class="btn btn-success assign-me assigned" itemref="{{ record.id }}">
+            <i class="icon-edit-sign icon-white"></i>
+            <span class="assigned_to_me">{{ record.assigned_to_officer }}</span>
+        </a>
+
+    {% else %}
+
+        <a class="btn btn-info assign-me unassigned" itemref="{{ record.id }}">
+            <i class="icon-edit-sign icon-white"></i>
+            <span class="assigned_to_me">Assign to me?</span>
+        </a>
+
+    {% endif %}
+
+
 {% else %}
-<a class="btn btn-success assign-me" itemref="{{ record.id }}">
-    <i class="icon-edit-sign icon-white"></i>
-    <span class="assigned_to_me">{{ record.assigned_to_officer }}</span>
-</a>
+
+    {{ record.assigned_to_officer }}
+
 {% endif %}

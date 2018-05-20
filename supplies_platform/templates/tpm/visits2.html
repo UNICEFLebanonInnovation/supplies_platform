@@ -64,7 +64,7 @@
           <!-- .top-bar-brand -->
           <div class="top-bar-brand">
             <a href="">
-              <img src="{% static 'images/logo_transparant.png' %}" height="32" alt="">
+              <img src="{% static 'images/logo_transparant.png' %}" height="50" width="150" alt="">
             </a>
           </div>
           <!-- /.top-bar-brand -->
@@ -119,10 +119,11 @@
                       <a href="" class="dropdown-item unread">
                         <div class="user-avatar">
                           {% if item.status %}
-                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt=""> </div>
+                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt="">
                           {% else %}
-                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt=""> </div>
+                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt="">
                           {% endif %}
+                        </div>
                         <div class="dropdown-item-body">
                           <p class="subject"> {{ item.subject }} </p>
                           <p class="text text-truncate"> {{ item.description }} </p>
@@ -317,10 +318,10 @@
     <!-- END THEME JS -->
     <!-- BEGIN PAGE LEVEL JS -->
     <script src="{% static 'dashboard/easypiechart-demo.js' %}"></script>
-    <script src="{% static 'dashboard/dashboard-demo.js' %}"></script>
+    <!--<script src="{% static 'dashboard/dashboard-demo.js' %}"></script>-->
     <!-- END PAGE LEVEL JS -->
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-116692175-1"></script>
+    <!--<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-116692175-1"></script>-->
     <script>
       window.dataLayer = window.dataLayer || [];
 
@@ -345,7 +346,11 @@
         $(document).ready(function() {
 
             $('.assign-me').dblclick(function(){
-                assign_to_me($(this));
+                if($(this).hasClass('unassigned')) {
+                  assign_to_me($(this), user_id);
+                }else{
+                  assign_to_me($(this), null);
+                }
             });
 
             $('.assign-tpm').dblclick(function(){
@@ -381,9 +386,9 @@
             return header;
         }
 
-        function assign_to_me(item)
+        function assign_to_me(item, user)
         {
-            var data = {assigned_to_officer:user_id}
+            var data = {assigned_to_officer:user}
             $.ajax({
                 type: "PATCH",
                 url: tpm_url+item.attr('itemref')+'/',
@@ -393,9 +398,19 @@
                 dataType: 'json',
                 success: function (response, result, jqXHR) {
                     if(jqXHR.status == 200){
-                        item.find('.assigned_to_me').text(user_email);
-                        item.removeClass('btn-info');
-                        item.addClass('btn-success');
+                        if(user) {
+                          item.find('.assigned_to_me').text(user_email);
+                          item.removeClass('unassigned');
+                          item.addClass('assigned');
+                          item.removeClass('btn-info');
+                          item.addClass('btn-success');
+                        }else{
+                          item.find('.assigned_to_me').text('Assign to me?');
+                          item.removeClass('assigned');
+                          item.addClass('unassigned');
+                          item.addClass('btn-info');
+                          item.removeClass('btn-success');
+                        }
                     }
                 },
                 error: function (response) {
