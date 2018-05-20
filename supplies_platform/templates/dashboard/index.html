@@ -146,7 +146,8 @@
                   <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
                     <h6 class="dropdown-header stop-propagation">
                       <span>Messages</span>
-                      <a href="">Mark all as read</a>
+                      <a>{{ unread_messages }} Unread message(s)</a>
+                      <!--<a href="">Mark all as read</a>-->
                     </h6>
                     <!-- .dropdown-scroll -->
                     <div class="dropdown-scroll has-scrollable ps">
@@ -448,7 +449,7 @@
                           <sub>
                             <i class="oi oi-warning"></i>
                           </sub>
-                          <span class="value">8</span>
+                          <span class="value">{{ nbr_late_dist }}</span>
                         </p>
                       </a>
                       <!-- /.metric -->
@@ -516,15 +517,24 @@
                                                   <div class="icon"></div>
                                               </div>
                                               <div class="image-order-status shipping-icon active img-circle">
-                                                  <span class="status">{{ distribution.delivery_expected_date }}</span>
+                                                  <span class="status">{% if distribution.delivery_expected_date %}
+                                                            {{ distribution.delivery_expected_date }}
+                                                          {% endif %}
+                                                  </span>
                                                   <div class="icon"></div>
                                               </div>
                                               <div class="image-order-status received-icon active img-circle">
-                                                  <span class="status">{{ distribution.item_received_date }}</span>
+                                                  <span class="status">{% if distribution.item_received_date %}
+                                                    {{ distribution.item_received_date }}
+                                                    {% endif %}
+                                                  </span>
                                                   <div class="icon"></div>
                                               </div>
                                               <div class="image-order-status distributed-icon active img-circle">
-                                                  <span class="status">{{ distribution.item_distributed_date }}</span>
+                                                  <span class="status">{% if distribution.item_distributed_date %}
+                                                    {{ distribution.item_distributed_date }}
+                                                    {% endif %}
+                                                  </span>
                                                   <div class="icon"></div>
                                               </div>
 

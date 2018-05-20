@@ -27,14 +27,16 @@ class IndexView(LoginRequiredMixin,
                                      'location', 'location type']).order_by('-action_time')[0:100]
         notifications = Notification.objects.filter(
             # user_group__in=['SUPPLY_ADMIN',]
-        ).order_by('-created')[0:20]
+        ).order_by('-created')
         plannings = SupplyPlan.objects.all()
         distributions = DistributionPlan.objects.all()
         return {
             'plans': plannings,
             'feeds': feeds,
-            'notifications': notifications,
+            'notifications': notifications[0:20],
+            'unread_messages': notifications.filter(status=False).count(),
             'nbr_planned': plannings.filter(status='submitted').count(),
             'nbr_dist_planned': distributions.filter(status='submitted').count(),
-            'nbr_dist_ready': distributions.filter(to_delivery=True, item_received=False).count()
+            'nbr_dist_ready': distributions.filter(to_delivery=True, item_received=False).count(),
+            'nbr_late_dist': distributions.filter(delivery_expected_date__gte=datetime.datetime.now(), item_received=False).count()
         }
