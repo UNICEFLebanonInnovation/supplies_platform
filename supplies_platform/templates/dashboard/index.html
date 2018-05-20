@@ -121,8 +121,8 @@
                         <div class="user-avatar">
                           <img src="{% static 'dashboard/action.jpg' %}" alt=""> </div>
                         <div class="dropdown-item-body">
-                          <p class="text"> Activity 1</p>
-                          <span class="date">Just now</span>
+                          <p class="text"></p>
+                          <span class="date"></span>
                         </div>
                       </a>
                       <!-- /.dropdown-item -->
@@ -507,23 +507,23 @@
                                                   {% endif %}
                                               </div>
 
-                                              <div class="image-order-status image-order-status-new active img-circle">
+                                              <div class="image-order-status supply-plan-icon active img-circle">
                                                   <span class="status">Plan {{ item.status }}</span>
                                                   <div class="icon"></div>
                                               </div>
-                                              <div class="image-order-status image-order-status-active active img-circle">
+                                              <div class="image-order-status distribution-plan-icon active img-circle">
                                                   <span class="status">Distribution plan {{ distribution.status }}</span>
                                                   <div class="icon"></div>
                                               </div>
-                                              <div class="image-order-status image-order-status-intransit active img-circle">
+                                              <div class="image-order-status shipping-icon active img-circle">
                                                   <span class="status">{{ distribution.delivery_expected_date }}</span>
                                                   <div class="icon"></div>
                                               </div>
-                                              <div class="image-order-status image-order-status-delivered active img-circle">
+                                              <div class="image-order-status received-icon active img-circle">
                                                   <span class="status">{{ distribution.item_received_date }}</span>
                                                   <div class="icon"></div>
                                               </div>
-                                              <div class="image-order-status image-order-status-completed active img-circle">
+                                              <div class="image-order-status distributed-icon active img-circle">
                                                   <span class="status">{{ distribution.item_distributed_date }}</span>
                                                   <div class="icon"></div>
                                               </div>
