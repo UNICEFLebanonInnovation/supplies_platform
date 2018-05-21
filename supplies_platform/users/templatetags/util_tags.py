@@ -88,3 +88,21 @@ def percentage(number, total):
 def get_users(group):
     from supplies_platform.users.models import User
     return User.objects.filter(groups__name=group)
+
+
+@register.assignment_tag
+def user_notifications(user):
+    from supplies_platform.backends.models import Notification
+    notifications = Notification.objects.filter(
+        user_group__in=[user.groups.all(), ]
+    ).order_by('-created')
+    return notifications
+
+
+@register.assignment_tag
+def user_feeds(user):
+    from django.contrib.admin.models import LogEntry
+    feeds = LogEntry.objects.exclude(
+        content_type__model__in=['user', 'groups', 'group', 'section',
+                                 'location', 'location type']).order_by('-action_time')[0:100]
+    return feeds

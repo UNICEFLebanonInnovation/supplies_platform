@@ -231,78 +231,9 @@
       <!-- /section-deck -->
     </div>
     <!-- /.page-section -->
-    {% csrf_token %}
+
 {% endblock %}
 
 {% block custom_javascript %}
 
-{% get_user_token request.user.id as user_token %}
-
-<script type="text/javascript">
-    var notification_url = '/api/notifications/';
-    var user_token = '{{ user_token }}';
-    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
-    var read_message_icon = '{% static 'dashboard/email-read-icon.png' %}';
-    var unread_message_icon = '{% static 'dashboard/email-unread-icon.png' %}';
-
-    $(document).ready(function() {
-        $('.toggle-status').click(function(e){
-            e.preventDefault();
-            var item = $(this);
-            var itemid = $(this).attr('itemid');
-            var img = $(this).find('img');
-
-            if($(this).hasClass('unread')) {
-                var callback = function() {
-                    item.removeClass('unread');
-                    item.addClass('read');
-                    img.attr('src', read_message_icon)
-                }
-                toggle_notification_status(itemid, true, callback);
-            }else{
-                var callback = function() {
-                    item.removeClass('read');
-                    item.addClass('unread');
-                    img.attr('src', unread_message_icon)
-                }
-                toggle_notification_status(itemid, false, callback);
-            }
-        });
-    });
-
-    function getHeader()
-    {
-        var header = {
-            'Authorization': 'Token '+user_token,
-            'HTTP_REFERER': $(location).attr('href'),
-            'Cookie': 'token=Token '+user_token,
-            'X-CSRFToken': csrftoken
-        };
-        return header;
-    }
-
-    function toggle_notification_status(itemid, status, callback)
-    {
-        var data = {status: status};
-
-        $.ajax({
-            type: "PUT",
-            url: notification_url+itemid+'/',
-            data: data,
-            cache: false,
-            headers: getHeader(),
-            dataType: 'json',
-            success: function (response, result, jqXHR) {
-                if(jqXHR.status == 200){
-                    if(callback){
-                        callback();
-                    }
-                }
-            },
-            error: function (response) {
-                console.log(response);
-            }
-        });
-    }
-</script>
 {% endblock custom_javascript %}

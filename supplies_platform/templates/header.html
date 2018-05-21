@@ -1,5 +1,7 @@
 {% load static %}
 {% load util_tags %}
+
+{% user_notifications request.user as notifications %}
 <header class="app-header">
         <!-- .top-bar -->
         <div class="top-bar">
@@ -154,6 +156,18 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
+                        {% if request.user|has_group:"PARTNER" %}
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="/admin/planning/distributionplan/" class="tile-wrapper">
+                          <span class="tile tile-lg bg-teal">
+                            <i class="oi oi-list"></i>
+                          </span>
+                          <span class="tile-peek">Distribution Plan</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                        {% endif %}
                       {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
@@ -176,6 +190,7 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
+                      {% if request.user|has_group:"SM_VISIT" %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="{% url 'tpm:visits' %}" class="tile-wrapper">
@@ -185,6 +200,7 @@
                           <span class="tile-peek">SM Visits</span>
                         </a>
                       </div>
+                      {% endif %}
                       {% endif %}
                       <!-- /.dropdown-sheet-item -->
                     </div>
@@ -212,8 +228,13 @@
                   <h6 class="dropdown-header d-none d-md-block d-lg-none"> {% if request.user.is_authenticated %}{{ request.user }}{% endif %}</h6>
 
                   {% if request.user.is_authenticated %}
+                    {% if request.user|has_group:"PARTNER" %}
+                  <a class="dropdown-item" href="/admin/partners/partnerorganization/{{ request.user.partner_id }}/change/">
+                    <span class="dropdown-icon oi oi-person"></span> Profile</a>
+                    {% else %}
                   <a class="dropdown-item" href="">
                     <span class="dropdown-icon oi oi-person"></span> Profile</a>
+                    {% endif %}
                   <a class="dropdown-item" href="{% url 'account_change_password' %}">
                     <span class="dropdown-icon oi oi-fork"></span> Change password </a>
                   <a class="dropdown-item" href="{% url 'account_logout' %}">
@@ -238,3 +259,74 @@
         </div>
         <!-- /.top-bar -->
       </header>
+{% csrf_token %}
+
+{% get_user_token request.user.id as user_token %}
+
+<script type="text/javascript">
+    var notification_url = '/api/notifications/';
+    var user_token = '{{ user_token }}';
+    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+    var read_message_icon = '{% static 'dashboard/email-read-icon.png' %}';
+    var unread_message_icon = '{% static 'dashboard/email-unread-icon.png' %}';
+
+    $(document).ready(function() {
+        $('.toggle-status').click(function(e){
+            e.preventDefault();
+            var item = $(this);
+            var itemid = $(this).attr('itemid');
+            var img = $(this).find('img');
+
+            if($(this).hasClass('unread')) {
+                var callback = function() {
+                    item.removeClass('unread');
+                    item.addClass('read');
+                    img.attr('src', read_message_icon)
+                }
+                toggle_notification_status(itemid, true, callback);
+            }else{
+                var callback = function() {
+                    item.removeClass('read');
+                    item.addClass('unread');
+                    img.attr('src', unread_message_icon)
+                }
+                toggle_notification_status(itemid, false, callback);
+            }
+        });
+    });
+
+    function getHeader()
+    {
+        var header = {
+            'Authorization': 'Token '+user_token,
+            'HTTP_REFERER': $(location).attr('href'),
+            'Cookie': 'token=Token '+user_token,
+            'X-CSRFToken': csrftoken
+        };
+        return header;
+    }
+
+    function toggle_notification_status(itemid, status, callback)
+    {
+        var data = {status: status};
+
+        $.ajax({
+            type: "PUT",
+            url: notification_url+itemid+'/',
+            data: data,
+            cache: false,
+            headers: getHeader(),
+            dataType: 'json',
+            success: function (response, result, jqXHR) {
+                if(jqXHR.status == 200){
+                    if(callback){
+                        callback();
+                    }
+                }
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+</script>

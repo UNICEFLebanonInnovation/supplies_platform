@@ -3,6 +3,7 @@
 
 {% if request.user.is_authenticated %}
   {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
+  {% user_feeds request.user as feeds %}
 <aside class="app-aside">
     <!-- .aside-content -->
     <div class="aside-content">

@@ -27,7 +27,6 @@
         <div class="card card-fluid">
           <header class="card-header"> Supply Monitoring Visits <span class="badge">({{ table.rows|length }})</span></header>
           <!-- .lits-group -->
-          {% csrf_token %}
           {% render_table table 'django_tables2/bootstrap.html' %}
           <!-- /.lits-group -->
         </div>
