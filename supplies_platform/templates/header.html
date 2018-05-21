@@ -1,7 +1,9 @@
 {% load static %}
 {% load util_tags %}
 
+{% if request.user.is_authenticated %}
 {% user_notifications request.user as notifications %}
+{% endif %}
 <header class="app-header">
         <!-- .top-bar -->
         <div class="top-bar">
@@ -156,7 +158,18 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
-                        {% if request.user|has_group:"PARTNER" %}
+                        {% if request.user|has_group:"UNICEF_PD" or request.user|has_group:"BUDGET_OWNER"  %}
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="/admin/planning/supplyplan/" class="tile-wrapper">
+                          <span class="tile tile-lg bg-teal">
+                            <i class="oi oi-list"></i>
+                          </span>
+                          <span class="tile-peek">Supply Plan</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                        {% endif %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="/admin/planning/distributionplan/" class="tile-wrapper">
@@ -167,7 +180,6 @@
                         </a>
                       </div>
                       <!-- /.dropdown-sheet-item -->
-                        {% endif %}
                       {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
@@ -259,6 +271,7 @@
         </div>
         <!-- /.top-bar -->
       </header>
+{% if request.user.is_authenticated %}
 {% csrf_token %}
 
 {% get_user_token request.user.id as user_token %}
@@ -330,3 +343,4 @@
         });
     }
 </script>
+{% endif %}
