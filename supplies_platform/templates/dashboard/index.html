@@ -1,644 +1,242 @@
+{% extends "base2.html" %}
 {% load static %}
 {% load util_tags %}
-<!DOCTYPE html>
-<!-- saved from url=(0022) -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <!-- End SEO tag -->
-    <!-- FAVICONS -->
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{% block title %}SMS{% endblock title %}</title>
-    <link rel="apple-touch-icon" sizes="57x57" href="{% static 'images/apple-icon-57x57.png' %}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-icon-60x60.png' %}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-icon-72x72.png' %}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'images/apple-icon-76x76.png' %}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-icon-114x114.png' %}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/apple-icon-120x120.png' %}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-icon-144x144.png' %}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/apple-icon-152x152.png' %}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-icon-180x180.png' %}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/android-icon-192x192.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon-96x96.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'images/manifest.json' %}">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <script src="{% static 'dashboard/pace.min.js' %}"></script>
-    <!-- BEGIN BASE STYLES -->
-    <link rel="stylesheet" href="{% static 'dashboard/pace.min.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/open-iconic-bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/fontawesome-all.min.css' %}">
-    <!-- END BASE STYLES -->
-    <!-- BEGIN PLUGINS STYLES -->
-    <link rel="stylesheet" href="{% static 'dashboard/flatpickr.min.css' %}">
-    <!-- END PLUGINS STYLES -->
-    <!-- BEGIN THEME STYLES -->
-    <link rel="stylesheet" href="{% static 'dashboard/main.min.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/custom.css' %}">
-    <link href="{% static 'css/tracking.css' %}" rel="stylesheet">
-    <!-- END THEME STYLES -->
-  <style type="text/css">/* Chart.js */
-    @-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}
+{% block css %}
+  <style type="text/css">
     a.toggle-status:hover .dropdown-item-body { color: white !important;}
   </style>
-</head>
+{% endblock %}
 
-  <body class="  pace-done">
-  <div class="pace  pace-inactive"><div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
-  <div class="pace-progress-inner"></div>
-</div>
-<div class="pace-activity"></div></div>
-    <!-- .app -->
-    <div class="app">
-      <!-- .app-header -->
-      <header class="app-header">
-        <!-- .top-bar -->
-        <div class="top-bar">
-          <!-- .top-bar-brand -->
-          <div class="top-bar-brand">
-            <a href="">
-              <img src="{% static 'images/logo_transparant.png' %}" height="50" width="150" alt="">
-            </a>
+{% block page-inner %}
+    <!-- .page-title-bar -->
+    <header class="page-title-bar">
+      <p class="lead">
+        <span class="font-weight-bold"></span>
+        <span class="d-block text-muted"></span>
+      </p>
+    </header>
+    <!-- /.page-title-bar -->
+    <!-- .page-section -->
+    <div class="page-section">
+      <!-- .section-block -->
+      <div class="section-block">
+        <!-- metric row -->
+        <div class="metric-row">
+          <!-- metric column -->
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-primary">
+                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-timer"></i>
+                </sub>
+                <span class="value">{{ nbr_planned }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
           </div>
-          <!-- /.top-bar-brand -->
-          <!-- .top-bar-list -->
-          <div class="top-bar-list">
-            <!-- .top-bar-item -->
-            <div class="top-bar-item px-2 d-md-none d-lg-none d-xl-none">
-              <!-- toggle menu -->
-              <button class="hamburger hamburger-squeeze" type="button" data-toggle="aside" aria-label="Menu" aria-controls="navigation">
-                <span class="hamburger-box">
-                  <span class="hamburger-inner"></span>
-                </span>
-              </button>
-              <!-- /toggle menu -->
-            </div>
-            <!-- /.top-bar-item -->
-            <!-- .top-bar-item -->
-            <div class="top-bar-item top-bar-item-full">
-              <!-- .top-bar-search -->
-              <div class="top-bar-search">
-                <div class="input-group input-group-search">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text">
-                      <span class="oi oi-magnifying-glass"></span>
-                    </span>
-                  </div>
-                  <input type="text" class="form-control" aria-label="Search" placeholder="Search"> </div>
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
               </div>
-              <!-- /.top-bar-search -->
-            </div>
-            <!-- /.top-bar-item -->
-            <!-- .top-bar-item -->
-            <div class="top-bar-item top-bar-item-right px-0 d-none d-sm-flex">
-              <!-- .nav -->
-              <ul class="header-nav nav">
-                <!-- .nav-item -->
-                <li class="nav-item dropdown header-nav-dropdown has-notified">
-                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="oi oi-pulse"></span>
-                  </a>
-                  <div class="dropdown-arrow"></div>
-                  <!-- .dropdown-menu -->
-                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
-                    <h6 class="dropdown-header stop-propagation">
-                      <span>Activities
-                        <span class="badge"></span>
-                      </span>
-                    </h6>
-                    <!-- .dropdown-scroll -->
-                    <div class="dropdown-scroll has-scrollable ps">
-                      <!-- .dropdown-item -->
-                      <a href="" class="dropdown-item unread">
-                        <div class="user-avatar">
-                          <img src="{% static 'dashboard/action.jpg' %}" alt=""> </div>
-                        <div class="dropdown-item-body">
-                          <p class="text"></p>
-                          <span class="date"></span>
-                        </div>
-                      </a>
-                      <!-- /.dropdown-item -->
-                      <!-- /.dropdown-item -->
-                    <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div></div></div>
-                    <!-- /.dropdown-scroll -->
-                    <a href="" class="dropdown-footer">All activities
-                      <i class="fa fa-fw fa-long-arrow-alt-right"></i>
-                    </a>
-                  </div>
-                  <!-- /.dropdown-menu -->
-                </li>
-                <!-- /.nav-item -->
-                <!-- .nav-item -->
-                <li class="nav-item dropdown header-nav-dropdown has-notified">
-                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="oi oi-envelope-open"></span>
-                  </a>
-                  <div class="dropdown-arrow"></div>
-                  <!-- .dropdown-menu -->
-                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
-                    <h6 class="dropdown-header stop-propagation">
-                      <span>Messages</span>
-                      <a><span class="ttl-unread-messages">{{ unread_messages }}</span> Unread message(s)</a>
-                      <!--<a href="">Mark all as read</a>-->
-                    </h6>
-                    <!-- .dropdown-scroll -->
-                    <div class="dropdown-scroll has-scrollable ps">
-                      {% for item in notifications %}
-                      <!-- .dropdown-item -->
-                      <a class="dropdown-item {% if item.status == 'true' %}read{% else %}unread{% endif %} toggle-status" itemid="{{ item.id }}">
-                        <div class="user-avatar">
-                          {% if item.status == 'true' %}
-                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt="">
-                          {% else %}
-                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt="">
-                          {% endif %}
-                        </div>
-                        <div class="dropdown-item-body">
-                          <p class="subject"> {{ item.subject }} </p>
-                          <p class="text text-truncate"> {{ item.description }} </p>
-                          <span class="date">{{ item.created }}</span>
-                        </div>
-                      </a>
-                      {% endfor %}
-                      <!-- /.dropdown-item -->
-                    <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div></div></div>
-                    <!-- /.dropdown-scroll -->
-                    <a href="" class="dropdown-footer">All messages
-                      <i class="fa fa-fw fa-long-arrow-alt-right"></i>
-                    </a>
-                  </div>
-                  <!-- /.dropdown-menu -->
-                </li>
-                <!-- /.nav-item -->
-                <!-- .nav-item -->
-                <li class="nav-item dropdown header-nav-dropdown">
-                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="oi oi-grid-three-up"></span>
-                  </a>
-                  <div class="dropdown-arrow"></div>
-                  <!-- .dropdown-menu -->
-                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
-                    <!-- .dropdown-sheets -->
-                    <div class="dropdown-sheets">
-                      <!-- .dropdown-sheet-item -->
-                      <!--<div class="dropdown-sheet-item">-->
-                        <!--<a href="" class="tile-wrapper">-->
-                          <!--<span class="tile tile-lg bg-indigo">-->
-                            <!--<i class="oi oi-people"></i>-->
-                          <!--</span>-->
-                          <!--<span class="tile-peek">Teams</span>-->
-                        <!--</a>-->
-                      <!--</div>-->
-                      <!-- /.dropdown-sheet-item -->
-                      <!-- .dropdown-sheet-item -->
-                      <div class="dropdown-sheet-item">
-                        <a href="/admin/" class="tile-wrapper">
-                          <span class="tile tile-lg bg-teal">
-                            <i class="oi oi-wrench"></i>
-                          </span>
-                          <span class="tile-peek">Admin</span>
-                        </a>
-                      </div>
-                      <!-- /.dropdown-sheet-item -->
-                      <!-- .dropdown-sheet-item -->
-                      <div class="dropdown-sheet-item">
-                        <a href="{% url 'dashboard:index' %}" class="tile-wrapper">
-                          <span class="tile tile-lg bg-pink">
-                            <i class="oi oi-bar-chart"></i>
-                          </span>
-                          <span class="tile-peek">Dashboard</span>
-                        </a>
-                      </div>
-                      <!-- /.dropdown-sheet-item -->
-                      <!-- .dropdown-sheet-item -->
-                      <div class="dropdown-sheet-item">
-                        <a href="" class="tile-wrapper">
-                          <span class="tile tile-lg bg-yellow">
-                            <i class="oi oi-fire"></i>
-                          </span>
-                          <span class="tile-peek">Feeds</span>
-                        </a>
-                      </div>
-                      <!-- /.dropdown-sheet-item -->
-                      <!-- .dropdown-sheet-item -->
-                      <div class="dropdown-sheet-item">
-                        <a href="{% url 'tpm:visits' %}" class="tile-wrapper">
-                          <span class="tile tile-lg bg-cyan">
-                            <i class="oi oi-document"></i>
-                          </span>
-                          <span class="tile-peek">SM Visits</span>
-                        </a>
-                      </div>
-                      <!-- /.dropdown-sheet-item -->
-                    </div>
-                    <!-- .dropdown-sheets -->
-                  </div>
-                  <!-- .dropdown-menu -->
-                </li>
-                <!-- /.nav-item -->
-              </ul>
-              <!-- /.nav -->
-              <!-- .btn-account -->
-              <div class="dropdown">
-                <button class="btn-account d-none d-md-flex" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="user-avatar">
-                    <img src="{% static 'dashboard/profile.png' %}" alt="">
-                  </span>
-                  <span class="account-summary pr-lg-4 d-none d-lg-block">
-                    <span class="account-name">{{ request.user }}</span>
-                    <span class="account-description"></span>
-                  </span>
-                </button>
-                <div class="dropdown-arrow dropdown-arrow-left"></div>
-                <!-- .dropdown-menu -->
-                <div class="dropdown-menu">
-                  <h6 class="dropdown-header d-none d-md-block d-lg-none"> Beni Arisandi </h6>
-                  <a class="dropdown-item" href="">
-                    <span class="dropdown-icon oi oi-person"></span> Profile</a>
-                  <a class="dropdown-item" href="{% url 'account_logout' %}">
-                    <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="">Help Center</a>
-                </div>
-                <!-- /.dropdown-menu -->
-              </div>
-              <!-- /.btn-account -->
-            </div>
-            <!-- /.top-bar-item -->
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-timer"></i>
+                </sub>
+                <span class="value">{{ nbr_dist_planned }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
           </div>
-          <!-- /.top-bar-list -->
-        </div>
-        <!-- /.top-bar -->
-      </header>
-      <!-- /.app-header -->
-      <!-- .app-aside -->
-      <aside class="app-aside">
-        <!-- .aside-content -->
-        <div class="aside-content">
-          <!-- .aside-header -->
-          <header class="aside-header d-block d-md-none">
-            <!-- .btn-account -->
-            <button class="btn-account" type="button" data-toggle="collapse" data-target="#dropdown-aside">
-              <span class="user-avatar user-avatar-lg">
-                <img src="{% static 'dashboard/profile.png' %}" alt="">
-              </span>
-              <span class="account-icon">
-                <span class="fa fa-caret-down fa-lg"></span>
-              </span>
-              <span class="account-summary">
-                <span class="account-name">{{ request.user }}</span>
-                <span class="account-description"></span>
-              </span>
-            </button>
-            <!-- /.btn-account -->
-            <!-- .dropdown-aside -->
-            <div id="dropdown-aside" class="dropdown-aside collapse">
-              <!-- dropdown-items -->
-              <div class="pb-3">
-                <a class="dropdown-item" href="">
-                  <span class="dropdown-icon oi oi-person"></span> Profile</a>
-                <a class="dropdown-item" href="">
-                  <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="">Help Center</a>
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> APPROVED DISTRIBUTION PLAN </span>
               </div>
-              <!-- /dropdown-items -->
-            </div>
-            <!-- /.dropdown-aside -->
-          </header>
-          <!-- /.aside-header -->
-          <!-- .aside-menu -->
-          <section class="aside-menu has-scrollable ps ps--active-y">
-            <!-- .stacked-menu -->
-            <nav id="stacked-menu" class="stacked-menu stacked-menu-has-collapsible">
-              <!-- .menu -->
-              <ul class="menu">
-                <li class="menu-item" style="border-bottom: 2px solid #ccc;">
-                  <a class="menu-link">
-                    <span class="menu-icon oi oi-rss"></span>
-                    <span class="menu-text menu-header">Live feeds</span>
-                  </a>
-                </li>
-                <li class="" style="height: 800px; overflow: scroll;">
-                <ul class="menu">
-
-                {% for item in feeds %}
-
-                <li class="menu-item" style="border-left: 5px solid #346cb0; margin-top:5px; margin-bottom: 5px; box-shadow: 10px 1px 5px #888888;">
-                  <span class="menu-link">
-                    {% if item.action_flag == 1 %}
-                    <span class="menu-icon oi oi-task"></span>
-                    {% elif item.action_flag == 2 %}
-                    <span class="menu-icon oi oi-pencil"></span>
-                    {% elif item.action_flag == 3 %}
-                    <span class="menu-icon oi oi-trash"></span>
-                    {% else %}
-                    <span class="menu-icon oi oi-info"></span>
-                    {% endif %}
-                    <span class="menu-text" style="text-transform: uppercase;">{{ item.object_repr }}</span>
-                    <div class="text-muted"><span class="menu-icon oi oi-person"></span> {{ item.user }}</div>
-                    <div class="text-muted"><span class="menu-icon oi oi-timer"></span>{{ item.action_time  }}</div>
-                    <!--<span class="text-muted">{{ item.change_message }}</span>-->
-                  </span>
-                </li>
-
-                {% endfor %}
-                </ul>
-                </li>
-              </ul>
-              <!-- /.menu -->
-            </nav>
-            <!-- /.stacked-menu -->
-          <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; height: 760px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 644px;"></div></div></section>
-          <!-- /.aside-menu -->
-        </div>
-        <!-- /.aside-content -->
-      </aside>
-      <!-- /.app-aside -->
-      <!-- .app-main -->
-      <main class="app-main">
-        <!-- .wrapper -->
-        <div class="wrapper">
-          <!-- .page -->
-          <div class="page"><div class="sidebar-backdrop"></div>
-            <!-- .page-inner -->
-            <div class="page-inner">
-              <!-- .page-title-bar -->
-              <header class="page-title-bar">
-                <p class="lead">
-                  <span class="font-weight-bold"></span>
-                  <span class="d-block text-muted"></span>
-                </p>
-              </header>
-              <!-- /.page-title-bar -->
-              <!-- .page-section -->
-              <div class="page-section">
-                <!-- .section-block -->
-                <div class="section-block">
-                  <!-- metric row -->
-                  <div class="metric-row">
-                    <!-- metric column -->
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-primary">
-                            <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-timer"></i>
-                          </sub>
-                          <span class="value">{{ nbr_planned }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-success">
-                            <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-timer"></i>
-                          </sub>
-                          <span class="value">{{ nbr_dist_planned }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-success">
-                            <span class="oi oi-media-record pulse mr-1"></span> APPROVED DISTRIBUTION PLAN </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-timer"></i>
-                          </sub>
-                          <span class="value">{{ nbr_dist_approved }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-warning">
-                            <span class="oi oi-media-record pulse mr-1"></span> WAVES DELAYED FOR DELIVERY </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-timer"></i>
-                          </sub>
-                          <span class="value">{{ nbr_delayed_delivery }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-warning">
-                            <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-warning"></i>
-                          </sub>
-                          <span class="value">{{ nbr_dist_ready }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-
-                    <div class="col-lg-3">
-                      <!-- .metric -->
-                      <span class="metric metric-bordered">
-                        <div class="metric-badge">
-                          <span class="badge badge-lg badge-danger">
-                            <span class="oi oi-media-record pulse mr-1"></span> WAVES NOT RECEIVED </span>
-                        </div>
-                        <p class="metric-value h3">
-                          <sub>
-                            <i class="oi oi-warning"></i>
-                          </sub>
-                          <span class="value">{{ nbr_not_received }}</span>
-                        </p>
-                      </span>
-                      <!-- /.metric -->
-                    </div>
-                    <!-- /metric column -->
-                  </div>
-                  <!-- /metric row -->
-                </div>
-                <div class="section-deck">
-                  <!-- .card -->
-                  <div class="card card-fluid">
-                    <header class="card-header"> Active Plans </header>
-                    <!-- .lits-group -->
-                    <div style="height:500px; overflow: scroll;">
-                    {% for item in plans %}
-                    <div class="lits-group list-group-flush">
-                      <!-- .lits-group-item -->
-                      <div class="list-group-item">
-                        <!-- .lits-group-item-figure -->
-                        <div class="list-group-item-figure">
-                          <div class="has-badge">
-                            <a href="" class="tile tile-md {{ item.section.color }}">{{ item.section.code }}</a>
-                            <a href="team" class="">
-                              <!--<img src="{% static 'dashboard/team1.jpg' %}" alt="">-->
-                            </a>
-                          </div>
-                        </div>
-                        <!-- .lits-group-item-figure -->
-                        <!-- .lits-group-item-body -->
-                        <div class="list-group-item-body">
-                          <h5 class="card-title mb-2">
-                            <a href="">{{ item }}</a>
-                          </h5>
-                          <!--<p class="card-subtitle text-muted"> Progress in 74% - Last update date </p>-->
-                          <!--{{ item.plan.all.first }}-->
-                          {% with item.plan.all.first as distribution %}
-                          <p class="card-subtitle text-muted"> {% if item.plan %} {{ distribution.modified }} {% else %} {{ item.modified }} {% endif %}</p>
-
-                              <div class="row shop-tracking-status">
-
-                                  <div class="col-md-12">
-                                      <div class="well">
-
-                                          <div class="order-status">
-
-                                              <div class="order-status-timeline">
-                                                  <!-- class names: c0 c1 c2 c3 and c4 -->
-                                                  {% if not distribution %}
-                                                  <div class="order-status-timeline-completion c1 {{ item.section.color }}"></div>
-                                                  {% elif distribution.status == 'submitted' %}
-                                                  <div class="order-status-timeline-completion c2 {{ item.section.color }}"></div>
-                                                  {% elif distribution.delivery_expected_date %}
-                                                  <div class="order-status-timeline-completion c3 {{ item.section.color }}"></div>
-                                                  {% elif distribution.item_received %}
-                                                  <div class="order-status-timeline-completion c4 {{ item.section.color }}"></div>
-                                                  {% endif %}
-                                              </div>
-
-                                              <div class="image-order-status supply-plan-icon active img-circle">
-                                                  <span class="status">Plan {{ item.status }}</span>
-                                                  <div class="icon"></div>
-                                              </div>
-                                              <div class="image-order-status distribution-plan-icon active img-circle">
-                                                  <span class="status">Distribution plan {{ distribution.status }}</span>
-                                                  <div class="icon"></div>
-                                              </div>
-                                              <div class="image-order-status shipping-icon active img-circle">
-                                                  <span class="status">{% if distribution.delivery_expected_date %}
-                                                            {{ distribution.delivery_expected_date }}
-                                                          {% endif %}
-                                                  </span>
-                                                  <div class="icon"></div>
-                                              </div>
-                                              <div class="image-order-status received-icon active img-circle">
-                                                  <span class="status">{% if distribution.item_received_date %}
-                                                    {{ distribution.item_received_date }}
-                                                    {% endif %}
-                                                  </span>
-                                                  <div class="icon"></div>
-                                              </div>
-                                              <div class="image-order-status distributed-icon active img-circle">
-                                                  <span class="status">{% if distribution.item_distributed_date %}
-                                                    {{ distribution.item_distributed_date }}
-                                                    {% endif %}
-                                                  </span>
-                                                  <div class="icon"></div>
-                                              </div>
-
-                                          </div>
-                                      </div>
-                                  </div>
-
-                              </div>
-                              {% endwith %}
-                          <!-- /.progress -->
-                        </div>
-                        <!-- .lits-group-item-body -->
-                      </div>
-                      <!-- /.lits-group-item -->
-                    </div>
-                    {% endfor %}
-                    </div>
-                    <!-- /.lits-group -->
-                  </div>
-                  <!-- /.card -->
-                </div>
-                <!-- /section-deck -->
-              </div>
-              <!-- /.page-section -->
-            </div>
-            <!-- /.page-inner -->
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-timer"></i>
+                </sub>
+                <span class="value">{{ nbr_dist_approved }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
           </div>
-          <!-- /.page -->
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> WAVES DELAYED FOR DELIVERY </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-timer"></i>
+                </sub>
+                <span class="value">{{ nbr_delayed_delivery }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-warning"></i>
+                </sub>
+                <span class="value">{{ nbr_dist_ready }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-danger">
+                  <span class="oi oi-media-record pulse mr-1"></span> WAVES NOT RECEIVED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-warning"></i>
+                </sub>
+                <span class="value">{{ nbr_not_received }}</span>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          <!-- /metric column -->
         </div>
-        <!-- /.wrapper -->
-      </main>
-      <!-- /.app-main -->
-    <div class="app-backdrop"></div></div>
-    <!-- /.app -->
-    <!-- BEGIN BASE JS -->
-    <script src="{% static 'dashboard/jquery.min.js' %}"></script>
-    <script src="{% static 'dashboard/popper.min.js' %}"></script>
-    <script src="{% static 'dashboard/bootstrap.min.js' %}"></script>
-    <!-- END BASE JS -->
-    <!-- BEGIN PLUGINS JS -->
-    <script src="{% static 'dashboard/stacked-menu.min.js' %}"></script>
-    <script src="{% static 'dashboard/perfect-scrollbar.min.js' %}"></script>
-    <script src="{% static 'dashboard/flatpickr.min.js' %}"></script>
-    <script src="{% static 'dashboard/jquery.easypiechart.min.js' %}"></script>
-    <script src="{% static 'dashboard/Chart.min.js' %}"></script>
-    <!-- END PLUGINS JS -->
-    <!-- BEGIN THEME JS -->
-    <script src="{% static 'dashboard/main.min.js' %}"></script>
-    <!-- END THEME JS -->
-    <!-- BEGIN PAGE LEVEL JS -->
-    <script src="{% static 'dashboard/easypiechart-demo.js' %}"></script>
-    <!--<script src="{% static 'dashboard/dashboard-demo.js' %}"></script>-->
-    <!-- END PAGE LEVEL JS -->
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <!--<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-116692175-1"></script>-->
-    <script>
-      window.dataLayer = window.dataLayer || [];
+        <!-- /metric row -->
+      </div>
+      <div class="section-deck">
+        <!-- .card -->
+        <div class="card card-fluid">
+          <header class="card-header"> Active Plans </header>
+          <!-- .lits-group -->
+          <div style="height:500px; overflow: scroll;">
+          {% for item in plans %}
+          <div class="lits-group list-group-flush">
+            <!-- .lits-group-item -->
+            <div class="list-group-item">
+              <!-- .lits-group-item-figure -->
+              <div class="list-group-item-figure">
+                <div class="has-badge">
+                  <a href="" class="tile tile-md {{ item.section.color }}">{{ item.section.code }}</a>
+                  <a href="team" class="">
+                    <!--<img src="{% static 'dashboard/team1.jpg' %}" alt="">-->
+                  </a>
+                </div>
+              </div>
+              <!-- .lits-group-item-figure -->
+              <!-- .lits-group-item-body -->
+              <div class="list-group-item-body">
+                <h5 class="card-title mb-2">
+                  <a href="">{{ item }}</a>
+                </h5>
+                <!--<p class="card-subtitle text-muted"> Progress in 74% - Last update date </p>-->
+                <!--{{ item.plan.all.first }}-->
+                {% with item.plan.all.first as distribution %}
+                <p class="card-subtitle text-muted"> {% if item.plan %} {{ distribution.modified }} {% else %} {{ item.modified }} {% endif %}</p>
 
-      function gtag()
-      {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'UA-116692175-1');
-    </script>
+                    <div class="row shop-tracking-status">
 
-{% csrf_token %}
+                        <div class="col-md-12">
+                            <div class="well">
+
+                                <div class="order-status">
+
+                                    <div class="order-status-timeline">
+                                        <!-- class names: c0 c1 c2 c3 and c4 -->
+                                        {% if not distribution %}
+                                        <div class="order-status-timeline-completion c1 {{ item.section.color }}"></div>
+                                        {% elif distribution.status == 'submitted' %}
+                                        <div class="order-status-timeline-completion c2 {{ item.section.color }}"></div>
+                                        {% elif distribution.delivery_expected_date %}
+                                        <div class="order-status-timeline-completion c3 {{ item.section.color }}"></div>
+                                        {% elif distribution.item_received %}
+                                        <div class="order-status-timeline-completion c4 {{ item.section.color }}"></div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="image-order-status supply-plan-icon active img-circle">
+                                        <span class="status">Plan {{ item.status }}</span>
+                                        <div class="icon"></div>
+                                    </div>
+                                    <div class="image-order-status distribution-plan-icon active img-circle">
+                                        <span class="status">Distribution plan {{ distribution.status }}</span>
+                                        <div class="icon"></div>
+                                    </div>
+                                    <div class="image-order-status shipping-icon active img-circle">
+                                        <span class="status">{% if distribution.delivery_expected_date %}
+                                                  {{ distribution.delivery_expected_date }}
+                                                {% endif %}
+                                        </span>
+                                        <div class="icon"></div>
+                                    </div>
+                                    <div class="image-order-status received-icon active img-circle">
+                                        <span class="status">{% if distribution.item_received_date %}
+                                          {{ distribution.item_received_date }}
+                                          {% endif %}
+                                        </span>
+                                        <div class="icon"></div>
+                                    </div>
+                                    <div class="image-order-status distributed-icon active img-circle">
+                                        <span class="status">{% if distribution.item_distributed_date %}
+                                          {{ distribution.item_distributed_date }}
+                                          {% endif %}
+                                        </span>
+                                        <div class="icon"></div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    {% endwith %}
+                <!-- /.progress -->
+              </div>
+              <!-- .lits-group-item-body -->
+            </div>
+            <!-- /.lits-group-item -->
+          </div>
+          {% endfor %}
+          </div>
+          <!-- /.lits-group -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /section-deck -->
+    </div>
+    <!-- /.page-section -->
+    {% csrf_token %}
+{% endblock %}
+
+{% block custom_javascript %}
+
 {% get_user_token request.user.id as user_token %}
-<!--<script type="text/javascript" language="javascript" src="{% static 'js/jquery-1.12.3.min.js' %}"></script>-->
-<!--<script type="text/javascript" language="javascript" src="{% static 'js/jquery-ui-1.12.1.js' %}"></script>-->
 
 <script type="text/javascript">
     var notification_url = '/api/notifications/';
@@ -707,6 +305,4 @@
         });
     }
 </script>
-
-
-</body></html>
+{% endblock custom_javascript %}

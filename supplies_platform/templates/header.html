@@ -1,0 +1,240 @@
+{% load static %}
+{% load util_tags %}
+<header class="app-header">
+        <!-- .top-bar -->
+        <div class="top-bar">
+          <!-- .top-bar-brand -->
+          <div class="top-bar-brand">
+            <a href="/">
+              <img src="{% static 'images/logo_transparant.png' %}" height="50" width="150" alt="">
+            </a>
+          </div>
+          <!-- /.top-bar-brand -->
+          <!-- .top-bar-list -->
+          <div class="top-bar-list">
+            <!-- .top-bar-item -->
+            <div class="top-bar-item px-2 d-md-none d-lg-none d-xl-none">
+              <!-- toggle menu -->
+              <button class="hamburger hamburger-squeeze" type="button" data-toggle="aside" aria-label="Menu" aria-controls="navigation">
+                <span class="hamburger-box">
+                  <span class="hamburger-inner"></span>
+                </span>
+              </button>
+              <!-- /toggle menu -->
+            </div>
+            <!-- /.top-bar-item -->
+            <!-- .top-bar-item -->
+            <div class="top-bar-item top-bar-item-full">
+              <!-- .top-bar-search -->
+              {% if request.user.is_authenticated %}
+              <div class="top-bar-search">
+                <div class="input-group input-group-search">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">
+                      <span class="oi oi-magnifying-glass"></span>
+                    </span>
+                  </div>
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search"> </div>
+              </div>
+              {% endif %}
+              <!-- /.top-bar-search -->
+            </div>
+            <!-- /.top-bar-item -->
+            <!-- .top-bar-item -->
+            <div class="top-bar-item top-bar-item-right px-0 d-none d-sm-flex">
+              <!-- .nav -->
+              <ul class="header-nav nav">
+                <!-- .nav-item -->
+                <li class="nav-item dropdown header-nav-dropdown has-notified">
+                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="oi oi-pulse"></span>
+                  </a>
+                  <div class="dropdown-arrow"></div>
+                  <!-- .dropdown-menu -->
+                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
+                    <h6 class="dropdown-header stop-propagation">
+                      <span>Activities
+                        <span class="badge"></span>
+                      </span>
+                    </h6>
+                    <!-- .dropdown-scroll -->
+                    <div class="dropdown-scroll has-scrollable ps">
+                      <!-- .dropdown-item -->
+                      <a href="" class="dropdown-item unread">
+                        <div class="user-avatar">
+                          <img src="{% static 'dashboard/action.jpg' %}" alt=""> </div>
+                        <div class="dropdown-item-body">
+                          <p class="text"></p>
+                          <span class="date"></span>
+                        </div>
+                      </a>
+                      <!-- /.dropdown-item -->
+                      <!-- /.dropdown-item -->
+                    <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div></div></div>
+                    <!-- /.dropdown-scroll -->
+                    <a href="" class="dropdown-footer">All activities
+                      <i class="fa fa-fw fa-long-arrow-alt-right"></i>
+                    </a>
+                  </div>
+                  <!-- /.dropdown-menu -->
+                </li>
+                <!-- /.nav-item -->
+                <!-- .nav-item -->
+                <li class="nav-item dropdown header-nav-dropdown has-notified">
+                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="oi oi-envelope-open"></span>
+                  </a>
+                  <div class="dropdown-arrow"></div>
+                  <!-- .dropdown-menu -->
+                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
+                    <h6 class="dropdown-header stop-propagation">
+                      <span>Messages</span>
+                      <a><span class="ttl-unread-messages">{{ unread_messages }}</span> Unread message(s)</a>
+                      <!--<a href="">Mark all as read</a>-->
+                    </h6>
+                    <!-- .dropdown-scroll -->
+                    <div class="dropdown-scroll has-scrollable ps">
+                      {% for item in notifications %}
+                      <!-- .dropdown-item -->
+                      <a class="dropdown-item {% if item.status == 'true' %}read{% else %}unread{% endif %} toggle-status" itemid="{{ item.id }}">
+                        <div class="user-avatar">
+                          {% if item.status == 'true' %}
+                          <img src="{% static 'dashboard/email-read-icon.png' %}" alt="">
+                          {% else %}
+                          <img src="{% static 'dashboard/email-unread-icon.png' %}" alt="">
+                          {% endif %}
+                        </div>
+                        <div class="dropdown-item-body">
+                          <p class="subject"> {{ item.subject }} </p>
+                          <p class="text text-truncate"> {{ item.description }} </p>
+                          <span class="date">{{ item.created }}</span>
+                        </div>
+                      </a>
+                      {% endfor %}
+                      <!-- /.dropdown-item -->
+                    <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div></div></div>
+                    <!-- /.dropdown-scroll -->
+                    <a href="" class="dropdown-footer">All messages
+                      <i class="fa fa-fw fa-long-arrow-alt-right"></i>
+                    </a>
+                  </div>
+                  <!-- /.dropdown-menu -->
+                </li>
+                <!-- /.nav-item -->
+                <!-- .nav-item -->
+                <li class="nav-item dropdown header-nav-dropdown">
+                  <a class="nav-link" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="oi oi-grid-three-up"></span>
+                  </a>
+                  <div class="dropdown-arrow"></div>
+                  <!-- .dropdown-menu -->
+                  <div class="dropdown-menu dropdown-menu-rich dropdown-menu-right">
+                    <!-- .dropdown-sheets -->
+                    <div class="dropdown-sheets">
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="/" class="tile-wrapper">
+                          <span class="tile tile-lg bg-indigo">
+                            <i class="fa fa-home"></i>
+                          </span>
+                          <span class="tile-peek">Home</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                      {% if request.user.is_authenticated %}
+                        {% if request.user.is_staff %}
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="/admin/" class="tile-wrapper">
+                          <span class="tile tile-lg bg-teal">
+                            <i class="oi oi-wrench"></i>
+                          </span>
+                          <span class="tile-peek">Admin</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                      {% endif %}
+                      {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="{% url 'dashboard:index' %}" class="tile-wrapper">
+                          <span class="tile tile-lg bg-pink">
+                            <i class="oi oi-bar-chart"></i>
+                          </span>
+                          <span class="tile-peek">Dashboard</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="" class="tile-wrapper">
+                          <span class="tile tile-lg bg-yellow">
+                            <i class="oi oi-fire"></i>
+                          </span>
+                          <span class="tile-peek">Feeds</span>
+                        </a>
+                      </div>
+                      <!-- /.dropdown-sheet-item -->
+                      {% endif %}
+                      <!-- .dropdown-sheet-item -->
+                      <div class="dropdown-sheet-item">
+                        <a href="{% url 'tpm:visits' %}" class="tile-wrapper">
+                          <span class="tile tile-lg bg-cyan">
+                            <i class="oi oi-document"></i>
+                          </span>
+                          <span class="tile-peek">SM Visits</span>
+                        </a>
+                      </div>
+                      {% endif %}
+                      <!-- /.dropdown-sheet-item -->
+                    </div>
+                    <!-- .dropdown-sheets -->
+                  </div>
+                  <!-- .dropdown-menu -->
+                </li>
+                <!-- /.nav-item -->
+              </ul>
+              <!-- /.nav -->
+              <!-- .btn-account -->
+              <div class="dropdown">
+                <button class="btn-account d-none d-md-flex" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="user-avatar">
+                    <img src="{% static 'dashboard/profile.png' %}" alt="">
+                  </span>
+                  <span class="account-summary pr-lg-4 d-none d-lg-block">
+                    <span class="account-name">{% if request.user.is_authenticated %}{{ request.user }}{% endif %}</span>
+                    <span class="account-description"></span>
+                  </span>
+                </button>
+                <div class="dropdown-arrow dropdown-arrow-left"></div>
+                <!-- .dropdown-menu -->
+                <div class="dropdown-menu">
+                  <h6 class="dropdown-header d-none d-md-block d-lg-none"> {% if request.user.is_authenticated %}{{ request.user }}{% endif %}</h6>
+
+                  {% if request.user.is_authenticated %}
+                  <a class="dropdown-item" href="">
+                    <span class="dropdown-icon oi oi-person"></span> Profile</a>
+                  <a class="dropdown-item" href="{% url 'account_change_password' %}">
+                    <span class="dropdown-icon oi oi-fork"></span> Change password </a>
+                  <a class="dropdown-item" href="{% url 'account_logout' %}">
+                    <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
+                  {% else %}
+                  <a class="dropdown-item" href="{% url 'account_login' %}">
+                    <span class="dropdown-icon oi oi-account-logout"></span> Login</a>
+                  {% endif %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="">
+                    <span class="dropdown-icon fa fa-hands-helping"></span>
+                    Help Center
+                  </a>
+                </div>
+                <!-- /.dropdown-menu -->
+              </div>
+              <!-- /.btn-account -->
+            </div>
+            <!-- /.top-bar-item -->
+          </div>
+          <!-- /.top-bar-list -->
+        </div>
+        <!-- /.top-bar -->
+      </header>

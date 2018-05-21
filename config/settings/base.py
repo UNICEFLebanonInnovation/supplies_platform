@@ -125,7 +125,7 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.s
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
-    ("""Tarek Moubarak""", 'tmoubarak@unicef.org'),
+    ("""Ali Chamseddine""", 'achamseddine@unicef.org'),
 ]
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -324,7 +324,7 @@ SOCIALACCOUNT_ADAPTER = 'supplies_platform.users.adapters.SocialAccountAdapter'
 # Custom user app defaults
 # Select the correct user model
 AUTH_USER_MODEL = 'users.User'
-LOGIN_REDIRECT_URL = 'users:redirect'
+LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'account_login'
 
 # SLUGLIFIER

@@ -1,0 +1,90 @@
+{% load static %}
+{% load util_tags %}
+
+{% if request.user.is_authenticated %}
+  {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
+<aside class="app-aside">
+    <!-- .aside-content -->
+    <div class="aside-content">
+      <!-- .aside-header -->
+      <header class="aside-header d-block d-md-none">
+        <!-- .btn-account -->
+        <button class="btn-account" type="button" data-toggle="collapse" data-target="#dropdown-aside">
+          <span class="user-avatar user-avatar-lg">
+            <img src="{% static 'dashboard/profile.png' %}" alt="">
+          </span>
+          <span class="account-icon">
+            <span class="fa fa-caret-down fa-lg"></span>
+          </span>
+          <span class="account-summary">
+            <span class="account-name">{{ request.user }}</span>
+            <span class="account-description"></span>
+          </span>
+        </button>
+        <!-- /.btn-account -->
+        <!-- .dropdown-aside -->
+        <div id="dropdown-aside" class="dropdown-aside collapse">
+          <!-- dropdown-items -->
+          <div class="pb-3">
+            <a class="dropdown-item" href="">
+              <span class="dropdown-icon oi oi-person"></span> Profile</a>
+            <a class="dropdown-item" href="">
+              <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="">Help Center</a>
+          </div>
+          <!-- /dropdown-items -->
+        </div>
+        <!-- /.dropdown-aside -->
+      </header>
+      <!-- /.aside-header -->
+      <!-- .aside-menu -->
+      <section class="aside-menu has-scrollable ps ps--active-y">
+        <!-- .stacked-menu -->
+        <nav id="stacked-menu" class="stacked-menu stacked-menu-has-collapsible">
+          <!-- .menu -->
+          <ul class="menu">
+            <li class="menu-item" style="border-bottom: 2px solid #ccc;">
+              <a class="menu-link">
+                <span class="menu-icon oi oi-rss"></span>
+                <span class="menu-text menu-header">Live feeds</span>
+              </a>
+            </li>
+            <li class="" style="height: 800px; overflow: scroll;">
+            <ul class="menu">
+
+            {% for item in feeds %}
+
+            <li class="menu-item" style="border-left: 5px solid #346cb0; margin-top:5px; margin-bottom: 5px; box-shadow: 10px 1px 5px #888888;">
+              <span class="menu-link">
+                {% if item.action_flag == 1 %}
+                <span class="menu-icon oi oi-task"></span>
+                {% elif item.action_flag == 2 %}
+                <span class="menu-icon oi oi-pencil"></span>
+                {% elif item.action_flag == 3 %}
+                <span class="menu-icon oi oi-trash"></span>
+                {% else %}
+                <span class="menu-icon oi oi-info"></span>
+                {% endif %}
+                <span class="menu-text" style="text-transform: uppercase;">{{ item.object_repr }}</span>
+                <div class="text-muted"><span class="menu-icon oi oi-person"></span> {{ item.user }}</div>
+                <div class="text-muted"><span class="menu-icon oi oi-timer"></span>{{ item.action_time  }}</div>
+                <!--<span class="text-muted">{{ item.change_message }}</span>-->
+              </span>
+            </li>
+
+            {% endfor %}
+            </ul>
+            </li>
+          </ul>
+          <!-- /.menu -->
+        </nav>
+        <!-- /.stacked-menu -->
+      <div class="ps__rail-x" style="left: 0px; bottom: 0px;"><div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div></div><div class="ps__rail-y" style="top: 0px; height: 760px; right: 0px;"><div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 644px;"></div></div>
+    </section>
+      <!-- /.aside-menu -->
+    </div>
+    <!-- /.aside-content -->
+  </aside>
+  {% endif %}
+{% endif %}

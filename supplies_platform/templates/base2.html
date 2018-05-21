@@ -1,0 +1,129 @@
+{% load static %}
+{% load util_tags %}
+<!DOCTYPE html>
+<!-- saved from url=(0022) -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <!-- End SEO tag -->
+    <!-- FAVICONS -->
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>SMS | {% block title %}Home{% endblock title %}</title>
+    <link rel="apple-touch-icon" sizes="57x57" href="{% static 'images/apple-icon-57x57.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-icon-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'images/apple-icon-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-icon-114x114.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/apple-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-icon-144x144.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/apple-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-icon-180x180.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/android-icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'images/favicon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'images/manifest.json' %}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <script src="{% static 'dashboard/pace.min.js' %}"></script>
+    <!-- BEGIN BASE STYLES -->
+    <link rel="stylesheet" href="{% static 'dashboard/pace.min.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/open-iconic-bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/fontawesome-all.min.css' %}">
+    <!-- END BASE STYLES -->
+    <!-- BEGIN PLUGINS STYLES -->
+    <link rel="stylesheet" href="{% static 'dashboard/flatpickr.min.css' %}">
+    <!-- END PLUGINS STYLES -->
+    <!-- BEGIN THEME STYLES -->
+    <link rel="stylesheet" href="{% static 'dashboard/main.min.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/custom.css' %}">
+    <link href="{% static 'css/tracking.css' %}" rel="stylesheet">
+    <!-- END THEME STYLES -->
+  <style type="text/css">/* Chart.js */
+    @-webkit-keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}@keyframes chartjs-render-animation{from{opacity:0.99}to{opacity:1}}.chartjs-render-monitor{-webkit-animation:chartjs-render-animation 0.001s;animation:chartjs-render-animation 0.001s;}
+    a.toggle-status:hover .dropdown-item-body { color: white !important;}
+  </style>
+{% block css %}
+{% endblock %}
+</head>
+
+  <body class="  pace-done">
+  <div class="pace  pace-inactive"><div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+  <div class="pace-progress-inner"></div>
+</div>
+<div class="pace-activity"></div></div>
+    <!-- .app -->
+    <div class="app">
+      <!-- .app-header -->
+
+      {% include "header.html" %}
+
+      <!-- /.app-header -->
+      <!-- .app-aside -->
+
+      {% include "dashboard/feeds.html" %}
+
+      <!-- /.app-aside -->
+      <!-- .app-main -->
+      <main class="app-main">
+        <!-- .wrapper -->
+        <div class="wrapper">
+          <!-- .page -->
+          <div class="page"><div class="sidebar-backdrop"></div>
+            <!-- .page-inner -->
+            <div class="page-inner">
+              {% block page-inner %}
+              {% endblock %}
+            </div>
+            <!-- /.page-inner -->
+          </div>
+          <!-- /.page -->
+        </div>
+        <!-- /.wrapper -->
+      </main>
+      <!-- /.app-main -->
+    <div class="app-backdrop"></div></div>
+    <!-- /.app -->
+    <!-- BEGIN BASE JS -->
+    <script src="{% static 'dashboard/jquery.min.js' %}"></script>
+    <script src="{% static 'dashboard/popper.min.js' %}"></script>
+    <script src="{% static 'dashboard/bootstrap.min.js' %}"></script>
+    <!-- END BASE JS -->
+    <!-- BEGIN PLUGINS JS -->
+    <!--<script src="{% static 'dashboard/stacked-menu.min.js' %}"></script>-->
+    <script src="{% static 'dashboard/perfect-scrollbar.min.js' %}"></script>
+    <script src="{% static 'dashboard/flatpickr.min.js' %}"></script>
+    <script src="{% static 'dashboard/jquery.easypiechart.min.js' %}"></script>
+    <script src="{% static 'dashboard/Chart.min.js' %}"></script>
+    <!-- END PLUGINS JS -->
+    <!-- BEGIN THEME JS -->
+    <script src="{% static 'dashboard/main.min.js' %}"></script>
+    <!-- END THEME JS -->
+    <!-- BEGIN PAGE LEVEL JS -->
+    <script src="{% static 'dashboard/easypiechart-demo.js' %}"></script>
+    <!--<script src="{% static 'dashboard/dashboard-demo.js' %}"></script>-->
+    <!-- END PAGE LEVEL JS -->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <!--<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-116692175-1"></script>-->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag()
+      {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'UA-116692175-1');
+    </script>
+
+    {% block custom_javascript %}
+
+    {% endblock custom_javascript %}
+
+</body></html>
