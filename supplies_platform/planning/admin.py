@@ -391,10 +391,14 @@ class DistributedItemInline(nested_admin.NestedStackedInline):
     suit_classes = u'suit-tab suit-tab-distribution'
 
     fields = (
+        'wave_number',
         'supply_item',
+        'quantity_requested',
     )
     readonly_fields = (
+        'wave_number',
         'supply_item',
+        'quantity_requested',
     )
     inlines = [DistributedItemSiteInline, ]
 
@@ -570,25 +574,25 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         if obj and obj.status == obj.RECEIVED and not obj.item_received:
             obj.item_received = True
             obj.item_received_date = datetime.datetime.now()
-            items = obj.requests.all()
-            for wave_item in items:
-                item = wave_item.wave.supply_plan.item
-                DistributedItem.objects.get_or_create(
-                    plan=obj,
-                    supply_item=item
-                )
-            send_notification('SUPPLY_ADMIN', 'ITEMS RECEIVED', obj)
+            send_notification('SUPPLY_ADMIN', 'ALL WAVES RECEIVED', obj)
         if obj and obj.status == obj.COMPLETED and not obj.item_distributed:
             obj.item_distributed = True
             obj.item_distributed_date = datetime.datetime.now()
-            send_notification('SUPPLY_ADMIN', 'ITEMS DISTRIBUTED', obj)
-            send_notification('UNICEF_PD', 'ITEMS DISTRIBUTED', obj)
+            send_notification('SUPPLY_ADMIN', 'ALL ITEMS DISTRIBUTED', obj)
+            send_notification('UNICEF_PD', 'ALL ITEMS DISTRIBUTED', obj)
         if obj and obj.delivery_expected_date and not obj.to_delivery:
+        # if True:
             obj.to_delivery = True
             items = obj.requests.all()
             for wave_item in items:
                 item = wave_item.wave.supply_plan.item
                 DistributionPlanItemReceived.objects.get_or_create(
+                    wave_number=wave_item.wave.wave_number,
+                    plan=obj,
+                    supply_item=item,
+                    quantity_requested=wave_item.quantity_requested
+                )
+                DistributedItem.objects.get_or_create(
                     wave_number=wave_item.wave.wave_number,
                     plan=obj,
                     supply_item=item,

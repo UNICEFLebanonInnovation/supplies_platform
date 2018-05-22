@@ -309,7 +309,7 @@ class DistributionPlan(TimeStampedModel):
         (REVIEWED, u"Reviewed"),
         (CLEARED, u"Cleared"),
         (APPROVED, u"Approved"),
-        (RECEIVED, u"Received"),
+        (RECEIVED, u"All waves received"),
         (COMPLETED, u"Distribution Completed"),
         (CANCELLED, u"Cancelled"),
     )
@@ -529,6 +529,13 @@ class DistributedItem(models.Model):
     plan = models.ForeignKey(DistributionPlan, related_name='distributed')
     supply_item = models.ForeignKey(SupplyItem, related_name='distributed_items')
     quantity_distributed_per_site = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    wave_number = models.CharField(
+        max_length=2,
+        null=True, blank=False,
+    )
+    quantity_requested = models.PositiveIntegerField(
         null=True, blank=True
     )
 
