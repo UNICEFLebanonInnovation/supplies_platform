@@ -122,6 +122,21 @@
       gtag('config', 'UA-116692175-1');
     </script>
 
+
+    <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyA2Aio1bqRUXtYBZIe687hlgYR7lP2ETyQ",
+        authDomain: "supply-management-system.firebaseapp.com",
+        databaseURL: "https://supply-management-system.firebaseio.com",
+        projectId: "supply-management-system",
+        storageBucket: "supply-management-system.appspot.com",
+        messagingSenderId: "150092950355"
+      };
+      firebase.initializeApp(config);
+    </script>
+
     {% block custom_javascript %}
 
     {% endblock custom_javascript %}
