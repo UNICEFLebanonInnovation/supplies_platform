@@ -27,12 +27,29 @@
         <div id="dropdown-aside" class="dropdown-aside collapse">
           <!-- dropdown-items -->
           <div class="pb-3">
+
+            {% if request.user.is_authenticated %}
+              {% if request.user|has_group:"PARTNER" %}
+            <a class="dropdown-item" href="/admin/partners/partnerorganization/{{ request.user.partner_id }}/change/">
+              <span class="dropdown-icon oi oi-person"></span> Profile</a>
+              {% else %}
             <a class="dropdown-item" href="">
               <span class="dropdown-icon oi oi-person"></span> Profile</a>
-            <a class="dropdown-item" href="">
+              {% endif %}
+
+            <a class="dropdown-item" href="{% url 'account_change_password' %}">
+              <span class="dropdown-icon oi oi-fork"></span> Change password </a>
+            <a class="dropdown-item" href="{% url 'account_logout' %}">
               <span class="dropdown-icon oi oi-account-logout"></span> Logout</a>
+            {% else %}
+            <a class="dropdown-item" href="{% url 'account_login' %}">
+              <span class="dropdown-icon oi oi-account-logout"></span> Login</a>
+            {% endif %}
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="">Help Center</a>
+            <a class="dropdown-item" href="">
+              <span class="dropdown-icon fa fa-hands-helping"></span>
+              Help Center
+            </a>
           </div>
           <!-- /dropdown-items -->
         </div>
@@ -69,7 +86,7 @@
                 {% endif %}
                 <span class="menu-text" style="text-transform: uppercase;">{{ item.object_repr }}</span>
                 <div class="text-muted"><span class="menu-icon oi oi-person"></span> {{ item.user }}</div>
-                <div class="text-muted"><span class="menu-icon oi oi-timer"></span>{{ item.action_time  }}</div>
+                <div class="text-muted"><span class="menu-icon oi oi-clock"></span> {{ item.action_time  }}</div>
                 <!--<span class="text-muted">{{ item.change_message }}</span>-->
               </span>
             </li>

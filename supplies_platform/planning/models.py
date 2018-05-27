@@ -5,6 +5,7 @@ import datetime
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.conf import settings
+from django.db.models import Avg, Count, Min, Sum
 
 from model_utils.choices import Choices
 from model_utils.models import TimeStampedModel
@@ -120,6 +121,16 @@ class SupplyPlan(TimeStampedModel):
     )
 
     @property
+    def target_population(self):
+        ttl = 0
+        plans = DistributionPlanItem.objects.filter(
+            plan__plan_id=self.id,
+        )
+        for item in plans:
+            ttl += item.target_population
+        return ttl
+
+    @property
     def total_budget(self):
         total = 0.0
         try:
@@ -166,62 +177,6 @@ class SupplyPlanItem(models.Model):
         help_text=u'PD Quantity'
     )
 
-    wave_number_1 = models.CharField(
-        max_length=2,
-        null=True, blank=False,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    wave_quantity_1 = models.PositiveIntegerField(
-        null=True, blank=False
-    )
-    date_required_by_1 = models.DateField(
-        null=True, blank=False
-    )
-
-    wave_number_2 = models.CharField(
-        max_length=2,
-        null=True, blank=True,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    wave_quantity_2 = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    date_required_by_2 = models.DateField(
-        null=True, blank=True
-    )
-
-    wave_number_3 = models.CharField(
-        max_length=2,
-        null=True, blank=True,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    wave_quantity_3 = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    date_required_by_3 = models.DateField(
-        null=True, blank=True
-    )
-
-    wave_number_4 = models.CharField(
-        max_length=2,
-        null=True, blank=True,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    wave_quantity_4 = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    date_required_by_4 = models.DateField(
-        null=True, blank=True
-    )
-
     # auto generate
     target_population = models.IntegerField(
         verbose_name=u'Max No. of beneficiaries covered',
@@ -232,6 +187,18 @@ class SupplyPlanItem(models.Model):
         verbose_name=u'Beneficiaries covered per item',
         null=True, blank=True
     )
+
+    @property
+    def beneficiaries_covered_per_item(self):
+        ttl = 0
+        if self.supply_plan:
+            plans = DistributionPlanItem.objects.filter(
+                plan__plan_id=self.supply_plan_id,
+                wave__supply_plan__item_id=self.item_id
+            )
+            for item in plans:
+                ttl += item.target_population
+        return ttl
 
     @property
     def item_price(self):
@@ -265,8 +232,6 @@ class SupplyPlanItem(models.Model):
 class WavePlan(models.Model):
 
     supply_plan = models.ForeignKey(SupplyPlanItem, related_name='supply_plans_waves')
-    # supply_item = models.ForeignKey(SupplyItem)
-    # supply_plan_item = models.ForeignKey(SupplyPlanItem)
     wave_number = models.CharField(
         max_length=2,
         null=True, blank=False,
@@ -309,7 +274,7 @@ class DistributionPlan(TimeStampedModel):
         (REVIEWED, u"Reviewed"),
         (CLEARED, u"Cleared"),
         (APPROVED, u"Approved"),
-        (RECEIVED, u"Received"),
+        (RECEIVED, u"All waves received"),
         (COMPLETED, u"Distribution Completed"),
         (CANCELLED, u"Cancelled"),
     )
@@ -323,6 +288,15 @@ class DistributionPlan(TimeStampedModel):
         max_length=32,
         choices=STATUS,
         default=DRAFT,
+    )
+    submitted = models.BooleanField(blank=True, default=False)
+    submission_date = models.DateField(
+        null=True, blank=True
+    )
+    submitted_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
     )
     to_review = models.BooleanField(blank=True, default=False)
     reviewed = models.BooleanField(blank=True, default=False)
@@ -466,29 +440,14 @@ class DistributionPlanItem(models.Model):
 
     quantity_requested = models.PositiveIntegerField(
         verbose_name=u'Quantity required for this location',
-        null=True, blank=True
+        null=True, blank=False
     )
     date_required_by = models.DateField(
-        null=True, blank=True,
+        null=True, blank=False,
     )
     date_distributed_by = models.DateField(
         verbose_name=u'planned distribution date',
-        null=True, blank=True
-    )
-    quantity_received = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    date_received = models.DateField(
-        null=True, blank=True,
-    )
-    quantity_balance = models.PositiveIntegerField(
-        null=True, blank=True
-    )
-    date_distributed = models.DateField(
-        null=True, blank=True,
-    )
-    quantity_distributed = models.PositiveIntegerField(
-        null=True, blank=True
+        null=True, blank=False
     )
 
     def __unicode__(self):
@@ -529,6 +488,13 @@ class DistributedItem(models.Model):
     plan = models.ForeignKey(DistributionPlan, related_name='distributed')
     supply_item = models.ForeignKey(SupplyItem, related_name='distributed_items')
     quantity_distributed_per_site = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    wave_number = models.CharField(
+        max_length=2,
+        null=True, blank=False,
+    )
+    quantity_requested = models.PositiveIntegerField(
         null=True, blank=True
     )
 
