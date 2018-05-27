@@ -170,22 +170,24 @@
                                     <div class="order-status-timeline">
                                         <!-- class names: c0 c1 c2 c3 and c4 -->
                                         {% if not distribution %}
-                                        <div class="order-status-timeline-completion c1 {{ item.section.color }}"></div>
+                                        <div class="order-status-timeline-completion c0 {{ item.section.color }}"></div>
                                         {% elif distribution.status == 'submitted' %}
-                                        <div class="order-status-timeline-completion c2 {{ item.section.color }}"></div>
+                                        <div class="order-status-timeline-completion c1 {{ item.section.color }}"></div>
                                         {% elif distribution.delivery_expected_date %}
-                                        <div class="order-status-timeline-completion c3 {{ item.section.color }}"></div>
+                                        <div class="order-status-timeline-completion c2 {{ item.section.color }}"></div>
                                         {% elif distribution.item_received %}
+                                        <div class="order-status-timeline-completion c3 {{ item.section.color }}"></div>
+                                        {% elif distribution.item_distributed %}
                                         <div class="order-status-timeline-completion c4 {{ item.section.color }}"></div>
                                         {% endif %}
                                     </div>
 
                                     <div class="image-order-status supply-plan-icon active img-circle">
-                                        <span class="status">Plan {{ item.status }}</span>
+                                        <span class="status">{{ item.status }}</span>
                                         <div class="icon"></div>
                                     </div>
                                     <div class="image-order-status distribution-plan-icon active img-circle">
-                                        <span class="status">Distribution plan {{ distribution.status }}</span>
+                                        <span class="status">{{ distribution.status }}</span>
                                         <div class="icon"></div>
                                     </div>
                                     <div class="image-order-status shipping-icon active img-circle">

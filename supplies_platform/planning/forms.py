@@ -71,7 +71,7 @@ class WavePlanFormSet(BaseInlineFormSet):
         """
         cleaned_data = super(WavePlanFormSet, self).clean()
 
-        if self.instance:
+        if self.instance and hasattr(self.instance, 'supply_plan'):
             pca = self.instance.supply_plan.pca
 
             for plan in self.instance.supply_plans_waves.all():
@@ -135,11 +135,12 @@ class DistributionPlanItemForm(forms.ModelForm):
             queryset = WavePlan.objects.filter(supply_plan__supply_plan_id=self.parent_object.plan_id)
             queryset1 = PartnerStaffMember.objects.filter(partner_id=self.parent_object.plan.partner_id)
 
-        self.fields['wave'].queryset = queryset
-        self.fields['contact_person'].queryset = queryset1
+        if hasattr(self, 'parent_object') and not self.parent_object.submitted:
+            self.fields['wave'].queryset = queryset
+            self.fields['contact_person'].queryset = queryset1
 
-        if queryset1.count() == 1:
-            self.fields['contact_person'].initial = queryset1.first
+            if queryset1.count() == 1:
+                self.fields['contact_person'].initial = queryset1.first
 
 
 class DistributionPlanItemFormSet(BaseInlineFormSet):

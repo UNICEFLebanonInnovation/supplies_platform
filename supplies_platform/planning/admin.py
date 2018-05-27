@@ -2,6 +2,8 @@ import datetime
 
 from django.contrib import admin
 from django import forms
+from django.db.models import Avg, Count, Min, Sum
+from django.core.urlresolvers import resolve
 
 from import_export import resources, fields
 from import_export import fields
@@ -66,8 +68,8 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
         'quantity',
         'item_price',
         'total_budget',
-        'covered_per_item',
-        'target_population',
+        'beneficiaries_covered_per_item',
+        # 'target_population',
     )
 
     inlines = [WavePlanInline, ]
@@ -75,8 +77,8 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
     readonly_fields = (
         'item_price',
         'total_budget',
-        'target_population',
-        'covered_per_item',
+        # 'target_population',
+        'beneficiaries_covered_per_item',
     )
 
     # def get_readonly_fields(self, request, obj=None):
@@ -127,6 +129,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'partnership_start_date',
                 'partnership_end_date',
                 'total_budget',
+                'target_population',
                 'created',
                 'created_by',
                 'submission_date',
@@ -219,6 +222,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
             'approval_date',
             'approval_comments',
             'total_budget',
+            'target_population',
         ]
 
         if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.SUBMITTED:
@@ -303,6 +307,45 @@ class DistributionPlanItemInline(admin.StackedInline):
         'date_required_by',
         'date_distributed_by',
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        parent = self.get_parent_object_from_request(request)
+        if parent and parent.submitted:
+            return (
+                'wave',
+                'site',
+                'target_population',
+                'delivery_location',
+                'contact_person',
+                'quantity_requested',
+                'date_required_by',
+                'date_distributed_by',
+            )
+        return ()
+
+    def get_parent_object_from_request(self, request):
+        resolved = resolve(request.path_info)
+        if resolved.args:
+            return self.parent_model.objects.get(pk=resolved.args[0])
+        return None
+
+    def has_add_permission(self, request):
+        parent = self.get_parent_object_from_request(request)
+        if parent and parent.submitted:
+            return False
+        return True
+
+    # def has_change_permission(self, request, obj=None):
+    #     parent = self.get_parent_object_from_request(request)
+    #     if parent and parent.submitted:
+    #         return False
+    #     return True
+
+    def has_delete_permission(self, request, obj=None):
+        parent = self.get_parent_object_from_request(request)
+        if parent and parent.submitted:
+            return False
+        return True
 
 
 class ReceivedItemInline(admin.TabularInline):
@@ -553,8 +596,12 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
     def save_model(self, request, obj, form, change):
         if not change and obj and obj.status == obj.DRAFT:
             obj.created_by = request.user
+        if obj and not obj.submitted and obj.status == obj.SUBMITTED:
+            obj.submission_date = datetime.datetime.now()
+            obj.submitted_by = request.user
             obj.to_review = True
             send_notification('FIELD_FP', 'TO REVIEW', obj)
+            send_notification('SUPPLY_ADMIN', 'SUBMITTED DISTRIBUTION PLAN', obj)
         if obj and obj.reviewed is True and not obj.review_date:
             obj.review_date = datetime.datetime.now()
             obj.reviewed_by = request.user
