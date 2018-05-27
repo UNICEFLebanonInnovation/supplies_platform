@@ -308,20 +308,20 @@ class DistributionPlanItemInline(admin.StackedInline):
         'date_distributed_by',
     )
 
-    def get_readonly_fields(self, request, obj=None):
-        parent = self.get_parent_object_from_request(request)
-        if parent and parent.submitted:
-            return (
-                'wave',
-                'site',
-                'target_population',
-                'delivery_location',
-                'contact_person',
-                'quantity_requested',
-                'date_required_by',
-                'date_distributed_by',
-            )
-        return ()
+    # def get_readonly_fields(self, request, obj=None):
+    #     parent = self.get_parent_object_from_request(request)
+    #     if parent and parent.submitted:
+    #         return (
+    #             'wave',
+    #             'site',
+    #             'target_population',
+    #             'delivery_location',
+    #             'contact_person',
+    #             'quantity_requested',
+    #             'date_required_by',
+    #             'date_distributed_by',
+    #         )
+    #     return ()
 
     def get_parent_object_from_request(self, request):
         resolved = resolve(request.path_info)
@@ -645,7 +645,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                     supply_item=item,
                     quantity_requested=wave_item.quantity_requested
                 )
-            send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, obj.plan.partner)
+            send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, 'info', obj.plan.partner_id)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
