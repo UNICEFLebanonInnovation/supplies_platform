@@ -12,6 +12,8 @@ from django.core.exceptions import (
     MultipleObjectsReturned
 )
 
+from supplies_platform.backends.utils import send_notification
+
 from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
@@ -237,6 +239,8 @@ class DistributedItemSiteFormSet(BaseInlineFormSet):
                         instance.distribution_date = obj.distribution_date
                         instance.assigned_to_tpm = plan.plan.tpm_focal_point
                         instance.save()
+                        send_notification('TPM_COMPANY', 'A NEW QUANTITATIVE SM VISIT HAS BEEN CREATED', instance)
+                        send_notification('UNICEF_PO', 'A NEW QUALITATIVE SM VISIT HAS BEEN CREATED', instance)
         return saved_instances
 
 
