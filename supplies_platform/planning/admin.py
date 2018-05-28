@@ -274,7 +274,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
             obj.approved_by = request.user
             obj.status = obj.APPROVED
             DistributionPlan.objects.create(plan=obj)
-            send_notification('PARTNER', 'TO APPROVE', obj, obj.partner)
+            send_notification('PARTNER', 'TO APPROVE', obj, 'info', obj.partner_id)
         super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
