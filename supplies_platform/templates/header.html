@@ -2,7 +2,9 @@
 {% load util_tags %}
 
 {% if request.user.is_authenticated %}
-{% user_notifications request.user as notifications %}
+  {% if request.user|has_group:"ADMIN" %}
+    {% user_notifications '' as notifications %}
+  {% endif %}
 {% endif %}
 <header class="app-header">
         <!-- .top-bar -->
