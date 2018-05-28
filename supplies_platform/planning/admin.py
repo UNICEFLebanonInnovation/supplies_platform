@@ -274,7 +274,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
             obj.approved_by = request.user
             obj.status = obj.APPROVED
             DistributionPlan.objects.create(plan=obj)
-            send_notification('PARTNER', 'TO APPROVE', obj, 'info', obj.partner_id)
+            send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED', obj, 'info', obj.partner_id)
         super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
@@ -599,7 +599,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         if obj and not obj.submitted and obj.status == obj.SUBMITTED:
             obj.submission_date = datetime.datetime.now()
             obj.submitted_by = request.user
-            obj.to_review = True
+            obj.submitted = True
             send_notification('FIELD_FP', 'TO REVIEW', obj)
             send_notification('SUPPLY_ADMIN', 'SUBMITTED DISTRIBUTION PLAN', obj)
         if obj and obj.reviewed is True and not obj.review_date:
