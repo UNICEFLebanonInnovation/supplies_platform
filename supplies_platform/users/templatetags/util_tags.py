@@ -91,11 +91,14 @@ def get_users(group):
 
 
 @register.assignment_tag
-def user_notifications(user):
+def user_notifications(user=None):
     from supplies_platform.backends.models import Notification
-    notifications = Notification.objects.filter(
-        user_group__in=[user.groups.all(), ]
-    ).order_by('-created')
+
+    notifications = Notification.objects.all().order_by('-created')
+    if user:
+        notifications =  notifications.filter(
+            user_group__in=[a.name for a in user.groups.all()]
+        )
     return notifications
 
 

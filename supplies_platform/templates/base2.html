@@ -122,6 +122,171 @@
       gtag('config', 'UA-116692175-1');
     </script>
 
+
+{% if request.user.is_authenticated %}
+{% csrf_token %}
+
+{% get_user_token request.user.id as user_token %}
+
+<script type="text/javascript">
+    var notification_url = '/api/notifications/';
+    var user_token = '{{ user_token }}';
+    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+    var read_message_icon = '{% static 'dashboard/email-read-icon.png' %}';
+    var unread_message_icon = '{% static 'dashboard/email-unread-icon.png' %}';
+
+    $(document).ready(function() {
+        $('.toggle-status').click(function(e){
+            e.preventDefault();
+            var item = $(this);
+            var itemid = $(this).attr('itemid');
+            var img = $(this).find('img');
+
+            if($(this).hasClass('unread')) {
+                var callback = function() {
+                    item.removeClass('unread');
+                    item.addClass('read');
+                    img.attr('src', read_message_icon)
+                }
+                toggle_notification_status(itemid, true, callback);
+            }else{
+                var callback = function() {
+                    item.removeClass('read');
+                    item.addClass('unread');
+                    img.attr('src', unread_message_icon)
+                }
+                toggle_notification_status(itemid, false, callback);
+            }
+        });
+    });
+
+    function getHeader()
+    {
+        var header = {
+            'Authorization': 'Token '+user_token,
+            'HTTP_REFERER': $(location).attr('href'),
+            'Cookie': 'token=Token '+user_token,
+            'X-CSRFToken': csrftoken
+        };
+        return header;
+    }
+
+    function toggle_notification_status(itemid, status, callback)
+    {
+        var data = {status: status};
+
+        $.ajax({
+            type: "PUT",
+            url: notification_url+itemid+'/',
+            data: data,
+            cache: false,
+            headers: getHeader(),
+            dataType: 'json',
+            success: function (response, result, jqXHR) {
+                if(jqXHR.status == 200){
+                    if(callback){
+                        callback();
+                    }
+                }
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+</script>
+{% endif %}
+
+    <style>
+
+
+@import url(http://fonts.googleapis.com/css?family=Old+Standard+TT:400,700);
+[data-notify="container"][class*="alert-pastel-"] {
+	background-color: #f5f5f5;
+	border-width: 0px;
+	border-left: 15px solid rgb(255, 240, 106);
+	border-radius: 0px;
+	box-shadow: 0px 0px 5px rgba(51, 51, 51, 0.3);
+	font-family: 'Old Standard TT', serif;
+	letter-spacing: 1px;
+	z-index: 3001;
+}
+[data-notify="container"].alert-pastel-info {
+	border-left-color: #346cb0;
+}
+[data-notify="container"].alert-pastel-danger {
+	border-left-color: rgb(255, 103, 76);
+}
+[data-notify="container"][class*="alert-pastel-"] > [data-notify="title"] {
+	color: rgb(80, 80, 57);
+	display: block;
+	font-weight: 700;
+	margin-bottom: 5px;
+}
+[data-notify="container"][class*="alert-pastel-"] > [data-notify="message"] {
+	font-weight: 400;
+}
+
+
+    </style>
+
+    <script src="{% static 'js/bootstrap-notify.js'  %}"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var newStreamedFeed     = new Array();// false;
+      var config = {
+        apiKey: "AIzaSyA2Aio1bqRUXtYBZIe687hlgYR7lP2ETyQ",
+        authDomain: "supply-management-system.firebaseapp.com",
+        databaseURL: "https://supply-management-system.firebaseio.com",
+        projectId: "supply-management-system",
+        storageBucket: "supply-management-system.appspot.com",
+        messagingSenderId: "150092950355"
+      };
+      var firebase = firebase.initializeApp(config);
+      var db = firebase.database();
+      subscribeToLiveStream('notifications', function(data){ displayNotification(data); });
+
+      function subscribeToLiveStream(cmd, callback)
+      {
+          console.log('Subscription to stream: '+ cmd);
+          var myDataRef = db.ref('notifications');
+          newStreamedFeed[cmd] = false;
+
+          myDataRef.limitToLast(1).on('child_added', function(snapshot) {
+              if(newStreamedFeed[cmd]) {
+                  var message = snapshot.val();
+                  callback(message);
+              }else{
+                  newStreamedFeed[cmd] = true;
+              }
+          });
+      }
+
+      function displayNotification(data){
+          console.log(data);
+
+          $.notify({
+            title: data.subject,
+            message: data.description
+          },{
+            animate: {
+              enter: 'animated fadeInRight',
+              exit: 'animated fadeOutRight'
+            },
+            type: 'pastel-'+data.level,
+            allow_dismiss: true,
+            newest_on_top: true,
+            delay: 5000,
+            template: '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+              '<span data-notify="title">{1}</span>' +
+              '<span data-notify="message">{2}</span>' +
+            '</div>'
+          });
+      }
+
+    </script>
+
     {% block custom_javascript %}
 
     {% endblock custom_javascript %}
