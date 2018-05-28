@@ -415,9 +415,8 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
         fields = [
            'tpm_visit',
         ]
-
         if (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')) \
-            and obj and obj.plan.plan.status == DistributionPlan.COMPLETED:
+            and obj and obj.plan.status == DistributionPlan.COMPLETED:
             fields.remove('tpm_visit')
 
         return fields
@@ -607,17 +606,21 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             obj.reviewed_by = request.user
             obj.status = obj.REVIEWED
             obj.to_cleared = True
+            send_notification('SUPPLY_ADMIN', 'REVIEWED', obj)
             send_notification('SUPPLY_ADMIN', 'TO CLEARANCE', obj)
         if obj and obj.cleared is True and not obj.cleared_date:
             obj.cleared_date = datetime.datetime.now()
             obj.cleared_by = request.user
             obj.status = obj.CLEARED
             obj.to_approve = True
+            send_notification('SUPPLY_ADMIN', 'CLEARED', obj)
             send_notification('UNICEF_PD', 'TO APPROVE', obj)
         if obj and obj.approved is True and not obj.approval_date:
             obj.approval_date = datetime.datetime.now()
             obj.approved_by = request.user
             obj.status = obj.APPROVED
+            send_notification('SUPPLY_ADMIN', 'APPROVED', obj)
+            send_notification('SUPPLY_ADMIN', 'TO DEFINE THE DISTRIBUTION DATE', obj)
         if obj and obj.status == obj.RECEIVED and not obj.item_received:
             obj.item_received = True
             obj.item_received_date = datetime.datetime.now()
@@ -653,7 +656,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         if has_group(request.user, 'PARTNER'):
             qs = qs.filter(plan__partner_id=request.user.partner_id)
         if has_group(request.user, 'FIELD_FP'):
-            qs = qs.filter(status__in=['reviewed', 'submitted'])
+            qs = qs.filter(status__in=['reviewed', 'submitted', 'completed'])
         if has_group(request.user, 'UNICEF_PD'):
             qs = qs.filter(plan__section=request.user.section)
         return qs
