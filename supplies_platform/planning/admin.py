@@ -306,22 +306,25 @@ class DistributionPlanItemInline(admin.StackedInline):
         'quantity_requested',
         'date_required_by',
         'date_distributed_by',
+        'delivery_expected_date',
     )
 
-    # def get_readonly_fields(self, request, obj=None):
-    #     parent = self.get_parent_object_from_request(request)
-    #     if parent and parent.submitted:
-    #         return (
-    #             'wave',
-    #             'site',
-    #             'target_population',
-    #             'delivery_location',
-    #             'contact_person',
-    #             'quantity_requested',
-    #             'date_required_by',
-    #             'date_distributed_by',
-    #         )
-    #     return ()
+    def get_fields(self, request, obj=None):
+        fields = [
+            'wave',
+            'site',
+            'target_population',
+            'delivery_location',
+            'contact_person',
+            'quantity_requested',
+            'date_required_by',
+            'date_distributed_by',
+            # 'delivery_expected_date',
+        ]
+
+        if has_group(request.user, 'SUPPLY_FP'):
+            fields.append('delivery_expected_date')
+        return fields
 
     def get_parent_object_from_request(self, request):
         resolved = resolve(request.path_info)
@@ -390,7 +393,6 @@ class ReceivedItemInline(admin.TabularInline):
         return 0
 
 
-# class DistributedItemSiteInline(nested_admin.NestedStackedInline):
 class DistributedItemSiteInline(nested_admin.NestedTabularInline):
     model = DistributedItemSite
     max_num = 99
@@ -496,12 +498,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'approval_comments',
             ]
         }),
-        ('Delivery by UNICEF Supply Beirut focal point', {
-            'classes': ('suit-tab', 'suit-tab-general',),
-            'fields': [
-                'delivery_expected_date',
-            ]
-        }),
     ]
 
     suit_form_tabs = (
@@ -569,7 +565,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             'approved_by',
             'approval_date',
             'approval_comments',
-            'delivery_expected_date',
         ]
 
         if has_group(request.user, 'FIELD_FP') and obj and obj.status == obj.SUBMITTED:
@@ -583,9 +578,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         if has_group(request.user, 'UNICEF_PD') and obj and obj.status == obj.CLEARED:
             fields.remove('approved')
             fields.remove('approval_comments')
-
-        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.APPROVED:
-            fields.remove('delivery_expected_date')
 
         if has_group(request.user, 'PARTNER'):
             fields.remove('status')
@@ -630,25 +622,26 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             obj.item_distributed_date = datetime.datetime.now()
             send_notification('SUPPLY_ADMIN', 'ALL ITEMS DISTRIBUTED', obj)
             send_notification('UNICEF_PD', 'ALL ITEMS DISTRIBUTED', obj)
-        if obj and obj.delivery_expected_date and not obj.to_delivery:
-        # if True:
-            obj.to_delivery = True
+        if change and obj.requests.all():
             items = obj.requests.all()
             for wave_item in items:
-                item = wave_item.wave.supply_plan.item
-                DistributionPlanItemReceived.objects.get_or_create(
-                    wave_number=wave_item.wave.wave_number,
-                    plan=obj,
-                    supply_item=item,
-                    quantity_requested=wave_item.quantity_requested
-                )
-                DistributedItem.objects.get_or_create(
-                    wave_number=wave_item.wave.wave_number,
-                    plan=obj,
-                    supply_item=item,
-                    quantity_requested=wave_item.quantity_requested
-                )
-            send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, 'info', obj.plan.partner_id)
+                if wave_item.delivery_expected_date:
+                    item = wave_item.wave.supply_plan.item
+                    DistributionPlanItemReceived.objects.get_or_create(
+                        wave=wave_item,
+                        wave_number=wave_item.wave.wave_number,
+                        plan=obj,
+                        supply_item=item,
+                        quantity_requested=wave_item.quantity_requested
+                    )
+                    DistributedItem.objects.get_or_create(
+                        wave=wave_item,
+                        wave_number=wave_item.wave.wave_number,
+                        plan=obj,
+                        supply_item=item,
+                        quantity_requested=wave_item.quantity_requested
+                    )
+                    send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, 'info', obj.plan.partner_id)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):

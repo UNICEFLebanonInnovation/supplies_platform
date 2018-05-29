@@ -25,6 +25,7 @@ from .models import (
     WavePlan,
     DistributedItem,
     DistributedItemSite,
+    DistributionPlanItemReceived,
 )
 
 

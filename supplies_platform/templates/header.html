@@ -204,7 +204,7 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
-                      {% if request.user|has_group:"SM_VISIT" %}
+                      {% if request.user|has_group:"SM_VISIT" or request.user|has_group:"ADMIN" %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="{% url 'tpm:visits' %}" class="tile-wrapper">
