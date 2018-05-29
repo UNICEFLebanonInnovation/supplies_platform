@@ -177,7 +177,7 @@
               <!-- .lits-group-item-body -->
               <div class="list-group-item-body">
                 <h5 class="card-title mb-2">
-                  <a href="/admin/planning/distributionplan/{{ item.plan_id }}/change/#request" target="_blank">WAVE #{{ item.wave_number }} {{ item.plan }}</a>
+                  <a href="/admin/planning/distributionplan/{{ item.plan_id }}/change/" target="_blank">WAVE #{{ item.wave_number }} {{ item.plan }}</a>
                 </h5>
                 <!--<p class="card-subtitle text-muted"> Progress in 74% - Last update date </p>-->
                 {% with item.plan as distribution %}
@@ -207,39 +207,87 @@
 
                                     <div class="image-order-status supply-plan-icon active img-circle">
                                         <span class="status text-muted">{{ distribution.plan.status }}</span>
-                                        <div class="icon"></div>
+                                        <a href="/admin/planning/supplyplan/{{ distribution.plan_id }}/change/" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i> {{ distribution.plan.reference_number }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i> {{ distribution.plan.pca }}<br>
+                                                </div>">
+                                            </div>
+                                        </a>
                                     </div>
                                     <div class="image-order-status distribution-plan-icon active img-circle">
                                         <span class="status text-muted">{{ distribution.status }}</span>
-                                        <div class="icon"></div>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#request" target="_blank">
+                                          <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Site: {{ item.site }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Targeting: {{ item.target_population }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Deliver to: {% if item.delivery_location %}{{ item.delivery_location }} {% else %}{{ item.site }}{% endif %}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Contact: {{ item.contact_person }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Quantity: {{ item.quantity_requested }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Date: {{ item.date_required_by }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Expected distribution: {{ item.date_distributed_by }}<br>
+                                                </div>">
+                                            </div>
+                                        </a>
                                     </div>
+
                                     <div class="image-order-status shipping-icon active img-circle">
-                                        <span class="status text-muted">{% if item.delivery_expected_date %}
-                                                  {{ item.delivery_expected_date }}
-                                                {% endif %}
+                                        <span class="status text-muted">
+                                          {% if item.delivery_expected_date %}
+                                              {{ item.delivery_expected_date }}
+                                          {% endif %}
                                         </span>
-                                        <div class="icon"></div>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#request" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                  <div class=&quot;text-left small&quot;>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Quantity: {{ item.quantity_requested }}<br>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Contact: {{ item.contact_person }}<br>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Deliver to: {% if item.delivery_location %}{{ item.delivery_location }} {% else %}{{ item.site }}{% endif %}<br>
+                                                  </div>">
+                                              </div>
+                                        </a>
                                     </div>
                                     <div class="image-order-status received-icon active img-circle">
                                       {% if item.received_wave.all %}
                                           {% with item.received_wave.all.first as received_wave %}
-                                            <span class="text-muted" style="position: absolute; top: -25px; left: 35px; font-style: italic; width: 172px;">
-                                                {{ received_wave.supply_item.code }}: {{ received_wave.quantity_received }} of {{ received_wave.quantity_requested }}
-                                            </span>
                                             <span class="status text-muted">
                                                 {{ received_wave.date_received }}
                                             </span>
+
+                                            <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#receiving" target="_blank">
+                                                <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                    <div class=&quot;text-left small&quot;>
+                                                        <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i>{{ received_wave.supply_item.code }} <br>
+                                                        <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i>{{ received_wave.quantity_received }} of {{ received_wave.quantity_requested }}<br>
+                                                    </div>">
+                                                </div>
+                                            </a>
                                           {% endwith %}
+                                      {% else %}
+                                          <span class="status text-muted"></span>
+                                          <div class="icon"></div>
                                       {% endif %}
-                                        <div class="icon"></div>
                                     </div>
                                     <div class="image-order-status distributed-icon active img-circle">
+                                      {% if item.distributed_wave.all %}
                                         <span class="status text-muted">
-                                          {% if item.distributed_wave.all %}
                                             {{ item.distributed_wave.all.first.distributed_sites.all.count }} Site(s)
-                                          {% endif %}
                                         </span>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#distribution" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    {% for local in item.distributed_wave.all.first.distributed_sites.all %}
+                                                    <i class=&quot;fa fa-fw fa-circle text-orange&quot;></i> {{ local }}<br>
+                                                    {% endfor %}
+                                                </div>">
+                                            </div>
+                                        </a>
+                                      {% else %}
+                                        <span class="status text-muted"></span>
                                         <div class="icon"></div>
+                                      {% endif %}
                                     </div>
 
                                 </div>

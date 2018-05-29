@@ -529,7 +529,9 @@ class DistributedItemSite(models.Model):
     )
 
     def __unicode__(self):
-        return u'{} - {}'.format(
-            self.plan.supply_item,
-            self.site
+        return u'{} - {} - {} - {}'.format(
+            self.plan.supply_item.code,
+            self.site,
+            self.quantity_distributed_per_site,
+            self.distribution_date,
         )
