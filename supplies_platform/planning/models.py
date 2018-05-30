@@ -19,7 +19,6 @@ from supplies_platform.supplies.models import SupplyItem
 
 class SupplyPlan(TimeStampedModel):
 
-    DRAFT = u'draft'
     PLANNED = u'planned'
     SUBMITTED = u'submitted'
     REVIEWED = u'reviewed'
@@ -27,7 +26,6 @@ class SupplyPlan(TimeStampedModel):
     COMPLETED = u'completed'
     CANCELLED = u'cancelled'
     STATUS = (
-        (DRAFT, u"Draft"),
         (PLANNED, u"Planned"),
         (SUBMITTED, u"Submitted"),
         (REVIEWED, u"Reviewed"),
@@ -67,13 +65,13 @@ class SupplyPlan(TimeStampedModel):
     status = models.CharField(
         max_length=32,
         choices=STATUS,
-        default=DRAFT,
+        default=PLANNED,
     )
     submission_date = models.DateField(
         null=True, blank=True
     )
     to_review = models.BooleanField(blank=True, default=False)
-    reviewed = models.BooleanField(blank=True, default=False)
+    reviewed = models.NullBooleanField(null=True, blank=True, default=None)
     review_date = models.DateField(
         null=True, blank=True
     )
@@ -86,7 +84,7 @@ class SupplyPlan(TimeStampedModel):
         null=True, blank=True,
     )
     to_approve = models.BooleanField(blank=True, default=False)
-    approved = models.BooleanField(blank=True, default=False)
+    approved = models.NullBooleanField(null=True, blank=True, default=None)
     approval_date = models.DateField(
         null=True, blank=True
     )
@@ -258,7 +256,6 @@ class WavePlan(models.Model):
 
 class DistributionPlan(TimeStampedModel):
 
-    DRAFT = u'draft'
     PLANNED = u'planned'
     SUBMITTED = u'submitted'
     REVIEWED = u'reviewed'
@@ -268,7 +265,6 @@ class DistributionPlan(TimeStampedModel):
     RECEIVED = u'received'
     CANCELLED = u'cancelled'
     STATUS = (
-        (DRAFT, u"Draft"),
         (PLANNED, u"Planned"),
         (SUBMITTED, u"Submitted/Plan completed"),
         (REVIEWED, u"Reviewed"),
@@ -287,7 +283,7 @@ class DistributionPlan(TimeStampedModel):
     status = models.CharField(
         max_length=32,
         choices=STATUS,
-        default=DRAFT,
+        default=PLANNED,
     )
     submitted = models.BooleanField(blank=True, default=False)
     submission_date = models.DateField(
@@ -299,7 +295,7 @@ class DistributionPlan(TimeStampedModel):
         related_name='+'
     )
     to_review = models.BooleanField(blank=True, default=False)
-    reviewed = models.BooleanField(blank=True, default=False)
+    reviewed = models.NullBooleanField(null=True, blank=True, default=None)
     review_date = models.DateField(
         null=True, blank=True
     )
@@ -312,7 +308,7 @@ class DistributionPlan(TimeStampedModel):
         null=True, blank=True,
     )
     to_validate = models.BooleanField(blank=True, default=False)
-    validated = models.BooleanField(blank=True, default=False)
+    validated = models.NullBooleanField(null=True, blank=True, default=None)
     validation_date = models.DateField(
         null=True, blank=True
     )
@@ -325,7 +321,7 @@ class DistributionPlan(TimeStampedModel):
         null=True, blank=True,
     )
     to_cleared = models.BooleanField(blank=True, default=False)
-    cleared = models.BooleanField(blank=True, default=False)
+    cleared = models.NullBooleanField(null=True, blank=True, default=None)
     cleared_date = models.DateField(
         null=True, blank=True
     )
@@ -338,7 +334,7 @@ class DistributionPlan(TimeStampedModel):
         null=True, blank=True,
     )
     to_approve = models.BooleanField(blank=True, default=False)
-    approved = models.BooleanField(blank=True, default=False)
+    approved = models.NullBooleanField(null=True, blank=True, default=None)
     approval_date = models.DateField(
         null=True, blank=True
     )

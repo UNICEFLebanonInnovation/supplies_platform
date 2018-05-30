@@ -12,7 +12,6 @@ import nested_admin
 
 from supplies_platform.backends.utils import send_notification
 from supplies_platform.users.util import has_group
-from supplies_platform.tpm.models import TPMVisit
 from .models import (
     SupplyPlan,
     WavePlan,
@@ -27,6 +26,7 @@ from .forms import (
     SupplyPlanForm,
     WavePlanForm,
     WavePlanFormSet,
+    DistributionPlanForm,
     DistributionPlanItemForm,
     DistributionPlanItemFormSet,
     DistributionItemForm,
@@ -245,7 +245,6 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         form.base_fields['section'].initial = user.section
         if has_group(request.user, 'UNICEF_PD'):
             form.base_fields['status'].choices = (
-                (SupplyPlan.DRAFT, u"Draft"),
                 (SupplyPlan.PLANNED, u"Planned"),
                 (SupplyPlan.SUBMITTED, u"Submitted"),
                 (SupplyPlan.COMPLETED, u"Completed"),
@@ -262,19 +261,29 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         if obj and obj.status == obj.SUBMITTED and not obj.submission_date:
             obj.submission_date = datetime.datetime.now()
             obj.to_review = True
-            send_notification('SUPPLY_ADMIN', 'TO REVIEW', obj)
-        if obj and obj.reviewed is True and not obj.review_date:
-            obj.review_date = datetime.datetime.now()
-            obj.reviewed_by = request.user
-            obj.status = obj.REVIEWED
-            obj.to_approve = True
-            send_notification('BUDGET_OWNER', 'TO APPROVE', obj)
-        if obj and obj.approved is True and not obj.approval_date:
-            obj.approval_date = datetime.datetime.now()
-            obj.approved_by = request.user
-            obj.status = obj.APPROVED
-            DistributionPlan.objects.create(plan=obj)
-            send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED', obj, 'info', obj.partner_id)
+            send_notification('SUPPLY_ADMIN', 'SUPPLY PLAN SUBMITTED - TO REVIEW BY SUPPLY', obj)
+        if obj and 'reviewed' in request.POST and not obj.review_date:
+            if obj.reviewed is True:
+                obj.review_date = datetime.datetime.now()
+                obj.reviewed_by = request.user
+                obj.status = obj.REVIEWED
+                obj.to_approve = True
+                send_notification('UNICEF_PD', 'SUPPLY PLAN REVIEWED BY SUPPLY', obj)
+                send_notification('BUDGET_OWNER', 'SUPPLY PLAN TO APPROVE BY THE BUDGET OWNER', obj)
+            elif obj.reviewed is False:
+                obj.status = obj.PLANNED
+                obj.submission_date = None
+                send_notification('UNICEF_PD', 'SUPPLY PLAN REJECTED BY THE SUPPLY - TO REVIEW BY PD FOCAL POINT', obj, 'danger')
+        if obj and 'approved' in request.POST and not obj.approval_date:
+            if obj.approved is True:
+                obj.approval_date = datetime.datetime.now()
+                obj.approved_by = request.user
+                obj.status = obj.APPROVED
+                DistributionPlan.objects.create(plan=obj)
+                send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
+                send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED - PARTNER WILL BE NOTIFIED', obj, 'info', obj.partner_id)
+            elif obj.approved is False:
+                send_notification('SUPPLY_ADMIN', 'SUPPLY PLAN REJECTED BY THE BUDGET OWNER - TO REVIEW BY SUPPLY', obj, 'danger')
         super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
@@ -306,7 +315,6 @@ class DistributionPlanItemInline(admin.StackedInline):
         'quantity_requested',
         'date_required_by',
         'date_distributed_by',
-        'delivery_expected_date',
     )
 
     def get_fields(self, request, obj=None):
@@ -319,7 +327,6 @@ class DistributionPlanItemInline(admin.StackedInline):
             'quantity_requested',
             'date_required_by',
             'date_distributed_by',
-            # 'delivery_expected_date',
         ]
 
         if has_group(request.user, 'SUPPLY_FP'):
@@ -458,7 +465,7 @@ class DistributionPlanResource(resources.ModelResource):
 
 class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     resource_class = DistributionPlanResource
-
+    form = DistributionPlanForm
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
@@ -525,25 +532,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
     inlines = [DistributionPlanItemInline, ReceivedItemInline, DistributedItemInline]
 
-    # suit_form_includes = (
-    #     ('admin/planning/tpm.html', 'middle', 'general'),
-    # )
-
-    # def get_form(self, request, obj=None, **kwargs):
-    #     form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
-    #     form.request = request
-    #     user = request.user
-    #     if has_group(request.user, 'PARTNER'):
-    #         form.base_fields['status'].choices = (
-    #             (DistributionPlan.DRAFT, u"Draft"),
-    #             (DistributionPlan.PLANNED, u"Planned"),
-    #             (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
-    #             (DistributionPlan.COMPLETED, u"Distribution Completed"),
-    #             (DistributionPlan.CANCELLED, u"Cancelled"),
-    #         )
-    #
-    #     return form
-
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
@@ -567,15 +555,15 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             'approval_comments',
         ]
 
-        if has_group(request.user, 'FIELD_FP') and obj and obj.status == obj.SUBMITTED:
+        if has_group(request.user, 'FIELD_FP') and obj:
             fields.remove('reviewed')
             fields.remove('review_comments')
 
-        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.REVIEWED:
+        if has_group(request.user, 'SUPPLY_FP') and obj:
             fields.remove('cleared')
             fields.remove('cleared_comments')
 
-        if has_group(request.user, 'UNICEF_PD') and obj and obj.status == obj.CLEARED:
+        if has_group(request.user, 'UNICEF_PD') and obj:
             fields.remove('approved')
             fields.remove('approval_comments')
 
@@ -584,45 +572,79 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
         return fields
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
+        form.request = request
+        if has_group(request.user, 'PARTNER'):
+            form.base_fields['status'].choices = (
+                (DistributionPlan.PLANNED, u"Planned"),
+                (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
+                (DistributionPlan.RECEIVED, u"All waves received"),
+                (DistributionPlan.COMPLETED, u"Distribution Completed"),
+            )
+
+        return form
+
     def save_model(self, request, obj, form, change):
-        if not change and obj and obj.status == obj.DRAFT:
+        if not change and obj and obj.status == obj.PLANNED:
             obj.created_by = request.user
-        if obj and not obj.submitted and obj.status == obj.SUBMITTED:
+        if obj and not obj.submitted and obj.status == obj.SUBMITTED:  # submitted by the partner
             obj.submission_date = datetime.datetime.now()
             obj.submitted_by = request.user
             obj.submitted = True
-            send_notification('FIELD_FP', 'TO REVIEW', obj)
-            send_notification('SUPPLY_ADMIN', 'SUBMITTED DISTRIBUTION PLAN', obj)
-        if obj and obj.reviewed is True and not obj.review_date:
-            obj.review_date = datetime.datetime.now()
-            obj.reviewed_by = request.user
-            obj.status = obj.REVIEWED
-            obj.to_cleared = True
-            send_notification('SUPPLY_ADMIN', 'REVIEWED', obj)
-            send_notification('SUPPLY_ADMIN', 'TO CLEARANCE', obj)
-        if obj and obj.cleared is True and not obj.cleared_date:
-            obj.cleared_date = datetime.datetime.now()
-            obj.cleared_by = request.user
-            obj.status = obj.CLEARED
-            obj.to_approve = True
-            send_notification('SUPPLY_ADMIN', 'CLEARED', obj)
-            send_notification('UNICEF_PD', 'TO APPROVE', obj)
-        if obj and obj.approved is True and not obj.approval_date:
-            obj.approval_date = datetime.datetime.now()
-            obj.approved_by = request.user
-            obj.status = obj.APPROVED
-            send_notification('SUPPLY_ADMIN', 'APPROVED', obj)
-            send_notification('SUPPLY_ADMIN', 'TO DEFINE THE DISTRIBUTION DATE', obj)
-        if obj and obj.status == obj.RECEIVED and not obj.item_received:
+            obj.to_review = True
+            send_notification('FIELD_FP', 'DISTRIBUTION PLAN SUBMITTED BY THE PARTNER - TO REVIEW BY THE FIELD FOCAL POINT', obj)
+            send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN SUBMITTED BY THE PARTNER', obj)
+
+        if obj and 'reviewed' in request.POST and not obj.review_date:  # by the field focal point
+            if obj.reviewed is True:
+                obj.review_date = datetime.datetime.now()
+                obj.reviewed_by = request.user
+                obj.status = obj.REVIEWED
+                send_notification('PARTNER', 'DISTRIBUTION PLAN REVIEWED BY THE FIELD FOCAL POINT', obj)
+                send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN REVIEWED BY FIELD FOCAL POINT - TO BE CLEARED BY SUPPLY', obj)
+            elif obj.reviewed is False:
+                obj.status = obj.PLANNED
+                obj.submission_date = None
+                obj.submitted = False
+                send_notification('PARTNER', 'DISTRIBUTION PLAN REJECTED BY THE FIELD FOCAL POINT - TO BE REVIEWED BY THE PARTNER', obj, 'danger')
+
+        if obj and 'cleared' in request.POST and not obj.cleared_date:  # cleared by the supply
+            if obj.cleared is True:
+                obj.cleared_date = datetime.datetime.now()
+                obj.cleared_by = request.user
+                obj.status = obj.CLEARED
+                send_notification('FIELD_FP', 'DISTRIBUTION PLAN CLEARED BY SUPPLY', obj)
+                send_notification('UNICEF_PD', 'DISTRIBUTION PLAN CLEARED BY SUPPLY - TO APPROVED BY THE PD FOCAL POINT', obj)
+            elif obj.cleared is False:
+                obj.reviewed = None
+                obj.review_date = None
+                obj.reviewed_by = None
+                obj.status = obj.SUBMITTED
+                send_notification('FIELD_FP', 'DISTRIBUTION PLAN REJECTED BY THE SUPPLY - TO REVIEW BY FIELD FOCAL POINT', obj, 'danger')
+
+        if obj and 'approved' in request.POST and not obj.approval_date:  # approval by the PD focal point
+            if obj.approved is True:
+                obj.approval_date = datetime.datetime.now()
+                obj.approved_by = request.user
+                obj.status = obj.APPROVED
+                send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN APPROVED BY THE PD FOCAL POINT', obj)
+            elif obj.approved is False:
+                obj.cleared = None
+                obj.cleared_date = None
+                obj.cleared_by = None
+                obj.status = obj.REVIEWED
+                send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN REJECTED BY THE PD FOCAL POINT - TO REVIEW BY SUPPLY', obj, 'danger')
+
+        if obj and obj.status == obj.RECEIVED and not obj.item_received:  # by the partner
             obj.item_received = True
             obj.item_received_date = datetime.datetime.now()
-            send_notification('SUPPLY_ADMIN', 'ALL WAVES RECEIVED', obj)
-        if obj and obj.status == obj.COMPLETED and not obj.item_distributed:
+            send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN - PARTNER RECEIVED ALL WAVES', obj)
+        if obj and obj.status == obj.COMPLETED and not obj.item_distributed:  # by the partner
             obj.item_distributed = True
             obj.item_distributed_date = datetime.datetime.now()
-            send_notification('SUPPLY_ADMIN', 'ALL ITEMS DISTRIBUTED', obj)
-            send_notification('UNICEF_PD', 'ALL ITEMS DISTRIBUTED', obj)
-        if change and obj.requests.all():
+            send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN - PARTNER DISTRIBUTED ALL ITEMS', obj)
+        if change and obj.requests.all():  # by the supply
             items = obj.requests.all()
             for wave_item in items:
                 if wave_item.delivery_expected_date:
@@ -641,17 +663,17 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                         supply_item=item,
                         quantity_requested=wave_item.quantity_requested
                     )
-                    send_notification('PARTNER', 'ITEMS WILL BE DELIVERED', obj, 'info', obj.plan.partner_id)
+                    send_notification('PARTNER', 'DISTRIBUTION PLAN - ITEMS WILL BE DELIVERED TO THE PARTNER', obj, 'warning', obj.plan.partner_id)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super(DistributionPlanAdmin, self).get_queryset(request)
         if has_group(request.user, 'PARTNER'):
-            qs = qs.filter(plan__partner_id=request.user.partner_id)
-        if has_group(request.user, 'FIELD_FP'):
-            qs = qs.filter(status__in=['reviewed', 'submitted', 'completed'])
+            return qs.filter(plan__partner_id=request.user.partner_id)
+        # if has_group(request.user, 'FIELD_FP'):
+        #     return qs.filter(status__in=['planned', 'reviewed', 'submitted', 'completed'])
         if has_group(request.user, 'UNICEF_PD'):
-            qs = qs.filter(plan__section=request.user.section)
+            return qs.filter(plan__section=request.user.section)
         return qs
 
 

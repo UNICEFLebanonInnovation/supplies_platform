@@ -27,21 +27,17 @@
         <div class="metric-bordered" style="height: 100px; padding: 10px; position: relative;">
               <!--<i class="fa fa-filter" style="position: absolute; top: -2px;left: -7px;"></i>-->
               <div class="" style="float: left; width: 100px; padding:5px;">
-                {% if not selected_section %}<h5>{% endif %}
-                <a class="filter-link" href="{% url 'dashboard:index' %}">
+                <a class="filter-link {% if not selected_section %}disabled{% endif %}" href="{% url 'dashboard:index' %}" role="button">
                   <span class="badge badge-lg badge-secondary" style="width: 80px; background: #d4d5d7;">
                     <span class="oi oi-media-record pulse mr-1"></span> ALL </span>
                 </a>
-                {% if not selected_section %}</h5>{% endif %}
               </div>
           {% for item in sections %}
               <div class="" style="float: left; width: 100px; padding:5px; color: white;">
-                {% if selected_section == item.id %}<h5>{% endif %}
-                <a class="filter-link" href="{% url 'dashboard:index' %}?section={{ item.id }}">
+                <a class="filter-link {% if selected_section == item.id %}disabled{% endif %}" href="{% url 'dashboard:index' %}?section={{ item.id }}" role="button">
                   <span class="badge badge-lg {{ item.color }}" style="width: 80px;">
                     <span class="oi oi-media-record pulse mr-1"></span> {{ item.code }} </span>
                 </a>
-                {% if selected_section == item.id %}</h5>{% endif %}
               </div>
           {% endfor %}
         </div>

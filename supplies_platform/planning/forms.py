@@ -21,11 +21,17 @@ from supplies_platform.tpm.models import TPMVisit
 from supplies_platform.users.models import User
 from .models import (
     SupplyPlan,
+    DistributionPlan,
     DistributionPlanItem,
     WavePlan,
     DistributedItem,
     DistributedItemSite,
     DistributionPlanItemReceived,
+)
+
+YES_NO_CHOICE = (
+    (True, 'Yes'),
+    (False, 'No')
 )
 
 
@@ -35,6 +41,9 @@ class SupplyPlanForm(forms.ModelForm):
         required=False, label='TPM focal point',
         queryset=User.objects.filter(groups__name='TPM_COMPANY')
     )
+
+    reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+    approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
 
     class Meta:
         model = SupplyPlan
@@ -101,6 +110,17 @@ class WavePlanFormSet(BaseInlineFormSet):
                     )
 
         return cleaned_data
+
+
+class DistributionPlanForm(forms.ModelForm):
+
+    reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+    cleared = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+    approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+
+    class Meta:
+        model = DistributionPlan
+        fields = '__all__'
 
 
 class DistributionPlanItemForm(forms.ModelForm):
