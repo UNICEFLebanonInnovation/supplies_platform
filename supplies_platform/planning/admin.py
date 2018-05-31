@@ -16,7 +16,11 @@ from .models import (
     SupplyPlan,
     WavePlan,
     SupplyPlanItem,
+    SupplyPlanWave,
+    SupplyPlanWaveItem,
     DistributionPlan,
+    DistributionPlanWave,
+    DistributionPlanWaveItem,
     DistributionPlanItem,
     DistributionPlanItemReceived,
     DistributedItem,
@@ -33,6 +37,8 @@ from .forms import (
     DistributionItemFormSet,
     DistributedItemSiteForm,
     DistributedItemSiteFormSet,
+    DistributionPlanWaveForm,
+    DistributionPlanWaveFormSet,
 )
 
 
@@ -97,6 +103,63 @@ class SupplyPlanItemInline(nested_admin.NestedStackedInline):
     #     return True
 
 
+class SupplyPlanWaveItemInline(nested_admin.NestedTabularInline):
+    model = SupplyPlanWaveItem
+    verbose_name = 'Item'
+    verbose_name_plural = 'Items'
+    extra = 0
+    min_num = 0
+    max_num = 0
+    fk_name = 'plan_wave'
+    suit_classes = u'suit-tab suit-tab-waves'
+
+    fields = (
+        'item',
+        'quantity',
+        'item_price',
+        'total_budget',
+        'beneficiaries_covered_per_item',
+        # 'target_population',
+    )
+
+    readonly_fields = (
+        'item',
+        'item_price',
+        'total_budget',
+        # 'target_population',
+        'beneficiaries_covered_per_item',
+    )
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return False
+
+
+class SupplyPlanWaveInline(nested_admin.NestedStackedInline):
+    model = SupplyPlanWave
+    # form = WavePlanForm
+    # formset = WavePlanFormSet
+    verbose_name = 'Wave'
+    verbose_name_plural = 'Waves'
+    min_num = 0
+    max_num = 0
+    extra = 0
+    fk_name = 'supply_plan'
+    suit_classes = u'suit-tab suit-tab-waves'
+
+    fields = (
+        'date_required_by',
+    )
+
+    inlines = [SupplyPlanWaveItemInline, ]
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return False
+
+
 class SupplyPlanResource(resources.ModelResource):
     class Meta:
         model = SupplyPlan
@@ -153,6 +216,13 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'approval_comments',
             ]
         }),
+        ('Supply Items', {
+            'classes': ('suit-tab', 'suit-tab-waves',),
+            'fields': [
+                'items',
+                'wave_number',
+            ]
+        }),
     ]
 
     suit_form_tabs = (
@@ -160,7 +230,9 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                       ('waves', 'Supply Items'),
                     )
 
-    inlines = [SupplyPlanItemInline, ]
+    inlines = [SupplyPlanWaveInline, ]
+
+    filter_horizontal = ('items',)
 
     ordering = (u'-created',)
     date_hierarchy = u'created'
@@ -258,6 +330,18 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
+        if obj and obj.id and obj.status == obj.PLANNED and not obj.supply_plans_waves.all().count() and obj.wave_number:
+            for x in range(1, obj.wave_number+1):
+                plan_wave = SupplyPlanWave.objects.create(
+                    supply_plan=obj,
+                    wave_number=x
+                )
+                for item in obj.items.all():
+                    SupplyPlanWaveItem.objects.create(
+                        plan_wave=plan_wave,
+                        item=item,
+                        quantity=0
+                    )
         if obj and obj.status == obj.SUBMITTED and not obj.submission_date:
             obj.submission_date = datetime.datetime.now()
             obj.to_review = True
@@ -279,7 +363,21 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 obj.approval_date = datetime.datetime.now()
                 obj.approved_by = request.user
                 obj.status = obj.APPROVED
-                DistributionPlan.objects.create(plan=obj)
+                dist_plan = DistributionPlan.objects.create(plan=obj)
+                for plan_wave in obj.supply_plans_waves.all():
+                    dist_plan_wave = DistributionPlanWave.objects.create(
+                        plan=dist_plan,
+                        wave_number=plan_wave.wave_number,
+                        wave=plan_wave,
+                    )
+                    for wave_item in plan_wave.supply_plan_wave_items.all():
+                        DistributionPlanWaveItem.objects.create(
+                            plan_wave=dist_plan_wave,
+                            wave_item=wave_item,
+                            item=wave_item.item,
+                            quantity_requested=wave_item.quantity
+                        )
+
                 send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
                 send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED - PARTNER WILL BE NOTIFIED', obj, 'info', obj.partner_id)
             elif obj.approved is False:
@@ -454,6 +552,72 @@ class DistributedItemInline(nested_admin.NestedStackedInline):
     inlines = [DistributedItemSiteInline, ]
 
 
+class DistributionPlanWaveItemInline(nested_admin.NestedTabularInline):
+    model = DistributionPlanWaveItem
+    verbose_name = 'Item'
+    verbose_name_plural = 'Items'
+    extra = 0
+    min_num = 0
+    max_num = 0
+    fk_name = 'plan_wave'
+    suit_classes = u'suit-tab suit-tab-request'
+
+    fields = (
+        'item',
+        'quantity_requested',
+        'target_population',
+        'date_distributed_by',
+    )
+
+    readonly_fields = (
+        'item',
+    )
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return False
+
+
+class DistributionPlanWaveInline(nested_admin.NestedStackedInline):
+    model = DistributionPlanWave
+    form = DistributionPlanWaveForm
+    formset = DistributionPlanWaveFormSet
+    verbose_name = 'Wave'
+    verbose_name_plural = 'Waves'
+    min_num = 0
+    max_num = 0
+    extra = 0
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-request'
+
+    fields = (
+        'site',
+        'delivery_site',
+        'date_required_by',
+        'contact_person',
+    )
+
+    inlines = [DistributionPlanWaveItemInline, ]
+
+    def get_fields(self, request, obj=None):
+        fields = [
+            'site',
+            'delivery_site',
+            'date_required_by',
+            'contact_person',
+        ]
+
+        if has_group(request.user, 'SUPPLY_FP'):
+            fields.append('delivery_expected_date')
+        return fields
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return False
+
+
 class DistributionPlanResource(resources.ModelResource):
     class Meta:
         model = DistributionPlan
@@ -530,7 +694,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         'plan__section',
     )
 
-    inlines = [DistributionPlanItemInline, ReceivedItemInline, DistributedItemInline]
+    inlines = [DistributionPlanWaveInline, ReceivedItemInline, DistributedItemInline]
 
     def get_readonly_fields(self, request, obj=None):
 
@@ -586,7 +750,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         return form
 
     def save_model(self, request, obj, form, change):
-        send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN TEST', obj)
         if not change and obj and obj.status == obj.PLANNED:
             obj.created_by = request.user
         if obj and not obj.submitted and obj.status == obj.SUBMITTED:  # submitted by the partner
@@ -645,25 +808,26 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             obj.item_distributed = True
             obj.item_distributed_date = datetime.datetime.now()
             send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN - PARTNER DISTRIBUTED ALL ITEMS', obj)
-        if change and obj.requests.all():  # by the supply
-            items = obj.requests.all()
-            for wave_item in items:
-                if wave_item.delivery_expected_date:
-                    item = wave_item.wave.supply_plan.item
-                    DistributionPlanItemReceived.objects.get_or_create(
-                        wave=wave_item,
-                        wave_number=wave_item.wave.wave_number,
-                        plan=obj,
-                        supply_item=item,
-                        quantity_requested=wave_item.quantity_requested
-                    )
-                    DistributedItem.objects.get_or_create(
-                        wave=wave_item,
-                        wave_number=wave_item.wave.wave_number,
-                        plan=obj,
-                        supply_item=item,
-                        quantity_requested=wave_item.quantity_requested
-                    )
+        if change and obj.plan_waves.all():  # by the supply
+            for plan_wave in obj.plan_waves.all():
+                if plan_wave.delivery_expected_date:
+                    for wave_item in plan_wave.plan_wave_items.all():
+                        DistributionPlanItemReceived.objects.get_or_create(
+                            plan=obj,
+                            wave_plan=plan_wave,
+                            wave_item=wave_item,
+                            supply_item=wave_item.item,
+                            wave_number=plan_wave.wave_number,
+                            quantity_requested=wave_item.quantity_requested,
+                        )
+                        DistributedItem.objects.get_or_create(
+                            plan=obj,
+                            wave_plan=plan_wave,
+                            wave_item=wave_item,
+                            supply_item=wave_item.item,
+                            wave_number=plan_wave.wave_number,
+                            quantity_requested=wave_item.quantity_requested,
+                        )
                     send_notification('PARTNER', 'DISTRIBUTION PLAN - ITEMS WILL BE DELIVERED TO THE PARTNER', obj, 'warning', obj.plan.partner_id)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)
 
