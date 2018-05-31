@@ -586,6 +586,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         return form
 
     def save_model(self, request, obj, form, change):
+        send_notification('SUPPLY_ADMIN', 'DISTRIBUTION PLAN TEST', obj)
         if not change and obj and obj.status == obj.PLANNED:
             obj.created_by = request.user
         if obj and not obj.submitted and obj.status == obj.SUBMITTED:  # submitted by the partner
