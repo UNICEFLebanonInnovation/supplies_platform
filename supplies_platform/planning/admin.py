@@ -42,6 +42,92 @@ from .forms import (
 )
 
 
+class QuantityGapFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = 'Quantity GAP'
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'quantity_gap'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No')
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() and self.value() == 'yes':
+            gaps = DistributionPlanItemReceived.objects.extra(where=[
+                'date_received IS NOT NULL', 'quantity_requested != quantity_received'
+            ]).values_list('plan_id', flat=True).distinct()
+            return queryset.filter(pk__in=gaps)
+        if self.value() and self.value() == 'no':
+            gaps = DistributionPlanItemReceived.objects.extra(where=[
+                'quantity_requested = quantity_received'
+            ]).values_list('plan_id', flat=True)
+            return queryset.filter(pk__in=gaps)
+        return queryset
+
+
+class LateDeliveryFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = 'Late Delivery'
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'late_delivery'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No')
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() and self.value() == 'yes':
+            return queryset.filter(
+                received__isnull=False,
+                received__date_received__isnull=True,
+                plan_waves__isnull=False,
+                plan_waves__delivery_expected_date__isnull=False,
+                plan_waves__delivery_expected_date__lt=datetime.datetime.now()
+            ).distinct()
+        if self.value() and self.value() == 'no':
+            return queryset.filter(
+                received__isnull=False,
+                received__date_received__isnull=True,
+                plan_waves__isnull=False,
+                plan_waves__delivery_expected_date__isnull=False,
+                plan_waves__delivery_expected_date__lt=datetime.datetime.now()
+            ).distinct()
+        return queryset
+
+
 class WavePlanInline(nested_admin.NestedStackedInline):
     model = WavePlan
     form = WavePlanForm
@@ -631,7 +717,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
     resource_class = DistributionPlanResource
     form = DistributionPlanForm
     fieldsets = [
-        (None, {
+        ('Plan Overview', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'reference_number',
@@ -692,6 +778,8 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         'status',
         'plan__partner',
         'plan__section',
+        QuantityGapFilter,
+        LateDeliveryFilter,
     )
 
     inlines = [DistributionPlanWaveInline, ReceivedItemInline, DistributedItemInline]

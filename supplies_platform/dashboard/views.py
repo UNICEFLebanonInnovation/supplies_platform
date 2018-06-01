@@ -11,6 +11,7 @@ from supplies_platform.planning.models import (
     SupplyPlan,
     DistributionPlan,
     DistributionPlanItem,
+    DistributionPlanItemReceived,
 )
 
 
@@ -33,11 +34,29 @@ class IndexView(LoginRequiredMixin,
             requests = requests.filter(plan__plan__section_id=selected_section)
         sections = Section.objects.all()
 
+        quantity_gap = DistributionPlanItemReceived.objects.extra(where=[
+            'date_received IS NOT NULL', 'quantity_requested != quantity_received'
+        ]).values_list('plan_id', flat=True).distinct()
+
+        quantity_gap_plans = DistributionPlan.objects.filter(pk__in=quantity_gap)
+
+        delayed_delivery = DistributionPlan.objects.filter(
+            received__isnull=False,
+            received__date_received__isnull=True,
+            plan_waves__isnull=False,
+            plan_waves__delivery_expected_date__isnull=False,
+            # plan_waves__delivery_expected_date__lt=datetime.datetime.now()
+        ).distinct()
+
         return {
             'sections': sections,
             'plans': plannings,
             'request_waves': requests,
             'selected_section': selected_section,
+            'nbr_quantity_gap': quantity_gap.count(),
+            'quantity_gap_plans': quantity_gap_plans,
+            'nbr_delayed_delivery': delayed_delivery.count(),
+            'delayed_delivery_plans': delayed_delivery,
             'nbr_planned': plannings.filter(status='submitted').count(),
             'nbr_dist_planned': distributions.filter(status='submitted').count(),
             'nbr_dist_ready': distributions.filter(to_delivery=True, item_received=False).count(),

@@ -45,18 +45,19 @@
         <div class="metric-row">
           <!-- metric column -->
 
+          {% if request.user|has_group:"ADMIN" %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Actions required at the planning phase for the next 48 hours">
                 <span class="badge badge-lg badge-primary">
-                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> ACTIONS REQUIRED IN 48H </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_planned }}</span>
+                <span class="value">{{ nbr_actions_24h }}</span>
               </p>
             </span>
             <!-- /.metric -->
@@ -65,15 +66,15 @@
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Distribution plans coming up in the next 2 weeks">
                 <span class="badge badge-lg badge-success">
-                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> UPCOMING DISTRIBUTION </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_planned }}</span>
+                <span class="value">{{ nbr_upcoming_dest }}</span>
               </p>
             </span>
             <!-- /.metric -->
@@ -82,15 +83,15 @@
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Actions needed and not completed from supply within 10 days after end user monitoring">
                 <span class="badge badge-lg badge-success">
-                  <span class="oi oi-media-record pulse mr-1"></span> APPROVED DISTRIBUTION PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> ACTION NEEDED AFTER SM </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_approved }}</span>
+                <span class="value">{{ nbr_actions_sm }}</span>
               </p>
             </span>
             <!-- /.metric -->
@@ -99,32 +100,22 @@
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
-                <span class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> WAVES DELAYED FOR DELIVERY </span>
-              </div>
-              <p class="metric-value h3">
-                <sub>
-                  <i class="oi oi-timer"></i>
-                </sub>
-                <span class="value">{{ nbr_delayed_delivery }}</span>
-              </p>
-            </span>
-            <!-- /.metric -->
-          </div>
-
-          <div class="col-lg-3">
-            <!-- .metric -->
-            <span class="metric metric-bordered">
-              <div class="metric-badge">
-                <span class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Late deliveries of supplies">
+                <a href="/admin/planning/distributionplan/?q=&late_delivery=yes" target="_blank" class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> LATE DELIVERIES </a>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_ready }}</span>
+                <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                    <div class=&quot;text-left small&quot;>
+                        {% for item in delayed_delivery_plans %}
+                        <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                        {% endfor %}
+                    </div>">
+                    {{ nbr_delayed_delivery }}
+                </span>
               </p>
             </span>
             <!-- /.metric -->
@@ -133,19 +124,49 @@
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Discrepancy between quantity of supplies received and quantity of supplies dispatched">
+                <a href="/admin/planning/distributionplan/?q=&quantity_gap=yes" target="_blank" class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> QUANTITY GAP </a>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-warning"></i>
+                </sub>
+
+                <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                    <div class=&quot;text-left small&quot;>
+                        {% for item in quantity_gap_plans %}
+                        <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                        {% endfor %}
+                    </div>">
+                    {{ nbr_quantity_gap }}
+                </span>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Replenishment and orders of PD supplies not available in stock">
                 <span class="badge badge-lg badge-danger">
-                  <span class="oi oi-media-record pulse mr-1"></span> WAVES NOT RECEIVED </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> STOCK NOT AVAILABLE </span>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
-                <span class="value">{{ nbr_not_received }}</span>
+                <span class="value">{{ nbr_stock_not_available }}</span>
               </p>
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
+
+          {% if request.user|has_group:"UNICEF_PO" %}
+
+          {% endif %}
           <!-- /metric column -->
         </div>
         <!-- /metric row -->

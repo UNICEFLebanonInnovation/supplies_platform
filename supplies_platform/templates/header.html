@@ -182,7 +182,7 @@
                         </a>
                       </div>
                       <!-- /.dropdown-sheet-item -->
-                      {% if request.user.is_superuser or request.user|has_group:"SUPPLY_ADMIN" %}
+                      {% if request.user.is_superuser or request.user|has_group:"DASHBOARD" %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="{% url 'dashboard:index' %}" class="tile-wrapper">
