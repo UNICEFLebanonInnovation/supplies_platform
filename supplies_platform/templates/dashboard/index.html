@@ -74,7 +74,16 @@
                 <sub>
                   <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_upcoming_dest }}</span>
+                <a href="/admin/planning/distributionplan/?q=&upcoming_delivery=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in upcoming_delivery_plan %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_upcoming_delivery }}
+                  </span>
+                </a>
               </p>
             </span>
             <!-- /.metric -->
@@ -101,21 +110,23 @@
             <!-- .metric -->
             <span class="metric metric-bordered">
               <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Late deliveries of supplies">
-                <a href="/admin/planning/distributionplan/?q=&late_delivery=yes" target="_blank" class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> LATE DELIVERIES </a>
+                <span class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> LATE DELIVERIES </span>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
-                <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
-                    <div class=&quot;text-left small&quot;>
-                        {% for item in delayed_delivery_plans %}
-                        <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
-                        {% endfor %}
-                    </div>">
-                    {{ nbr_delayed_delivery }}
-                </span>
+                <a href="/admin/planning/distributionplan/?q=&late_delivery=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in delayed_delivery_plans %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_delayed_delivery }}
+                  </span>
+                </a>
               </p>
             </span>
             <!-- /.metric -->
@@ -125,22 +136,24 @@
             <!-- .metric -->
             <span class="metric metric-bordered">
               <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Discrepancy between quantity of supplies received and quantity of supplies dispatched">
-                <a href="/admin/planning/distributionplan/?q=&quantity_gap=yes" target="_blank" class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> QUANTITY GAP </a>
+                <span class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> QUANTITY GAP </span>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
 
-                <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
-                    <div class=&quot;text-left small&quot;>
-                        {% for item in quantity_gap_plans %}
-                        <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
-                        {% endfor %}
-                    </div>">
-                    {{ nbr_quantity_gap }}
-                </span>
+                <a href="/admin/planning/distributionplan/?q=&quantity_gap=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in quantity_gap_plans %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_quantity_gap }}
+                  </span>
+                </a>
               </p>
             </span>
             <!-- /.metric -->
