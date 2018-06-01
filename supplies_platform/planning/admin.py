@@ -824,18 +824,18 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
         return fields
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
-        form.request = request
-        if has_group(request.user, 'PARTNER'):
-            form.base_fields['status'].choices = (
-                (DistributionPlan.PLANNED, u"Planned"),
-                (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
-                (DistributionPlan.RECEIVED, u"All waves received"),
-                (DistributionPlan.COMPLETED, u"Distribution Completed"),
-            )
-
-        return form
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super(DistributionPlanAdmin, self).get_form(request, obj, **kwargs)
+    #     form.request = request
+    #     if has_group(request.user, 'PARTNER'):
+    #         form.base_fields['status'].choices = (
+    #             (DistributionPlan.PLANNED, u"Planned"),
+    #             (DistributionPlan.SUBMITTED, u"Submitted/Plan completed"),
+    #             (DistributionPlan.RECEIVED, u"All waves received"),
+    #             (DistributionPlan.COMPLETED, u"Distribution Completed"),
+    #         )
+    #
+    #     return form
 
     def save_model(self, request, obj, form, change):
         if not change and obj and obj.status == obj.PLANNED:
