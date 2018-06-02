@@ -217,6 +217,7 @@ class DistributionPlanItemFormSet(BaseInlineFormSet):
 class DistributionPlanWaveForm(forms.ModelForm):
     site = forms.ModelChoiceField(
         queryset=Location.objects.all(),
+        label=u'Distribution site',
         widget=autocomplete.ModelSelect2(url='location_autocomplete')
     )
     delivery_site = forms.ModelChoiceField(

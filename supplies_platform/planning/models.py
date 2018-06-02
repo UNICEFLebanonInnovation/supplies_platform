@@ -151,6 +151,10 @@ class SupplyPlan(TimeStampedModel):
             '$'
         )
 
+    @property
+    def plan_section(self):
+        return self.section
+
     def __unicode__(self):
         return '{} - {} - {}'.format(
             self.reference_number,
@@ -488,7 +492,11 @@ class DistributionPlanWave(TimeStampedModel):
         )
     )
     wave = models.ForeignKey(SupplyPlanWave, null=True, blank=False)
-    site = models.ForeignKey(Location, null=True, blank=False)
+    site = models.ForeignKey(
+        Location,
+        null=True, blank=False,
+        verbose_name=u'Distribution site',
+    )
     purpose = models.CharField(
         max_length=50,
         null=True, blank=True,
@@ -518,11 +526,9 @@ class DistributionPlanWave(TimeStampedModel):
     )
 
     def __unicode__(self):
-        return u'Wave #{} - {} - {} - {}'.format(
+        return u'Wave #{} - Delivery expected date: {}'.format(
             self.wave_number,
-            self.date_required_by,
-            self.site,
-            self.delivery_expected_date
+            self.delivery_expected_date if self.delivery_expected_date else ''
         )
 
 

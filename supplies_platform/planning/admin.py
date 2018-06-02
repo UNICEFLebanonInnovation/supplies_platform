@@ -508,6 +508,9 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
                 send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED - PARTNER WILL BE NOTIFIED', obj, 'info', obj.partner_id)
             elif obj.approved is False:
+                obj.review_date = None
+                obj.reviewed_by = None
+                obj.status = obj.SUBMITTED
                 send_notification('SUPPLY_ADMIN', 'SUPPLY PLAN REJECTED BY THE BUDGET OWNER - TO REVIEW BY SUPPLY', obj, 'danger')
         super(SupplyPlanAdmin, self).save_model(request, obj, form, change)
 
@@ -698,6 +701,7 @@ class DistributionPlanWaveItemInline(nested_admin.NestedTabularInline):
 
     readonly_fields = (
         'item',
+        'quantity_requested',
     )
 
     def has_delete_permission(self, request, obj=None):

@@ -96,6 +96,8 @@ ANYMAIL = {
     'MAILGUN_SENDER_DOMAIN': env('MAILGUN_SENDER_DOMAIN')
 }
 EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+MAILGUN_API_KEY = env('MAILGUN_API_KEY', default='NO KEY')
+MAILGUN_DOMAIN = env('MAILGUN_DOMAIN', default='NO DOMAIN')
 
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------

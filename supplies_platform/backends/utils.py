@@ -5,6 +5,7 @@ import pyrebase
 
 from time import mktime
 from mailer import send_multi_message, send_simple_message
+from supplies_platform.users.models import User
 
 
 def send_notification(user_group, subject, obj, level='info', partner=None, recipient=None):
@@ -44,8 +45,13 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
     db.child("notifications").push(data)
 
     try:
+        recipients = User.objects.filter(
+            groups__name=user_group,
+            section=obj.plan_Section,
+            email__isnull=False,
+        ).values_list('email', flat=True).distinct()
         content = '{}: {}'.format(subject, obj.__unicode__())
-        send_simple_message(subject, content, 'sms@unicef.org', ['achamseddine@unicef.org'])
+        send_simple_message(subject, content, recipients)
     except Exception as ex:
         print(ex.message)
         pass
