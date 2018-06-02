@@ -677,8 +677,13 @@ class DistributedItemSite(models.Model):
     )
     tpm_visit = models.BooleanField(
         blank=True, default=False,
-        verbose_name=u'SM Visit?',
-        help_text=u'SM visit for this location',
+        verbose_name=u'TPM Visit?',
+        help_text=u'TPM visit for this location',
+    )
+    unicef_visit = models.BooleanField(
+        blank=True, default=False,
+        verbose_name=u'UNICEF Visit?',
+        help_text=u'UNICEF visit for this location',
     )
 
     def __unicode__(self):

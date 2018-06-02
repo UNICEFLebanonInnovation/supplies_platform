@@ -645,16 +645,19 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
         'quantity_distributed_per_site',
         'distribution_date',
         'tpm_visit',
+        'unicef_visit',
     )
 
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
            'tpm_visit',
+           'unicef_visit',
         ]
         if (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')) \
             and obj and obj.plan.status == DistributionPlan.COMPLETED:
             fields.remove('tpm_visit')
+            fields.remove('unicef_visit')
 
         return fields
 
@@ -954,13 +957,17 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                             wave_number=plan_wave.wave_number,
                             quantity_requested=wave_item.quantity_requested,
                         )
-                        DistributedItem.objects.get_or_create(
+                        dist_item, create = DistributedItem.objects.get_or_create(
                             plan=obj,
                             wave_plan=plan_wave,
                             wave_item=wave_item,
                             supply_item=wave_item.item,
                             wave_number=plan_wave.wave_number,
                             quantity_requested=wave_item.quantity_requested,
+                        )
+                        DistributedItemSite.objects.get_or_create(
+                            plan=dist_item,
+                            site=plan_wave.site
                         )
                     send_notification('PARTNER', 'DISTRIBUTION PLAN - ITEMS WILL BE DELIVERED TO THE PARTNER', obj, 'warning', obj.plan.partner_id)
         super(DistributionPlanAdmin, self).save_model(request, obj, form, change)

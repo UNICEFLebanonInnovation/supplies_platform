@@ -17,7 +17,7 @@ from supplies_platform.backends.utils import send_notification
 from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
-from supplies_platform.tpm.models import TPMVisit
+from supplies_platform.tpm.models import TPMVisit, SMVisit
 from supplies_platform.users.models import User
 from .models import (
     SupplyPlan,
@@ -338,18 +338,32 @@ class DistributedItemSiteFormSet(BaseInlineFormSet):
             for obj in saved_instances:
                 if obj.tpm_visit:
                     plan = obj.plan.plan
-                    instance, created = TPMVisit.objects.get_or_create(
+                    instance, created = SMVisit.objects.get_or_create(
                         distribution_plan=plan,
                         supply_plan=plan.plan,
                         supply_item=obj.plan.supply_item,
-                        site=obj.site
+                        site=obj.site,
+                        type='quantity'
                     )
                     if created:
                         instance.quantity_distributed = obj.quantity_distributed_per_site
                         instance.distribution_date = obj.distribution_date
-                        instance.assigned_to_tpm = plan.plan.tpm_focal_point
+                        instance.assigned_to = plan.plan.tpm_focal_point
                         instance.save()
                         send_notification('TPM_COMPANY', 'A NEW QUANTITATIVE SM VISIT HAS BEEN CREATED', instance)
+                if obj.unicef_visit:
+                    plan = obj.plan.plan
+                    instance, created = SMVisit.objects.get_or_create(
+                        distribution_plan=plan,
+                        supply_plan=plan.plan,
+                        supply_item=obj.plan.supply_item,
+                        site=obj.site,
+                        type='quality',
+                    )
+                    if created:
+                        instance.quantity_distributed = obj.quantity_distributed_per_site
+                        instance.distribution_date = obj.distribution_date
+                        instance.save()
                         send_notification('UNICEF_PO', 'A NEW QUALITATIVE SM VISIT HAS BEEN CREATED', instance)
         return saved_instances
 

@@ -2,13 +2,13 @@ from django.utils.translation import ugettext as _
 
 from django_filters import FilterSet, ModelChoiceFilter
 
-from .models import TPMVisit
+from .models import SMVisit
 
 
-class TPMVisitFilter(FilterSet):
+class SMVisitFilter(FilterSet):
 
     class Meta:
-        model = TPMVisit
+        model = SMVisit
         fields = {
 
         }

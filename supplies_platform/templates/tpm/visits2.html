@@ -92,7 +92,7 @@
 
         function assign_to_me(item, user)
         {
-            var data = {assigned_to_officer:user}
+            var data = {assigned_to:user}
             $.ajax({
                 type: "PATCH",
                 url: tpm_url+item.attr('itemref')+'/',

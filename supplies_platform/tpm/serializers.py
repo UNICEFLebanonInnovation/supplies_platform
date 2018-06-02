@@ -1,10 +1,10 @@
 
 from rest_framework import serializers
-from .models import TPMVisit
+from .models import SMVisit
 
 
-class TPMVisitSerializer(serializers.ModelSerializer):
+class SMVisitSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = TPMVisit
+        model = SMVisit
         fields = '__all__'

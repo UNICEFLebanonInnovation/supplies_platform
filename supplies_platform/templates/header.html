@@ -204,17 +204,28 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
-                      {% if request.user|has_group:"SM_VISIT" or request.user|has_group:"ADMIN" %}
-                      <!-- .dropdown-sheet-item -->
-                      <div class="dropdown-sheet-item">
-                        <a href="{% url 'tpm:visits' %}" class="tile-wrapper">
-                          <span class="tile tile-lg bg-cyan">
-                            <i class="oi oi-document"></i>
-                          </span>
-                          <span class="tile-peek">SM Visits</span>
-                        </a>
-                      </div>
-                      {% endif %}
+                        {% if request.user|has_group:"SM_VISIT" or request.user|has_group:"ADMIN" %}
+                        <!-- .dropdown-sheet-item -->
+                        <div class="dropdown-sheet-item">
+                          <a href="{% url 'tpm:unicef_visits' %}" class="tile-wrapper">
+                            <span class="tile tile-lg bg-cyan">
+                              <i class="oi oi-document"></i>
+                            </span>
+                            <span class="tile-peek">SM Visits</span>
+                          </a>
+                        </div>
+                        {% endif %}
+                        {% if request.user|has_group:"TPM_COMPANY" %}
+                        <!-- .dropdown-sheet-item -->
+                        <div class="dropdown-sheet-item">
+                          <a href="{% url 'tpm:tpm_visits' %}" class="tile-wrapper">
+                            <span class="tile tile-lg bg-cyan">
+                              <i class="oi oi-document"></i>
+                            </span>
+                            <span class="tile-peek">TPM Visits</span>
+                          </a>
+                        </div>
+                        {% endif %}
                       {% endif %}
                       <!-- /.dropdown-sheet-item -->
                     </div>
