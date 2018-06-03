@@ -67,5 +67,6 @@ django-tables2==1.10.0
 django-filter==0.13.0
 django-bootstrap3==8.2.3
 bootstrap3-datetime==2.4
+#django-datetime-widget==0.9.3
 
 Pyrebase==3.0.27

@@ -47,7 +47,7 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
     try:
         recipients = User.objects.filter(
             groups__name=user_group,
-            section=obj.plan_Section,
+            section=obj.plan_section,
             email__isnull=False,
         ).values_list('email', flat=True).distinct()
         content = '{}: {}'.format(subject, obj.__unicode__())

@@ -31,14 +31,11 @@ from .forms import (
     WavePlanForm,
     WavePlanFormSet,
     DistributionPlanForm,
-    DistributionPlanItemForm,
-    DistributionPlanItemFormSet,
-    DistributionItemForm,
-    DistributionItemFormSet,
     DistributedItemSiteForm,
     DistributedItemSiteFormSet,
     DistributionPlanWaveForm,
     DistributionPlanWaveFormSet,
+    DistributionPlanWaveItemForm
 )
 
 
@@ -523,69 +520,6 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         return qs
 
 
-class DistributionPlanItemInline(admin.StackedInline):
-    model = DistributionPlanItem
-    max_num = 99
-    min_num = 0
-    extra = 0
-    verbose_name = 'Request per wave'
-    verbose_name_plural = 'Requests per wave'
-    form = DistributionPlanItemForm
-    formset = DistributionPlanItemFormSet
-    suit_classes = u'suit-tab suit-tab-request'
-
-    fields = (
-        'wave',
-        'site',
-        'target_population',
-        'delivery_location',
-        'contact_person',
-        'quantity_requested',
-        'date_required_by',
-        'date_distributed_by',
-    )
-
-    def get_fields(self, request, obj=None):
-        fields = [
-            'wave',
-            'site',
-            'target_population',
-            'delivery_location',
-            'contact_person',
-            'quantity_requested',
-            'date_required_by',
-            'date_distributed_by',
-        ]
-
-        if has_group(request.user, 'SUPPLY_FP'):
-            fields.append('delivery_expected_date')
-        return fields
-
-    def get_parent_object_from_request(self, request):
-        resolved = resolve(request.path_info)
-        if resolved.args:
-            return self.parent_model.objects.get(pk=resolved.args[0])
-        return None
-
-    def has_add_permission(self, request):
-        parent = self.get_parent_object_from_request(request)
-        if parent and parent.submitted:
-            return False
-        return True
-
-    # def has_change_permission(self, request, obj=None):
-    #     parent = self.get_parent_object_from_request(request)
-    #     if parent and parent.submitted:
-    #         return False
-    #     return True
-
-    def has_delete_permission(self, request, obj=None):
-        parent = self.get_parent_object_from_request(request)
-        if parent and parent.submitted:
-            return False
-        return True
-
-
 class ReceivedItemInline(admin.TabularInline):
     model = DistributionPlanItemReceived
     max_num = 0
@@ -687,6 +621,7 @@ class DistributedItemInline(nested_admin.NestedStackedInline):
 
 class DistributionPlanWaveItemInline(nested_admin.NestedTabularInline):
     model = DistributionPlanWaveItem
+    form = DistributionPlanWaveItemForm
     verbose_name = 'Item'
     verbose_name_plural = 'Items'
     extra = 0

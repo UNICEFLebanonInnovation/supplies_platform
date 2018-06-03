@@ -494,7 +494,7 @@ class DistributionPlanWave(TimeStampedModel):
     wave = models.ForeignKey(SupplyPlanWave, null=True, blank=False)
     site = models.ForeignKey(
         Location,
-        null=True, blank=False,
+        null=True, blank=True,
         verbose_name=u'Distribution site',
     )
     purpose = models.CharField(
@@ -517,7 +517,7 @@ class DistributionPlanWave(TimeStampedModel):
         null=True, blank=True
     )
     date_required_by = models.DateField(
-        null=True, blank=False,
+        null=True, blank=True,
     )
     to_delivery = models.BooleanField(blank=True, default=False)
     delivery_expected_date = models.DateField(
@@ -547,7 +547,7 @@ class DistributionPlanWaveItem(models.Model):
     )
     date_distributed_by = models.DateField(
         verbose_name=u'planned distribution date',
-        null=True, blank=False
+        null=True, blank=True
     )
 
 
@@ -670,10 +670,10 @@ class DistributedItemSite(models.Model):
     plan = models.ForeignKey(DistributedItem, related_name='distributed_sites')
     site = models.ForeignKey(Location, blank=False)
     quantity_distributed_per_site = models.PositiveIntegerField(
-        null=True, blank=False
+        null=True, blank=True
     )
     distribution_date = models.DateField(
-        null=True, blank=False
+        null=True, blank=True
     )
     tpm_visit = models.BooleanField(
         blank=True, default=False,
