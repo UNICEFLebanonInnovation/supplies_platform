@@ -32,7 +32,8 @@ from .forms import (
     DistributedItemSiteFormSet,
     DistributionPlanWaveForm,
     DistributionPlanWaveFormSet,
-    DistributionPlanWaveItemForm
+    DistributionPlanWaveItemForm,
+    DistributionPlanItemReceivedFormSet,
 )
 
 
@@ -458,6 +459,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
 
 class ReceivedItemInline(admin.TabularInline):
     model = DistributionPlanItemReceived
+    formset = DistributionPlanItemReceivedFormSet
     max_num = 0
     min_num = 0
     extra = 0

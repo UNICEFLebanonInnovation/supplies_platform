@@ -175,10 +175,10 @@ class DistributionPlanWaveFormSet(BaseInlineFormSet):
                 partnership_start_date = self.instance.plan.pca.start
                 partnership_end_date = self.instance.plan.pca.end
             for form in self.forms:
+                data = form.cleaned_data
                 if form.cleaned_data.get('DELETE', False) or not data.get('date_required_by', 0):
                     continue
                 instance = form.instance
-                data = form.cleaned_data
 
                 date_required_by = data.get('date_required_by', 0)
 
@@ -203,6 +203,48 @@ class DistributionPlanWaveItemForm(forms.ModelForm):
     class Meta:
         model = DistributionPlanWaveItem
         fields = '__all__'
+
+
+class DistributionPlanItemReceivedFormSet(BaseInlineFormSet):
+    # def get_form_kwargs(self, index):
+    #     kwargs = super(DistributionPlanItemReceivedFormSet, self).get_form_kwargs(index)
+    #     kwargs['parent_object'] = self.instance
+    #     return kwargs
+
+    def clean(self):
+        """
+        Ensure distribution plans are inline with overall supply plan
+        """
+        cleaned_data = super(DistributionPlanItemReceivedFormSet, self).clean()
+        if self.instance and self.instance.plan:
+            for form in self.forms:
+                data = form.cleaned_data
+                if form.cleaned_data.get('DELETE', False):
+                    continue
+
+                instance = form.instance
+
+                quantity_received = data.get('quantity_received', 0)
+                date_received = data.get('date_received', 0)
+
+                if quantity_received > 0 and not date_received:
+                    raise ValidationError(
+                        _(u'Please fill the received date for the quantity received ({})'.format(
+                            quantity_received))
+                    )
+                if date_received and not quantity_received:
+                    raise ValidationError(
+                        _(u'Please fill the quantity received for the date received ({})'.format(
+                            date_received))
+                    )
+
+                if date_received and date_received <= instance.wave_item.date_distributed_by:
+                    raise ValidationError(
+                        _(u"The received date ({}) should be after the planned distribution date ({})".format(
+                            date_received, instance.wave_item.date_distributed_by))
+                    )
+
+        return cleaned_data
 
 
 class DistributedItemSiteFormSet(BaseInlineFormSet):
@@ -240,6 +282,35 @@ class DistributedItemSiteFormSet(BaseInlineFormSet):
                         instance.save()
                         send_notification('UNICEF_PO', 'A NEW QUALITATIVE SM VISIT HAS BEEN CREATED', instance)
         return saved_instances
+
+    def clean(self):
+        """
+        Ensure distribution plans are inline with overall supply plan
+        """
+        cleaned_data = super(DistributedItemSiteFormSet, self).clean()
+        if self.instance and self.instance.plan:
+            for form in self.forms:
+                data = form.cleaned_data
+                if form.cleaned_data.get('DELETE', False):
+                    continue
+
+                instance = form.instance
+
+                distribution_date = data.get('distribution_date', 0)
+
+                # if quantity_received > 0 and not date_received:
+                #     raise ValidationError(
+                #         _(u'Please fill the received date for the quantity received ({})'.format(
+                #             quantity_received))
+                #     )
+
+                # if distribution_date and distribution_date <= instance.wave_item.date_distributed_by:
+                #     raise ValidationError(
+                #         _(u"The distribution date ({}) should be after the received date ({})".format(
+                #             distribution_date, instance.wave_item.date_distributed_by))
+                #     )
+
+        return cleaned_data
 
 
 class DistributedItemSiteForm(forms.ModelForm):
