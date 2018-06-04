@@ -10,7 +10,7 @@ from supplies_platform.users.models import Section
 from supplies_platform.planning.models import (
     SupplyPlan,
     DistributionPlan,
-    DistributionPlanItem,
+    DistributionPlanWave,
     DistributionPlanItemReceived,
 )
 
@@ -27,7 +27,7 @@ class IndexView(LoginRequiredMixin,
         selected_section = int(self.request.GET.get('section', 0))
         plannings = SupplyPlan.objects.filter(plan__isnull=True)
         distributions = DistributionPlan.objects.all()
-        requests = DistributionPlanItem.objects.all().order_by('-modified')
+        requests = DistributionPlanWave.objects.all().order_by('-modified')
         if selected_section:
             plannings = plannings.filter(section_id=selected_section)
             distributions = distributions.filter(plan__section_id=selected_section)

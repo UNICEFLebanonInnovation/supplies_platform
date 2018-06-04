@@ -1,4 +1,6 @@
 
+import datetime
+
 from django.utils.translation import ugettext as _
 from django import forms
 from django.forms.models import BaseInlineFormSet
@@ -19,13 +21,12 @@ from supplies_platform.backends.utils import send_notification
 from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
 from supplies_platform.supplies.models import SupplyItem
-from supplies_platform.tpm.models import TPMVisit, SMVisit
+from supplies_platform.tpm.models import SMVisit
 from supplies_platform.users.models import User
 from .models import (
     SupplyPlan,
+    SupplyPlanWave,
     DistributionPlan,
-    DistributionPlanItem,
-    WavePlan,
     DistributedItem,
     DistributedItemSite,
     DistributionPlanItemReceived,
@@ -72,45 +73,34 @@ class SupplyPlanForm(forms.ModelForm):
         return cleaned_data
 
 
-class WavePlanForm(forms.ModelForm):
-
-    class Meta:
-        model = WavePlan
-        fields = '__all__'
-
-
-class WavePlanFormSet(BaseInlineFormSet):
+class SupplyPlanWaveFormSet(BaseInlineFormSet):
 
     def clean(self):
         """
         Ensure distribution plans are inline with overall supply plan
         """
-        cleaned_data = super(WavePlanFormSet, self).clean()
+        cleaned_data = super(SupplyPlanWaveFormSet, self).clean()
 
-        if self.instance and hasattr(self.instance, 'supply_plan'):
-            pca = self.instance.supply_plan.pca
+        if self.instance:
 
-            for plan in self.instance.supply_plans_waves.all():
-                total_quantity = 0
-                for form in self.forms:
-                    if form.cleaned_data.get('DELETE', False):
-                        continue
-                    data = form.cleaned_data
-                    # if plan.item == data.get('item', 0):
-                    date_required_by = data.get('date_required_by', 0)
+            for form in self.forms:
+                if form.cleaned_data.get('DELETE', False):
+                    continue
+                data = form.cleaned_data
+                date_required_by = data.get('date_required_by', 0)
+                current_date = date.today() + datetime.timedelta(days=15)
 
-                    if pca and date_required_by > pca.end:
-                        raise ValidationError(
-                            _(u'The required date ({}) should be between {} and {}'.format(
-                                date_required_by, pca.start, pca.end))
-                        )
-
-                    total_quantity += data.get('quantity_required', 0)
-
-                if total_quantity > self.instance.quantity:
+                if date_required_by <= current_date:
                     raise ValidationError(
-                        _(u'The total quantity ({}) of {} exceeds the planned amount of {}'.format(
-                            total_quantity, self.instance.item, self.instance.quantity))
+                        _(u"The required date ({}) should be at least 15 after the current day".format(
+                            date_required_by))
+                    )
+
+                if self.instance.pca and date_required_by > self.instance.pca.end:
+                    pca = self.instance
+                    raise ValidationError(
+                        _(u'The required date ({}) should be between {} and {}'.format(
+                            date_required_by, pca.start, pca.end))
                     )
 
         return cleaned_data
@@ -185,7 +175,7 @@ class DistributionPlanWaveFormSet(BaseInlineFormSet):
                 partnership_start_date = self.instance.plan.pca.start
                 partnership_end_date = self.instance.plan.pca.end
             for form in self.forms:
-                if form.cleaned_data.get('DELETE', False):
+                if form.cleaned_data.get('DELETE', False) or not data.get('date_required_by', 0):
                     continue
                 instance = form.instance
                 data = form.cleaned_data

@@ -120,7 +120,7 @@ class SupplyPlan(TimeStampedModel):
 
     items = models.ManyToManyField(SupplyItem, blank=True)
     wave_number = models.PositiveIntegerField(
-        null=True, blank=False,
+        null=True, blank=True,
         choices=Choices(
             1, 2, 3, 4
         ),
@@ -130,7 +130,7 @@ class SupplyPlan(TimeStampedModel):
     @property
     def target_population(self):
         ttl = 0
-        plans = DistributionPlanItem.objects.filter(
+        plans = DistributionPlanWave.objects.filter(
             plan__plan_id=self.id,
         )
         for item in plans:
@@ -211,7 +211,7 @@ class SupplyPlanWaveItem(models.Model):
     def beneficiaries_covered_per_item(self):
         ttl = 0
         if self.supply_plan:
-            plans = DistributionPlanItem.objects.filter(
+            plans = DistributionPlanWave.objects.filter(
                 plan__plan_id=self.supply_plan_id,
                 wave__supply_plan__item_id=self.item_id
             )
@@ -245,95 +245,6 @@ class SupplyPlanWaveItem(models.Model):
             self.plan_wave.__unicode__(),
             self.item,
             self.quantity
-        )
-
-
-class SupplyPlanItem(models.Model):
-    """
-    Planning fields
-    """
-    supply_plan = models.ForeignKey(SupplyPlan, related_name='supply_plans')
-    item = models.ForeignKey(SupplyItem)
-    quantity = models.PositiveIntegerField(
-        help_text=u'PD Quantity'
-    )
-
-    # auto generate
-    target_population = models.IntegerField(
-        verbose_name=u'Max No. of beneficiaries covered',
-        null=True, blank=True
-    )
-
-    covered_per_item = models.IntegerField(
-        verbose_name=u'Beneficiaries covered per item',
-        null=True, blank=True
-    )
-
-    @property
-    def beneficiaries_covered_per_item(self):
-        ttl = 0
-        if self.supply_plan:
-            plans = DistributionPlanItem.objects.filter(
-                plan__plan_id=self.supply_plan_id,
-                wave__supply_plan__item_id=self.item_id
-            )
-            for item in plans:
-                ttl += item.target_population
-        return ttl
-
-    @property
-    def item_price(self):
-        if self.item:
-            return '{} {}'.format(
-                self.item.price,
-                '$'
-            )
-        return ''
-
-    @property
-    def total_budget(self):
-        total = 0.0
-        try:
-            total = self.quantity * self.item.price
-        except Exception as ex:
-            pass
-        return '{} {}'.format(
-            total,
-            '$'
-        )
-
-    def __unicode__(self):
-        return u'{}-{}-{}'.format(
-            self.supply_plan.__unicode__(),
-            self.item,
-            self.quantity
-        )
-
-
-class WavePlan(models.Model):
-
-    supply_plan = models.ForeignKey(SupplyPlanItem, related_name='wave_plan')
-    wave_number = models.CharField(
-        max_length=2,
-        null=True, blank=False,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    quantity_required = models.PositiveIntegerField(
-        help_text=u'Quantity required for this wave',
-        null=True, blank=False
-    )
-    date_required_by = models.DateField(
-        null=True, blank=False
-    )
-
-    def __unicode__(self):
-        return u'Wave {}: Item: {}/{} - Quantity: {}'.format(
-            self.wave_number,
-            self.supply_plan.item.code,
-            self.supply_plan.item.description,
-            self.quantity_required,
         )
 
 
@@ -551,71 +462,10 @@ class DistributionPlanWaveItem(models.Model):
     )
 
 
-class DistributionPlanItem(TimeStampedModel):
-
-    plan = models.ForeignKey(DistributionPlan, related_name='requests')
-    wave_number = models.CharField(
-        max_length=2,
-        null=True, blank=True,
-        choices=Choices(
-            '1', '2', '3', '4'
-        )
-    )
-    wave = models.ForeignKey(WavePlan, null=True, blank=False)
-    site = models.ForeignKey(Location, null=True, blank=False)
-    purpose = models.CharField(
-        max_length=50,
-        null=True, blank=True,
-        choices=Choices(
-            ('emergency_request', 'Emergency Request',),
-            ('pd_request', 'PD Request',),
-        ),
-        default='pd_request'
-    )
-    target_population = models.IntegerField(
-        verbose_name=u'No. of beneficiaries covered',
-        null=True, blank=True
-    )
-    delivery_location = models.ForeignKey(
-        Location,
-        null=True, blank=True,
-        related_name='delivery_location',
-        help_text=u'Leave it empty if the same save the Site above',
-    )
-    contact_person = models.ForeignKey(
-        PartnerStaffMember,
-        null=True, blank=True
-    )
-
-    quantity_requested = models.PositiveIntegerField(
-        verbose_name=u'Quantity required for this location',
-        null=True, blank=False
-    )
-    date_required_by = models.DateField(
-        null=True, blank=False,
-    )
-    date_distributed_by = models.DateField(
-        verbose_name=u'planned distribution date',
-        null=True, blank=False
-    )
-    to_delivery = models.BooleanField(blank=True, default=False)
-    delivery_expected_date = models.DateField(
-        null=True, blank=True,
-        help_text='To be defined by UNICEF Supply Beirut focal point'
-    )
-
-    def __unicode__(self):
-        return u'Quantity: {} - Site: {}'.format(
-            self.quantity_requested,
-            self.site,
-        )
-
-
 class DistributionPlanItemReceived(TimeStampedModel):
 
     plan = models.ForeignKey(DistributionPlan, related_name='received')
     supply_item = models.ForeignKey(SupplyItem, related_name='received_items')
-    wave = models.ForeignKey(DistributionPlanItem, null=True, blank=True, related_name='received_wave')
     wave_plan = models.ForeignKey(DistributionPlanWave, null=True, blank=True, related_name='received_wave_plan')
     wave_item = models.ForeignKey(DistributionPlanWaveItem, null=True, blank=True, related_name='received_wave_item')
     quantity_requested = models.PositiveIntegerField(
@@ -644,7 +494,6 @@ class DistributedItem(TimeStampedModel):
 
     plan = models.ForeignKey(DistributionPlan, related_name='distributed')
     supply_item = models.ForeignKey(SupplyItem, related_name='distributed_items')
-    wave = models.ForeignKey(DistributionPlanItem, null=True, blank=True, related_name='distributed_wave')
     wave_plan = models.ForeignKey(DistributionPlanWave, null=True, blank=True, related_name='distributed_wave_plan')
     wave_item = models.ForeignKey(DistributionPlanWaveItem, null=True, blank=True, related_name='distributed_wave_item')
     quantity_distributed_per_site = models.PositiveIntegerField(

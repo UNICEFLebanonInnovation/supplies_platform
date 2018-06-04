@@ -14,22 +14,19 @@ from supplies_platform.backends.utils import send_notification
 from supplies_platform.users.util import has_group
 from .models import (
     SupplyPlan,
-    WavePlan,
-    SupplyPlanItem,
     SupplyPlanWave,
     SupplyPlanWaveItem,
     DistributionPlan,
     DistributionPlanWave,
     DistributionPlanWaveItem,
-    DistributionPlanItem,
     DistributionPlanItemReceived,
     DistributedItem,
     DistributedItemSite,
 )
 from .forms import (
     SupplyPlanForm,
-    WavePlanForm,
-    WavePlanFormSet,
+    # SupplyPlanWaveForm,
+    SupplyPlanWaveFormSet,
     DistributionPlanForm,
     DistributedItemSiteForm,
     DistributedItemSiteFormSet,
@@ -166,67 +163,6 @@ class UpcomingDeliveryFilter(admin.SimpleListFilter):
         return queryset
 
 
-class WavePlanInline(nested_admin.NestedStackedInline):
-    model = WavePlan
-    form = WavePlanForm
-    formset = WavePlanFormSet
-    verbose_name = 'Wave'
-    verbose_name_plural = 'Waves'
-    min_num = 0
-    max_num = 4
-    extra = 0
-    fk_name = 'supply_plan'
-    suit_classes = u'suit-tab suit-tab-waves'
-
-    fields = (
-        'wave_number',
-        'quantity_required',
-        'date_required_by',
-    )
-
-
-class SupplyPlanItemInline(nested_admin.NestedStackedInline):
-    model = SupplyPlanItem
-    verbose_name = 'Supply Item'
-    verbose_name_plural = 'Supply Items'
-    extra = 0
-    fk_name = 'supply_plan'
-    suit_classes = u'suit-tab suit-tab-waves'
-
-    fields = (
-        'item',
-        'quantity',
-        'item_price',
-        'total_budget',
-        'beneficiaries_covered_per_item',
-        # 'target_population',
-    )
-
-    inlines = [WavePlanInline, ]
-
-    readonly_fields = (
-        'item_price',
-        'total_budget',
-        # 'target_population',
-        'beneficiaries_covered_per_item',
-    )
-
-    # def get_readonly_fields(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.status in ['SUBMITTED', 'APPROVED']:
-    #         return self.fields
-    #     return self.readonly_fields
-    #
-    # def has_add_permission(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
-    #         return False
-    #     return True
-    #
-    # def has_change_permission(self, request, obj=None):
-    #     if has_group(request.user, 'UNICEF_PD') and obj and obj.plan.status in ['SUBMITTED', 'APPROVED']:
-    #         return False
-    #     return True
-
-
 class SupplyPlanWaveItemInline(nested_admin.NestedTabularInline):
     model = SupplyPlanWaveItem
     verbose_name = 'Item'
@@ -263,7 +199,7 @@ class SupplyPlanWaveItemInline(nested_admin.NestedTabularInline):
 class SupplyPlanWaveInline(nested_admin.NestedStackedInline):
     model = SupplyPlanWave
     # form = WavePlanForm
-    # formset = WavePlanFormSet
+    formset = SupplyPlanWaveFormSet
     verbose_name = 'Wave'
     verbose_name_plural = 'Waves'
     min_num = 0
@@ -791,15 +727,15 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             'approval_comments',
         ]
 
-        if has_group(request.user, 'FIELD_FP') and obj:
+        if has_group(request.user, 'FIELD_FP') and obj and obj.status == obj.SUBMITTED:
             fields.remove('reviewed')
             fields.remove('review_comments')
 
-        if has_group(request.user, 'SUPPLY_FP') and obj:
+        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.REVIEWED:
             fields.remove('cleared')
             fields.remove('cleared_comments')
 
-        if has_group(request.user, 'UNICEF_PD') and obj:
+        if has_group(request.user, 'UNICEF_PD') and obj and obj.status == obj.CLEARED:
             fields.remove('approved')
             fields.remove('approval_comments')
 
