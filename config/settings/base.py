@@ -219,7 +219,8 @@ SUIT_CONFIG = {
     'MENU_OPEN_FIRST_CHILD': True, # Default True
     'MENU_EXCLUDE': ('auth.group',),
     'MENU': (
-        {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
+        # {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
+        {'label': 'Dashboard', 'icon': 'icon-home', 'url': "/dashboard/index"},
         {'label': 'Planning', 'icon': 'icon-th-list', 'models': (
             'planning.SupplyPlan',
             'planning.DistributionPlan',
