@@ -275,8 +275,8 @@ class DistributionPlan(TimeStampedModel):
         (REVIEWED, u"Reviewed"),
         (CLEARED, u"Cleared"),
         (APPROVED, u"Approved"),
-        (RECEIVED, u"All waves received"),
-        (COMPLETED, u"Distribution Completed"),
+        # (RECEIVED, u"All waves received"),
+        # (COMPLETED, u"Distribution Completed"),
         (CANCELLED, u"Cancelled"),
     )
 

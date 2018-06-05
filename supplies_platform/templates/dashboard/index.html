@@ -305,7 +305,7 @@
                                           <div class="order-status-timeline-completion c3 {{ distribution.plan.section.color }}"></div>
                                         {% elif item.delivery_expected_date %}
                                           <div class="order-status-timeline-completion c2 {{ distribution.plan.section.color }}"></div>
-                                        {% elif distribution.status == 'submitted' %}
+                                        {% elif distribution.status == 'submitted' or distribution.status == 'reviewed' or distribution.status == 'cleared' or distribution.status == 'approved' %}
                                           <div class="order-status-timeline-completion c1 {{ distribution.plan.section.color }}"></div>
                                         {% else %}
                                           <div class="order-status-timeline-completion c0 {{ distribution.plan.section.color }}"></div>
