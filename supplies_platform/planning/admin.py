@@ -526,8 +526,7 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
            'tpm_visit',
            'unicef_visit',
         ]
-        if (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')) \
-            and obj and obj.plan.status == DistributionPlan.COMPLETED:
+        if obj and (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')):
             fields.remove('tpm_visit')
             fields.remove('unicef_visit')
 

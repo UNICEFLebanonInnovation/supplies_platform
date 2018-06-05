@@ -29,7 +29,7 @@ class SMVisit(TimeStampedModel):
         null=True, blank=True
     )
     type = models.CharField(
-        max_length=2,
+        max_length=10,
         null=True, blank=False,
         choices=Choices(
             ('quantity', 'Quantity'),

@@ -88,11 +88,11 @@ class SupplyPlanWaveFormSet(BaseInlineFormSet):
                     continue
                 data = form.cleaned_data
                 date_required_by = data.get('date_required_by', 0)
-                current_date = date.today() + datetime.timedelta(days=15)
+                current_date = date.today()
 
                 if date_required_by <= current_date:
                     raise ValidationError(
-                        _(u"The required date ({}) should be at least 15 after the current day".format(
+                        _(u"The required date ({}) should be after the current date".format(
                             date_required_by))
                     )
 
@@ -237,8 +237,7 @@ class DistributionPlanItemReceivedFormSet(BaseInlineFormSet):
                         _(u'Please fill the quantity received for the date received ({})'.format(
                             date_received))
                     )
-
-                if date_received and date_received <= instance.wave_item.date_distributed_by:
+                if date_received and instance.wave_item and date_received <= instance.wave_item.date_distributed_by:
                     raise ValidationError(
                         _(u"The received date ({}) should be after the planned distribution date ({})".format(
                             date_received, instance.wave_item.date_distributed_by))
