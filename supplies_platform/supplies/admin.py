@@ -11,6 +11,7 @@ class SupplyItemResource(resources.ModelResource):
     class Meta:
         model = SupplyItem
         fields = (
+            'id',
             'code',
             'description',
             'price',
