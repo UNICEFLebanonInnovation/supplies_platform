@@ -96,7 +96,7 @@ class SupplyPlanWaveFormSet(BaseInlineFormSet):
                             date_required_by))
                     )
 
-                if self.instance.pca and date_required_by > self.instance.pca.end:
+                if self.instance.pca and date_required_by and date_required_by > self.instance.pca.end:
                     pca = self.instance
                     raise ValidationError(
                         _(u'The required date ({}) should be between {} and {}'.format(
