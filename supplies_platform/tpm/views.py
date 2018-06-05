@@ -83,15 +83,15 @@ class SMAssessment(SingleObjectMixin, RedirectView):
         if assessment_slug == 'quality':
             callback_url = self.request.META.get('HTTP_REFERER', reverse('tpm:unicef_visits', args={}))
             if assessment_mode == 'online':
-                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'  # Online only
+                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8V'  # Online only
             else:
                 assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8V'  # Online / Offline
         if assessment_slug == 'quantity':
             callback_url = self.request.META.get('HTTP_REFERER', reverse('tpm:tpm_visits', args={}))
             if assessment_mode == 'online':
-                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8V'  # Online only
+                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'  # Online only
             else:
-                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8O'  # Online / Offline
+                assessment_form = 'https://ee.humanitarianresponse.info/x/::YS8O'  # Online / Offline
 
         url = '{form}?d[supply]={supply}&d[partnership]={partnership}&d[supply_item]={supply_item}' \
               '&d[location]={location}&d[quantity]={quantity}&d[distribution_date]={distribution_date}' \

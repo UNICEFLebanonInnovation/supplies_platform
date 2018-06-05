@@ -232,7 +232,7 @@ SUIT_CONFIG = {
             'partners.Agreement',
             'partners.PCA',
         )},
-        {'app': 'tmp', 'label': 'SM/TPM Visits', 'icon': 'icon-th-list'},
+        # {'app': 'tmp', 'label': 'TPM Visits', 'icon': 'icon-th-list'},
         {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-th-list'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
         {'app': 'users', 'label': 'Users', 'icon': 'icon-user'},

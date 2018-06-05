@@ -67,9 +67,9 @@ class SMVisit(TimeStampedModel):
 
     def get_path(self, tab=None):
         if self.type == 'quality':
-            return 'http://supply-platform.herokuapp.com/tpm/unicef-visits/'
+            return 'https://supply-platform.herokuapp.com/tpm/unicef-visits/'
         else:
-            return 'http://supply-platform.herokuapp.com/tpm/tpm-visits/'
+            return 'https://supply-platform.herokuapp.com/tpm/tpm-visits/'
 
     @property
     def supply_plan_partner(self):

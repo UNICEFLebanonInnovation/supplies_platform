@@ -63,7 +63,7 @@ class SMVisitAdmin(ImportExportModelAdmin):
         'supply_plan_partner',
         'supply_plan_partnership',
         'supply_plan_section',
-        # 'requested_by',
+        'type',
         'site',
         'supply_item',
         'quantity_distributed',

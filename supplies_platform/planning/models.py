@@ -163,7 +163,7 @@ class SupplyPlan(TimeStampedModel):
         )
 
     def get_path(self, tab):
-        return 'http://supply-platform.herokuapp.com/admin/planning/supplyplan/{}/change/{}'.format(
+        return 'https://supply-platform.herokuapp.com/admin/planning/supplyplan/{}/change/{}'.format(
             self.id,
             tab
         )
@@ -387,7 +387,7 @@ class DistributionPlan(TimeStampedModel):
         )
 
     def get_path(self, tab):
-        return 'http://supply-platform.herokuapp.com/admin/planning/distributionplan/{}/change/{}'.format(
+        return 'https://supply-platform.herokuapp.com/admin/planning/distributionplan/{}/change/{}'.format(
             self.id,
             tab
         )
