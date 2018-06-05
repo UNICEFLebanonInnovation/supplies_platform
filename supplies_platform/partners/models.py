@@ -98,8 +98,8 @@ class PartnerStaffMember(models.Model):
     title = models.CharField(max_length=64)
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
-    email = models.CharField(max_length=128, unique=True, blank=False)
-    phone = models.CharField(max_length=64, blank=True)
+    email = models.CharField(max_length=128, blank=True)
+    phone = models.CharField(max_length=64, blank=False)
     active = models.BooleanField(
         default=True
     )

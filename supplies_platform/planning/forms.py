@@ -63,7 +63,7 @@ class SupplyPlanForm(forms.ModelForm):
             return cleaned_data
 
         pca = cleaned_data.get('pca', 0)
-        if pca:
+        if pca and pca.end:
             current_date = date.today()
             if current_date > pca.end:
                 raise ValidationError(
