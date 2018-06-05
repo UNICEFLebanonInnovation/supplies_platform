@@ -25,7 +25,7 @@ from .models import (
 )
 from .forms import (
     SupplyPlanForm,
-    # SupplyPlanWaveForm,
+    SupplyPlanWaveForm,
     SupplyPlanWaveFormSet,
     DistributionPlanForm,
     DistributedItemSiteForm,
@@ -200,7 +200,7 @@ class SupplyPlanWaveItemInline(nested_admin.NestedTabularInline):
 
 class SupplyPlanWaveInline(nested_admin.NestedStackedInline):
     model = SupplyPlanWave
-    # form = WavePlanForm
+    form = SupplyPlanWaveForm
     formset = SupplyPlanWaveFormSet
     verbose_name = 'Wave'
     verbose_name_plural = 'Waves'

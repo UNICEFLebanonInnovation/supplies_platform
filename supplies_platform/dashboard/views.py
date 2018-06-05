@@ -25,7 +25,9 @@ class IndexView(LoginRequiredMixin,
 
     def get_context_data(self, **kwargs):
         selected_section = int(self.request.GET.get('section', 0))
+
         plannings = SupplyPlan.objects.filter(plan__isnull=True)
+
         distributions = DistributionPlan.objects.all()
         requests = DistributionPlanWave.objects.all().order_by('-modified')
         if selected_section:
@@ -57,9 +59,16 @@ class IndexView(LoginRequiredMixin,
             plan_waves__delivery_expected_date__lte=datetime.datetime.now() + datetime.timedelta(days=15),
         ).distinct()
 
+        planned = plannings.filter(status=SupplyPlan.PLANNED).count()
+        submitted = plannings.filter(status=SupplyPlan.SUBMITTED).count()
+        reviewed = plannings.filter(status=SupplyPlan.REVIEWED).count()
+
         return {
             'sections': sections,
             'plans': plannings,
+            'nbr_planned': planned,
+            'nbr_submitted': submitted,
+            'nbr_reviewed': reviewed,
             'request_waves': requests,
             'selected_section': selected_section,
             'nbr_quantity_gap': quantity_gap.count(),
@@ -71,6 +80,6 @@ class IndexView(LoginRequiredMixin,
             'nbr_actions_sm': 0,
             'nbr_actions_24h': 0,
             'nbr_stock_not_available': 0,
-            'nbr_planned': plannings.filter(status='submitted').count(),
+            # 'nbr_planned': plannings.filter(status='submitted').count(),
             'nbr_dist_planned': distributions.filter(status='submitted').count(),
         }

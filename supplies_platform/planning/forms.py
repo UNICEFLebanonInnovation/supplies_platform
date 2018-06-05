@@ -72,6 +72,16 @@ class SupplyPlanForm(forms.ModelForm):
         return cleaned_data
 
 
+class SupplyPlanWaveForm(forms.ModelForm):
+
+    class Meta:
+        model = SupplyPlanWave
+        fields = '__all__'
+        widgets = {
+            'date_required_by': SuitDateWidget,
+        }
+
+
 class SupplyPlanWaveFormSet(BaseInlineFormSet):
 
     def clean(self):

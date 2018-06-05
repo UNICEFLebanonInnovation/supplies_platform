@@ -46,6 +46,77 @@
           <!-- metric column -->
 
           {% if request.user|has_group:"ADMIN" %}
+
+          {% if nbr_planned %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - PLANNED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=planned" target="_blank">
+                  <span class="value">
+                      {{ nbr_planned }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_submitted %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - SUBMITTED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=submitted" target="_blank">
+                  <span class="value">
+                      {{ nbr_submitted }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_reviewed %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - REVIEWED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=reviewed" target="_blank">
+                  <span class="value">
+                      {{ nbr_reviewed }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_actions_24h %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
@@ -62,6 +133,7 @@
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
 
           <div class="col-lg-3">
             <!-- .metric -->
@@ -89,6 +161,7 @@
             <!-- /.metric -->
           </div>
 
+          {% if nbr_actions_sm %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
@@ -105,6 +178,7 @@
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
 
           <div class="col-lg-3">
             <!-- .metric -->
@@ -159,6 +233,7 @@
             <!-- /.metric -->
           </div>
 
+          {% if nbr_stock_not_available %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
@@ -175,6 +250,8 @@
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
+
           {% endif %}
 
           {% if request.user|has_group:"UNICEF_PO" %}
