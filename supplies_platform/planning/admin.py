@@ -33,6 +33,7 @@ from .forms import (
     DistributionPlanWaveForm,
     DistributionPlanWaveFormSet,
     DistributionPlanWaveItemForm,
+    DistributionPlanItemReceivedForm,
     DistributionPlanItemReceivedFormSet,
 )
 
@@ -461,6 +462,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
 
 class ReceivedItemInline(admin.TabularInline):
     model = DistributionPlanItemReceived
+    form = DistributionPlanItemReceivedForm
     formset = DistributionPlanItemReceivedFormSet
     max_num = 0
     min_num = 0
@@ -559,6 +561,7 @@ class DistributedItemInline(nested_admin.NestedStackedInline):
 
 
 class DistributionPlanWaveItemInline(nested_admin.NestedTabularInline):
+# class DistributionPlanWaveItemInline(nested_admin.NestedStackedInline):
     model = DistributionPlanWaveItem
     form = DistributionPlanWaveItemForm
     verbose_name = 'Item'
@@ -604,6 +607,9 @@ class DistributionPlanWaveInline(nested_admin.NestedStackedInline):
         'delivery_site',
         'date_required_by',
         'contact_person',
+    )
+    readonly_fields = (
+        'date_required_by',
     )
 
     inlines = [DistributionPlanWaveItemInline, ]
@@ -830,6 +836,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                             supply_item=wave_item.item,
                             wave_number=plan_wave.wave_number,
                             quantity_requested=wave_item.quantity_requested,
+                            date_required_by=plan_wave.date_required_by
                         )
                         dist_item, create = DistributedItem.objects.get_or_create(
                             plan=obj,

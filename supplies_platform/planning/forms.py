@@ -4,8 +4,7 @@ import datetime
 from django.utils.translation import ugettext as _
 from django import forms
 from django.forms.models import BaseInlineFormSet
-# from datetimewidget.widgets import DateTimeWidget
-# from bootstrap3_datetime.widgets import DateTimePicker
+from suit.widgets import SuitDateWidget, SuitTimeWidget, SuitSplitDateTimeWidget
 from django.contrib import messages
 from datetime import date
 from dal import autocomplete
@@ -176,23 +175,23 @@ class DistributionPlanWaveFormSet(BaseInlineFormSet):
                 partnership_end_date = self.instance.plan.pca.end
             for form in self.forms:
                 data = form.cleaned_data
-                if form.cleaned_data.get('DELETE', False) or not data.get('date_required_by', 0):
+                if form.cleaned_data.get('DELETE', False):
                     continue
                 instance = form.instance
 
-                date_required_by = data.get('date_required_by', 0)
-
-                if date_required_by < instance.wave.date_required_by:
-                    raise ValidationError(
-                        _(u'The required date ({}) should be grater than {}'.format(
-                            date_required_by, instance.wave.date_required_by))
-                    )
-
-                if self.instance.plan.pca and date_required_by > partnership_end_date:
-                    raise ValidationError(
-                        _(u'The required date ({}) should be between {} and {}'.format(
-                            date_required_by, partnership_start_date, partnership_end_date))
-                    )
+                # date_required_by = data.get('date_required_by', 0)
+                #
+                # if date_required_by < instance.wave.date_required_by:
+                #     raise ValidationError(
+                #         _(u'The required date ({}) should be grater than {}'.format(
+                #             date_required_by, instance.wave.date_required_by))
+                #     )
+                #
+                # if self.instance.plan.pca and date_required_by > partnership_end_date:
+                #     raise ValidationError(
+                #         _(u'The required date ({}) should be between {} and {}'.format(
+                #             date_required_by, partnership_start_date, partnership_end_date))
+                #     )
 
         return cleaned_data
 
@@ -203,6 +202,20 @@ class DistributionPlanWaveItemForm(forms.ModelForm):
     class Meta:
         model = DistributionPlanWaveItem
         fields = '__all__'
+        widgets = {
+            'date_distributed_by': SuitDateWidget,
+        }
+
+
+class DistributionPlanItemReceivedForm(forms.ModelForm):
+    # date_distributed_by= forms.DateField()
+
+    class Meta:
+        model = DistributionPlanItemReceived
+        fields = '__all__'
+        widgets = {
+            'date_received': SuitDateWidget,
+        }
 
 
 class DistributionPlanItemReceivedFormSet(BaseInlineFormSet):
@@ -237,11 +250,11 @@ class DistributionPlanItemReceivedFormSet(BaseInlineFormSet):
                         _(u'Please fill the quantity received for the date received ({})'.format(
                             date_received))
                     )
-                if date_received and instance.wave_item and date_received <= instance.wave_item.date_distributed_by:
-                    raise ValidationError(
-                        _(u"The received date ({}) should be after the planned distribution date ({})".format(
-                            date_received, instance.wave_item.date_distributed_by))
-                    )
+                # if date_received and instance.wave_item and date_received <= instance.wave_item.date_distributed_by:  # distribution expected date
+                #     raise ValidationError(
+                #         _(u"The received date ({}) should be after the planned distribution date ({})".format(
+                #             date_received, instance.wave_item.date_distributed_by))
+                #     )
 
         return cleaned_data
 
@@ -322,4 +335,7 @@ class DistributedItemSiteForm(forms.ModelForm):
     class Meta:
         model = DistributedItemSite
         fields = '__all__'
+        widgets = {
+            'distribution_date': SuitDateWidget,
+        }
 
