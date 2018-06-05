@@ -433,6 +433,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                         plan=dist_plan,
                         wave_number=plan_wave.wave_number,
                         wave=plan_wave,
+                        date_required_by=plan_wave.date_required_by
                     )
                     for wave_item in plan_wave.supply_plan_wave_items.all():
                         DistributionPlanWaveItem.objects.create(
@@ -836,7 +837,6 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                             supply_item=wave_item.item,
                             wave_number=plan_wave.wave_number,
                             quantity_requested=wave_item.quantity_requested,
-                            date_required_by=plan_wave.date_required_by
                         )
                         dist_item, create = DistributedItem.objects.get_or_create(
                             plan=obj,
