@@ -160,7 +160,7 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
-                        {% if request.user|has_group:"UNICEF_PD" or request.user|has_group:"BUDGET_OWNER"  %}
+                        {% if request.user.is_staff   %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="/admin/planning/supplyplan/" class="tile-wrapper">
@@ -171,7 +171,6 @@
                         </a>
                       </div>
                       <!-- /.dropdown-sheet-item -->
-                        {% endif %}
                       <!-- .dropdown-sheet-item -->
                       <div class="dropdown-sheet-item">
                         <a href="/admin/planning/distributionplan/" class="tile-wrapper">
@@ -181,6 +180,7 @@
                           <span class="tile-peek">Distribution Plan</span>
                         </a>
                       </div>
+                      {% endif %}
                       <!-- /.dropdown-sheet-item -->
                       {% if request.user.is_superuser or request.user|has_group:"DASHBOARD" %}
                       <!-- .dropdown-sheet-item -->
@@ -204,7 +204,7 @@
                       </div>
                       <!-- /.dropdown-sheet-item -->
                       {% endif %}
-                        {% if request.user|has_group:"SM_VISIT" or request.user|has_group:"ADMIN" %}
+                        {% if request.user|has_group:"SM_VISIT" %}
                         <!-- .dropdown-sheet-item -->
                         <div class="dropdown-sheet-item">
                           <a href="{% url 'tpm:unicef_visits' %}" class="tile-wrapper">

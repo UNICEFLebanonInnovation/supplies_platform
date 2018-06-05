@@ -10,7 +10,7 @@ urlpatterns = [
     ),
     url(
         regex=r'^tpm-visits/$',
-        view=views.SMListView.as_view(),
+        view=views.TPMListView.as_view(),
         name='tpm_visits'
     ),
     url(

@@ -1,0 +1,38 @@
+{% extends "base2.html" %}
+{% load static %}
+{% load render_table from django_tables2 %}
+{% load util_tags %}
+
+{% block page-inner %}
+    <!-- .page-title-bar -->
+    <header class="page-title-bar">
+      <p class="lead">
+        <span class="font-weight-bold"></span>
+        <span class="d-block text-muted"></span>
+      </p>
+    </header>
+    <!-- /.page-title-bar -->
+    <!-- .page-section -->
+    <div class="">
+      <!-- .section-block -->
+      <div class="section-block">
+        <!-- metric row -->
+        <div class="metric-row">
+
+        </div>
+        <!-- /metric row -->
+      </div>
+      <div class="section-deck">
+        <!-- .card -->
+        <div class="card card-fluid">
+          <header class="card-header"> TPM Visits <span class="badge">({{ table.rows|length }})</span></header>
+          <!-- .lits-group -->
+          {% render_table table 'django_tables2/bootstrap.html' %}
+          <!-- /.lits-group -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /section-deck -->
+    </div>
+    <!-- /.page-section -->
+{% endblock page-inner %}

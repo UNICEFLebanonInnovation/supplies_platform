@@ -36,7 +36,7 @@ class SMListView(LoginRequiredMixin,
 
     table_class = SMVisitTable
     model = SMVisit
-    template_name = 'tpm/visits2.html'
+    template_name = 'tpm/unicef.visit.html'
     table = BootstrapTable(SMVisit.objects.all(), order_by='-id')
 
     filterset_class = SMVisitFilter
@@ -53,7 +53,7 @@ class TPMListView(LoginRequiredMixin,
 
     table_class = TPMVisitTable
     model = SMVisit
-    template_name = 'tpm/visits2.html'
+    template_name = 'tpm/tpm.visit.html'
     table = BootstrapTable(SMVisit.objects.all(), order_by='-id')
 
     filterset_class = SMVisitFilter
@@ -119,16 +119,9 @@ class SMVisitSubmission(SingleObjectMixin, View):
         hashing = AssessmentHash.objects.get(hashed=payload['supply'])
 
         tpm_visit = SMVisit.objects.get(id=int(hashing.tpm_visit))
-
-        if hashing.assessment_slug == 'quantity':
-            tpm_visit.assessment_completed = True
-            tpm_visit.assessment = payload
-            tpm_visit.assessment_completed_date = datetime.datetime.now()
-
-        if hashing.assessment_slug == 'quality':
-            tpm_visit.assessment_completed = True
-            tpm_visit.assessment = payload
-            tpm_visit.assessment_completed_date = datetime.datetime.now()
+        tpm_visit.assessment_completed = True
+        tpm_visit.assessment = payload
+        tpm_visit.assessment_completed_date = datetime.datetime.now()
 
         tpm_visit.save()
 

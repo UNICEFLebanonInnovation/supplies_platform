@@ -11,7 +11,9 @@ class SupplyItemResource(resources.ModelResource):
     class Meta:
         model = SupplyItem
         fields = (
-
+            'code',
+            'description',
+            'price',
         )
         export_order = fields
 
