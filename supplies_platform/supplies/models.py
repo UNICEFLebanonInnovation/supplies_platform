@@ -35,7 +35,7 @@ class SupplyItem(models.Model):
         help_text='$'
     )
     quantity_in_stock = models.PositiveIntegerField(blank=True, null=True,)
-    section = models.ForeignKey(Section)
+    section = models.ForeignKey(Section, blank=True, null=True)
 
     @property
     def stock_value(self):
