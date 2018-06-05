@@ -377,13 +377,13 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         form.request = request
         user = request.user
         form.base_fields['section'].initial = user.section
-        if has_group(request.user, 'UNICEF_PD'):
-            form.base_fields['status'].choices = (
-                (SupplyPlan.PLANNED, u"Planned"),
-                (SupplyPlan.SUBMITTED, u"Submitted"),
-                (SupplyPlan.COMPLETED, u"Completed"),
-                (SupplyPlan.CANCELLED, u"Cancelled"),
-            )
+        # if has_group(request.user, 'UNICEF_PD'):
+        #     form.base_fields['status'].choices = (
+        #         (SupplyPlan.PLANNED, u"Planned"),
+        #         (SupplyPlan.SUBMITTED, u"Submitted"),
+        #         (SupplyPlan.COMPLETED, u"Completed"),
+        #         (SupplyPlan.CANCELLED, u"Cancelled"),
+        #     )
         if has_group(request.user, 'BUDGET_OWNER') and 'approved_by' in form.base_fields:
             form.base_fields['approved_by'].initial = user
 
