@@ -301,7 +301,7 @@
                                         <!-- class names: c0 c1 c2 c3 and c4 -->
                                         {% if distribution.item_distributed %}
                                           <div class="order-status-timeline-completion c4 {{ distribution.plan.section.color }}"></div>
-                                        {% elif item.received_wave.all.first %}
+                                        {% elif item.received_wave_plan.all.first %}
                                           <div class="order-status-timeline-completion c3 {{ distribution.plan.section.color }}"></div>
                                         {% elif item.delivery_expected_date %}
                                           <div class="order-status-timeline-completion c2 {{ distribution.plan.section.color }}"></div>
