@@ -8,7 +8,7 @@ from mailer import send_multi_message, send_simple_message
 from supplies_platform.users.models import User
 
 
-def send_notification(user_group, subject, obj, level='info', partner=None, recipient=None):
+def send_notification(user_group, subject, obj, tab='#general', level='info', partner=None, recipient=None):
     from supplies_platform.backends.models import Notification
 
     instance = Notification.objects.create(
@@ -19,7 +19,8 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
         object_id=obj.id,
         model=obj.__class__.__name__,
         description=obj.__unicode__(),
-        level=level
+        level=level,
+        tab=tab
     )
 
     config = {
@@ -50,7 +51,13 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
             section=obj.plan_section,
             email__isnull=False,
         ).values_list('email', flat=True).distinct()
-        content = '{}: {}'.format(subject, obj.__unicode__())
+        content = '{}: {} \\r\\n Please click on the link: {}'.format(
+            subject,
+            obj.__unicode__(),
+            obj.get_path(tab)
+        )
+
+        recipients = ['unicef.sms@gmail.com']
         send_simple_message(subject, content, recipients)
     except Exception as ex:
         print(ex.message)

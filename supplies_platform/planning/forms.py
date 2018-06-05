@@ -90,7 +90,7 @@ class SupplyPlanWaveFormSet(BaseInlineFormSet):
                 date_required_by = data.get('date_required_by', 0)
                 current_date = date.today()
 
-                if date_required_by <= current_date:
+                if date_required_by and date_required_by <= current_date:
                     raise ValidationError(
                         _(u"The required date ({}) should be after the current date".format(
                             date_required_by))

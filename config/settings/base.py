@@ -219,8 +219,9 @@ SUIT_CONFIG = {
     'MENU_OPEN_FIRST_CHILD': True, # Default True
     'MENU_EXCLUDE': ('auth.group',),
     'MENU': (
-        # {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
+        {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
         {'label': 'Dashboard', 'icon': 'icon-home', 'url': "/dashboard/index"},
+        {'label': 'SM Visits', 'icon': 'icon-home', 'url': "/tpm/unicef-visits/"},
         {'label': 'Planning', 'icon': 'icon-th-list', 'models': (
             'planning.SupplyPlan',
             'planning.DistributionPlan',
@@ -231,7 +232,7 @@ SUIT_CONFIG = {
             'partners.Agreement',
             'partners.PCA',
         )},
-        {'app': 'tmp', 'label': 'TPM', 'icon': 'icon-th-list'},
+        {'app': 'tmp', 'label': 'SM/TPM Visits', 'icon': 'icon-th-list'},
         {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-th-list'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
         {'app': 'users', 'label': 'Users', 'icon': 'icon-user'},

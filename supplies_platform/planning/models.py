@@ -141,7 +141,7 @@ class SupplyPlan(TimeStampedModel):
     def total_budget(self):
         total = 0.0
         try:
-            items = self.supply_plans.all()
+            items = self.waves_items.all()
             for item in items:
                 total += item.quantity * item.item.price
         except Exception as ex:
@@ -160,6 +160,12 @@ class SupplyPlan(TimeStampedModel):
             self.reference_number,
             self.partner,
             self.section
+        )
+
+    def get_path(self, tab):
+        return 'http://supply-platform.herokuapp.com/admin/planning/supplyplan/{}/change/{}'.format(
+            self.id,
+            tab
         )
 
     def save(self, **kwargs):
@@ -201,6 +207,11 @@ class SupplyPlanWave(models.Model):
 
 class SupplyPlanWaveItem(models.Model):
 
+    plan = models.ForeignKey(
+        SupplyPlan,
+        null=True, blank=True,
+        related_name='waves_items'
+    )
     plan_wave = models.ForeignKey(SupplyPlanWave, related_name='supply_plan_wave_items')
     item = models.ForeignKey(SupplyItem)
     quantity = models.PositiveIntegerField(
@@ -373,6 +384,12 @@ class DistributionPlan(TimeStampedModel):
             self.reference_number,
             self.plan.partner,
             self.plan.section
+        )
+
+    def get_path(self, tab):
+        return 'http://supply-platform.herokuapp.com/admin/planning/distributionplan/{}/change/{}'.format(
+            self.id,
+            tab
         )
 
     def save(self, **kwargs):
