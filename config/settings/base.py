@@ -66,6 +66,7 @@ THIRD_PARTY_APPS = [
     'bootstrap3',
     'bootstrap3_datetime',
     'django_tables2',
+    'elasticapm.contrib.django',
 ]
 
 # Apps specific for this project go here.
@@ -97,6 +98,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'elasticapm.contrib.django.middleware.TracingMiddleware',
 ]
 
 # MIGRATIONS CONFIGURATION
@@ -362,3 +364,15 @@ ADMIN_URL = r'^admin/'
 LOCALE_PATHS = [
     str(APPS_DIR.path('static/locale')),
 ]
+
+ELASTIC_APM = {
+  # Set required service name. Allowed characters:
+  # a-z, A-Z, 0-9, -, _, and space
+  'SERVICE_NAME': '',
+
+  # Use if APM Server requires a token
+  'SECRET_TOKEN': '',
+
+  # Set custom APM Server URL (default: http://localhost:8200)
+  'SERVER_URL': '',
+}
