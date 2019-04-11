@@ -23,6 +23,7 @@ from supplies_platform.supplies.models import SupplyItem
 from supplies_platform.tpm.models import SMVisit
 from supplies_platform.users.models import User
 from .models import (
+    YearlySupplyPlan,
     SupplyPlan,
     SupplyPlanWave,
     DistributionPlan,
@@ -37,6 +38,21 @@ YES_NO_CHOICE = (
     (True, 'Yes'),
     (False, 'No')
 )
+
+
+class YearlySupplyPlanForm(forms.ModelForm):
+
+    tpm_focal_point = forms.ModelChoiceField(
+        required=False, label='TPM focal point',
+        queryset=User.objects.filter(groups__name='TPM_COMPANY')
+    )
+
+    reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+    approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+
+    class Meta:
+        model = YearlySupplyPlan
+        fields = '__all__'
 
 
 class SupplyPlanForm(forms.ModelForm):

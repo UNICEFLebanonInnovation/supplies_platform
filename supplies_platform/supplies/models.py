@@ -51,3 +51,24 @@ class SupplyItem(models.Model):
             # self.quantity_in_stock,
             # self.section
         )
+
+
+class SupplyService(models.Model):
+
+    code = models.CharField(
+        max_length=10,
+    )
+    description = models.TextField(
+        blank=True
+    )
+    expected_amount = models.FloatField(
+        blank=True, null=True,
+        verbose_name='Unit price',
+        help_text='$'
+    )
+
+    def __unicode__(self):
+        return '{} - {}'.format(
+            self.code,
+            self.description,
+        )

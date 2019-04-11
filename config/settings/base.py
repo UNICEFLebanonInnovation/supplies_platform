@@ -223,6 +223,7 @@ SUIT_CONFIG = {
         {'label': 'Dashboard', 'icon': 'icon-home', 'url': "/dashboard/index"},
         {'label': 'SM Visits', 'icon': 'icon-home', 'url': "/tpm/unicef-visits/"},
         {'label': 'Planning', 'icon': 'icon-th-list', 'models': (
+            'planning.YearlySupplyPlan',
             'planning.SupplyPlan',
             'planning.DistributionPlan',
         )},

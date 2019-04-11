@@ -14,7 +14,215 @@ from smart_selects.db_fields import ChainedForeignKey
 from supplies_platform.locations.models import Location
 from supplies_platform.users.models import User, Section
 from supplies_platform.partners.models import PartnerOrganization, PartnerStaffMember, PCA
-from supplies_platform.supplies.models import SupplyItem
+from supplies_platform.supplies.models import SupplyItem, SupplyService
+
+
+class YearlySupplyPlan(TimeStampedModel):
+
+    PLANNED = u'planned'
+    SUBMITTED = u'submitted'
+    REVIEWED = u'reviewed'
+    APPROVED = u'approved'
+    COMPLETED = u'completed'
+    CANCELLED = u'cancelled'
+    STATUS = (
+        (PLANNED, u"Planned"),
+        (SUBMITTED, u"Submitted"),
+        (REVIEWED, u"Reviewed"),
+        (APPROVED, u"Approved"),
+        (COMPLETED, u"Completed"),
+        (CANCELLED, u"Cancelled"),
+    )
+
+    reference_number = models.CharField(
+        max_length=100,
+        null=True, blank=True,
+    )
+    section = models.ForeignKey(
+        Section,
+        null=True, blank=False
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=STATUS,
+        default=PLANNED,
+    )
+    submission_date = models.DateField(
+        null=True, blank=True
+    )
+    to_review = models.BooleanField(blank=True, default=False)
+    reviewed = models.NullBooleanField(null=True, blank=True, default=None)
+    review_date = models.DateField(
+        null=True, blank=True
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    review_comments = models.TextField(
+        null=True, blank=True,
+    )
+    to_approve = models.BooleanField(blank=True, default=False)
+    approved = models.NullBooleanField(null=True, blank=True, default=None)
+    approval_date = models.DateField(
+        null=True, blank=True
+    )
+    approved_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    approval_comments = models.TextField(
+        null=True, blank=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=False, null=True,
+        related_name='+',
+        verbose_name='Planned by'
+    )
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True, null=True,
+        related_name='+',
+        verbose_name='Modified by',
+    )
+    comments = models.TextField(
+        null=True, blank=True,
+    )
+    tpm_focal_point = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+',
+        verbose_name='TPM focal point',
+    )
+
+    items = models.ManyToManyField(SupplyItem, blank=True)
+
+    @property
+    def total_budget(self):
+        total = 0.0
+        try:
+            items = self.supply_plan_items.all()
+            for item in items:
+                total += item.quantity * item.item.price
+        except Exception as ex:
+            pass
+        return '{} {}'.format(
+            total,
+            '$'
+        )
+
+    @property
+    def plan_section(self):
+        return self.section
+
+    def __unicode__(self):
+        return '{} - {}'.format(
+            self.reference_number,
+            self.section
+        )
+
+    def get_path(self, tab):
+        return 'https://supply-platform.herokuapp.com/admin/planning/yearlysupplyplan/{}/change/{}'.format(
+            self.id,
+            tab
+        )
+
+    def save(self, **kwargs):
+        if not self.reference_number:
+            year = datetime.date.today().year
+            objects = list(YearlySupplyPlan.objects.filter(
+                created__year=year,
+            ).order_by('created').values_list('id', flat=True))
+            sequence = '{0:02d}'.format(objects.index(self.id) + 1 if self.id in objects else len(objects) + 1)
+            self.reference_number = '{}{}{}'.format(
+                'YSP',
+                year,
+                sequence
+            )
+
+        super(YearlySupplyPlan, self).save(**kwargs)
+
+
+class SupplyPlanItem(models.Model):
+
+    plan = models.ForeignKey(
+        YearlySupplyPlan,
+        null=True, blank=True,
+        related_name='supply_plan_items'
+    )
+    item = models.ForeignKey(SupplyItem)
+    quantity = models.PositiveIntegerField(
+        help_text=u'PD Quantity'
+    )
+
+    @property
+    def beneficiaries_covered_per_item(self):
+        ttl = 0
+        if self.supply_plan:
+            plans = DistributionPlanWave.objects.filter(
+                plan__plan_id=self.supply_plan_id,
+                wave__supply_plan__item_id=self.item_id
+            )
+            for item in plans:
+                ttl += item.target_population
+        return ttl
+
+    @property
+    def item_price(self):
+        if self.item:
+            return '{} {}'.format(
+                self.item.price,
+                '$'
+            )
+        return ''
+
+    @property
+    def total_budget(self):
+        total = 0.0
+        try:
+            total = self.quantity * self.item.price
+        except Exception as ex:
+            pass
+        return '{} {}'.format(
+            total,
+            '$'
+        )
+
+    def __unicode__(self):
+        return u'{}-{}-{}'.format(
+            self.plan_wave.__unicode__(),
+            self.item,
+            self.quantity
+        )
+
+
+class SupplyPlanService(models.Model):
+
+    plan = models.ForeignKey(
+        YearlySupplyPlan,
+        null=True, blank=True,
+        related_name='supply_plan_services'
+    )
+    item = models.ForeignKey(SupplyService)
+    expected_amount = models.FloatField(
+        blank=True, null=True,
+        verbose_name='Expected Amount',
+        help_text='$'
+    )
+    quantity = models.PositiveIntegerField(
+        help_text=u'PD Quantity'
+    )
+
+    def __unicode__(self):
+        return u'{}-{}-{}-{}$'.format(
+            self.plan.__unicode__(),
+            self.item,
+            self.quantity,
+            self.expected_amount
+        )
 
 
 class SupplyPlan(TimeStampedModel):
@@ -34,6 +242,7 @@ class SupplyPlan(TimeStampedModel):
         (CANCELLED, u"Cancelled"),
     )
 
+    supply_plan = models.ForeignKey(YearlySupplyPlan, related_name='yearly_plan')
     reference_number = models.CharField(
         max_length=100,
         null=True, blank=True,

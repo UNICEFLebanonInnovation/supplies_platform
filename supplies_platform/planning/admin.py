@@ -13,6 +13,9 @@ import nested_admin
 from supplies_platform.backends.utils import send_notification
 from supplies_platform.users.util import has_group
 from .models import (
+    YearlySupplyPlan,
+    SupplyPlanItem,
+    SupplyPlanService,
     SupplyPlan,
     SupplyPlanWave,
     SupplyPlanWaveItem,
@@ -25,6 +28,7 @@ from .models import (
 )
 from .forms import (
     SupplyPlanForm,
+    YearlySupplyPlanForm,
     SupplyPlanWaveForm,
     SupplyPlanWaveFormSet,
     DistributionPlanForm,
@@ -222,6 +226,28 @@ class SupplyPlanWaveInline(nested_admin.NestedStackedInline):
         return False
 
 
+class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
+    model = SupplyPlanItem
+    verbose_name = 'Item'
+    verbose_name_plural = 'Items'
+    min_num = 0
+    max_num = 100
+    extra = 0
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-items'
+
+
+class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
+    model = SupplyPlanService
+    verbose_name = 'Service'
+    verbose_name_plural = 'Services'
+    min_num = 0
+    max_num = 100
+    extra = 0
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-services'
+
+
 class SupplyPlanResource(resources.ModelResource):
     class Meta:
         model = SupplyPlan
@@ -235,6 +261,185 @@ class SupplyPlanResource(resources.ModelResource):
             'approved',
         )
         export_order = fields
+
+
+class YearlySupplyPlanResource(resources.ModelResource):
+    class Meta:
+        model = YearlySupplyPlan
+        fields = (
+            'section',
+            'status',
+            'created',
+            'created_by',
+            'approved',
+        )
+        export_order = fields
+
+
+class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
+    resource_class = YearlySupplyPlanResource
+    form = YearlySupplyPlanForm
+    fieldsets = [
+        (None, {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'reference_number',
+                'section',
+                'status',
+                'tpm_focal_point',
+                'comments',
+                'total_budget',
+                # 'target_population',
+                'created',
+                'created_by',
+                'submission_date',
+            ]
+        }),
+        ('Review by UNICEF Supply Beirut focal point', {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'reviewed',
+                'review_date',
+                'reviewed_by',
+                'review_comments',
+            ]
+        }),
+        ('Approval by UNICEF budget owner', {
+            'classes': ('suit-tab', 'suit-tab-general',),
+            'fields': [
+                'approved',
+                'approval_date',
+                'approved_by',
+                'approval_comments',
+            ]
+        }),
+    ]
+
+    suit_form_tabs = (
+                      ('general', 'Supply Plan'),
+                      ('items', 'Supply Items'),
+                      ('services', 'Supply Services'),
+                    )
+
+    inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline]
+
+    filter_horizontal = ('items',)
+
+    ordering = (u'-created',)
+    date_hierarchy = u'created'
+    search_fields = (
+        'partner__name',
+        'pca',
+    )
+    list_display = (
+        'reference_number',
+        'section',
+        'status',
+        'created',
+        'created_by',
+        'approval_date',
+        'approved_by',
+    )
+    list_filter = (
+        'status',
+        'approved',
+        'approved_by',
+        'approval_date',
+        'section',
+    )
+
+    def partnership_start_date(self, obj):
+        if obj.pca:
+            return obj.pca.start
+        return ''
+
+    def partnership_end_date(self, obj):
+        if obj.pca:
+            return obj.pca.end
+        return ''
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'reference_number',
+            'status',
+            'created',
+            'created_by',
+            'submission_date',
+            'reviewed',
+            'review_date',
+            'reviewed_by',
+            'review_comments',
+            'approved',
+            'approved_by',
+            'approval_date',
+            'approval_comments',
+            'total_budget',
+            # 'target_population',
+        ]
+
+        if has_group(request.user, 'SUPPLY_FP') and obj and obj.status == obj.SUBMITTED:
+            fields.remove('reviewed')
+            fields.remove('review_comments')
+
+        if has_group(request.user, 'BUDGET_OWNER') and obj and obj.status == obj.REVIEWED:
+            fields.remove('approved')
+            fields.remove('approval_comments')
+
+        if has_group(request.user, 'UNICEF_PD'):
+            fields.remove('status')
+
+        return fields
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(YearlySupplyPlanAdmin, self).get_form(request, obj, **kwargs)
+        form.request = request
+        user = request.user
+        form.base_fields['section'].initial = user.section
+        if has_group(request.user, 'BUDGET_OWNER') and 'approved_by' in form.base_fields:
+            form.base_fields['approved_by'].initial = user
+
+        return form
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        if obj and obj.status == obj.SUBMITTED and not obj.submission_date:
+            obj.submission_date = datetime.datetime.now()
+            obj.to_review = True
+            send_notification('SUPPLY_ADMIN', 'SUPPLY PLAN SUBMITTED - TO REVIEW BY SUPPLY', obj)
+        if obj and 'reviewed' in request.POST and not obj.review_date:
+            if obj.reviewed is True:
+                obj.review_date = datetime.datetime.now()
+                obj.reviewed_by = request.user
+                obj.status = obj.REVIEWED
+                obj.to_approve = True
+                send_notification('UNICEF_PD', 'SUPPLY PLAN REVIEWED BY SUPPLY', obj)
+                send_notification('BUDGET_OWNER', 'SUPPLY PLAN TO APPROVE BY THE BUDGET OWNER', obj)
+            elif obj.reviewed is False:
+                obj.status = obj.PLANNED
+                obj.submission_date = None
+                send_notification('UNICEF_PD', 'SUPPLY PLAN REJECTED BY THE SUPPLY - TO REVIEW BY PD FOCAL POINT', obj, 'danger')
+        if obj and 'approved' in request.POST and not obj.approval_date:
+            if obj.approved is True:
+                obj.approval_date = datetime.datetime.now()
+                obj.approved_by = request.user
+                obj.status = obj.APPROVED
+                send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
+            elif obj.approved is False:
+                obj.review_date = None
+                obj.reviewed_by = None
+                obj.status = obj.SUBMITTED
+                send_notification('SUPPLY_ADMIN', 'SUPPLY PLAN REJECTED BY THE BUDGET OWNER - TO REVIEW BY SUPPLY', obj, '#general', 'danger')
+        super(YearlySupplyPlanAdmin, self).save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super(YearlySupplyPlanAdmin, self).get_queryset(request)
+        if has_group(request.user, 'UNICEF_PD'):
+            qs = qs.filter(created_by=request.user)
+        if has_group(request.user, 'BUDGET_OWNER'):
+            qs = qs.filter(status__in=['reviewed', 'approved'])
+        return qs
 
 
 class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
@@ -864,6 +1069,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         return qs
 
 
+admin.site.register(YearlySupplyPlan, YearlySupplyPlanAdmin)
 admin.site.register(SupplyPlan, SupplyPlanAdmin)
 admin.site.register(DistributionPlan, DistributionPlanAdmin)
 
