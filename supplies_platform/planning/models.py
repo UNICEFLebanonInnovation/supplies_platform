@@ -99,6 +99,7 @@ class YearlySupplyPlan(TimeStampedModel):
     )
 
     items = models.ManyToManyField(SupplyItem, blank=True)
+    services = models.ManyToManyField(SupplyService, blank=True)
 
     @property
     def total_budget(self):
@@ -275,6 +276,11 @@ class SupplyPlan(TimeStampedModel):
         max_length=32,
         choices=STATUS,
         default=PLANNED,
+    )
+    is_for_internal = models.BooleanField(
+        blank=True,
+        default=False,
+        verbose_name='Is for Internal use?',
     )
     submission_date = models.DateField(
         null=True, blank=True

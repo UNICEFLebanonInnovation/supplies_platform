@@ -62,12 +62,33 @@ class SupplyPlanForm(forms.ModelForm):
         queryset=User.objects.filter(groups__name='TPM_COMPANY')
     )
 
+    # items = forms.MultipleChoiceField(
+    #     required=False,
+    #     queryset=SupplyItem.objects.all()
+    # )
+
     reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
     approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
 
     class Meta:
         model = SupplyPlan
         fields = '__all__'
+
+    # def __init__(self, *args, **kwargs):
+    #     """
+    #     Only show supply items already in the supply plan
+    #     """
+    #     if 'instance' in kwargs:
+    #         self.instance = kwargs['instance']
+    #
+    #     super(SupplyPlanForm, self).__init__(*args, **kwargs)
+    #
+    #     if self.instance and hasattr(self.instance, 'supply_pan') and self.instance.supply_plan:
+    #         queryset = SupplyItem.objects.filter(
+    #            activity__database_id=self.instance.activity.database_id)
+    #     else:
+    #         queryset = SupplyItem.objects.all()
+    #     self.fields['items'].queryset = queryset
 
     def clean(self):
         """

@@ -313,6 +313,18 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'approval_comments',
             ]
         }),
+        # ('Supply Items', {
+        #     'classes': ('suit-tab', 'suit-tab-items',),
+        #     'fields': [
+        #         'items',
+        #     ]
+        # }),
+        # ('Supply Services', {
+        #     'classes': ('suit-tab', 'suit-tab-services',),
+        #     'fields': [
+        #         'services',
+        #     ]
+        # }),
     ]
 
     suit_form_tabs = (
@@ -323,7 +335,7 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
     inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline]
 
-    filter_horizontal = ('items',)
+    filter_horizontal = ('items', 'services')
 
     ordering = (u'-created',)
     date_hierarchy = u'created'
@@ -449,8 +461,10 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         (None, {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
-                'reference_number',
+                'supply_plan',
+                # 'reference_number',
                 'section',
+                'is_for_internal',
                 'partner',
                 'pca',
                 'status',
@@ -545,7 +559,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
-            'reference_number',
+            # 'reference_number',
             'partnership_start_date',
             'partnership_end_date',
             'status',
