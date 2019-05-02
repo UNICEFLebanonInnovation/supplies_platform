@@ -47,6 +47,11 @@ class YearlySupplyPlan(TimeStampedModel):
         choices=STATUS,
         default=PLANNED,
     )
+    year = models.CharField(
+        max_length=4,
+        blank=True,
+        null=True,
+    )
     submission_date = models.DateField(
         null=True, blank=True
     )
@@ -98,21 +103,26 @@ class YearlySupplyPlan(TimeStampedModel):
         verbose_name='TPM focal point',
     )
 
-    items = models.ManyToManyField(SupplyItem, blank=True)
-    services = models.ManyToManyField(SupplyService, blank=True)
-
     @property
     def total_budget(self):
         total = 0.0
+        total1 = 0.0
         try:
             items = self.supply_plan_items.all()
             for item in items:
                 total += item.quantity * item.item.price
         except Exception as ex:
             pass
-        return '{} {}'.format(
-            total,
-            '$'
+
+        try:
+            items = self.supply_plan_services.all()
+            for item in items:
+                total1 += item.quantity * item.expected_amount
+        except Exception as ex:
+            pass
+
+        return '{}$'.format(
+            total + total1
         )
 
     @property
@@ -194,7 +204,7 @@ class SupplyPlanItem(models.Model):
 
     def __unicode__(self):
         return u'{}-{}-{}'.format(
-            self.plan_wave.__unicode__(),
+            self.plan.__unicode__(),
             self.item,
             self.quantity
         )
@@ -210,12 +220,24 @@ class SupplyPlanService(models.Model):
     item = models.ForeignKey(SupplyService)
     expected_amount = models.FloatField(
         blank=True, null=True,
-        verbose_name='Expected Amount',
+        verbose_name='Expected Amount/Unit Price',
         help_text='$'
     )
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
     )
+
+    @property
+    def total_budget(self):
+        total = 0.0
+        try:
+            total = self.quantity * self.expected_amount
+        except Exception as ex:
+            pass
+        return '{} {}'.format(
+            total,
+            '$'
+        )
 
     def __unicode__(self):
         return u'{}-{}-{}-{}$'.format(
@@ -256,7 +278,7 @@ class SupplyPlan(TimeStampedModel):
     )
     partner = models.ForeignKey(
         PartnerOrganization,
-        null=True, blank=False,
+        null=True, blank=True,
         verbose_name='Partner Organization'
     )
     pca = ChainedForeignKey(
@@ -341,6 +363,7 @@ class SupplyPlan(TimeStampedModel):
         ),
         verbose_name='Number of waves',
     )
+    services = models.ManyToManyField(SupplyService, blank=True)
 
     @property
     def target_population(self):
@@ -371,9 +394,8 @@ class SupplyPlan(TimeStampedModel):
         return self.section
 
     def __unicode__(self):
-        return '{} - {} - {}'.format(
+        return '{} - {}'.format(
             self.reference_number,
-            self.partner,
             self.section
         )
 
@@ -500,6 +522,7 @@ class DistributionPlan(TimeStampedModel):
         null=True, blank=True,
     )
     plan = models.ForeignKey(SupplyPlan, related_name='plan')
+    yearly_plan = models.ForeignKey(YearlySupplyPlan, related_name='yearly_dist_plan', null=True, blank=True)
     status = models.CharField(
         max_length=32,
         choices=STATUS,
@@ -679,7 +702,7 @@ class DistributionPlanWaveItem(models.Model):
 
     plan_wave = models.ForeignKey(DistributionPlanWave, related_name='plan_wave_items')
     wave_item = models.ForeignKey(SupplyPlanWaveItem, null=True, blank=False)
-    item = models.ForeignKey(SupplyItem)
+    item = models.ForeignKey(SupplyItem, related_name='items_distribution_waves')
     quantity_requested = models.PositiveIntegerField(
         verbose_name=u'Quantity required',
         null=True, blank=False
@@ -760,6 +783,12 @@ class DistributedItemSite(models.Model):
         blank=True, default=False,
         verbose_name=u'TPM Visit?',
         help_text=u'TPM visit for this location',
+    )
+    tpm_focal_point = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+',
+        verbose_name='TPM focal point',
     )
     unicef_visit = models.BooleanField(
         blank=True, default=False,

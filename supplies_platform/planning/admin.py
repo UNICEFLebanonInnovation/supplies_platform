@@ -236,6 +236,30 @@ class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
     fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-items'
 
+    fields = (
+        'item',
+        'quantity',
+        'total_budget',
+    )
+
+    readonly_fields = (
+        'total_budget',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'item',
+            'quantity',
+            'total_budget',
+        ]
+
+        if not has_group(request.user, 'BUDGET_OWNER'):
+            fields.remove('item')
+            fields.remove('quantity')
+
+        return fields
+
 
 class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
     model = SupplyPlanService
@@ -246,6 +270,33 @@ class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
     extra = 0
     fk_name = 'plan'
     suit_classes = u'suit-tab suit-tab-services'
+
+    fields = (
+        'item',
+        'quantity',
+        'expected_amount',
+        'total_budget',
+    )
+
+    readonly_fields = (
+        'total_budget',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'item',
+            'quantity',
+            'expected_amount',
+            'total_budget',
+        ]
+
+        if not has_group(request.user, 'BUDGET_OWNER'):
+            fields.remove('item')
+            fields.remove('quantity')
+            fields.remove('expected_amount')
+
+        return fields
 
 
 class SupplyPlanResource(resources.ModelResource):
@@ -285,8 +336,9 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             'fields': [
                 'reference_number',
                 'section',
+                'year',
                 'status',
-                'tpm_focal_point',
+                # 'tpm_focal_point',
                 'comments',
                 'total_budget',
                 # 'target_population',
@@ -313,18 +365,6 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'approval_comments',
             ]
         }),
-        # ('Supply Items', {
-        #     'classes': ('suit-tab', 'suit-tab-items',),
-        #     'fields': [
-        #         'items',
-        #     ]
-        # }),
-        # ('Supply Services', {
-        #     'classes': ('suit-tab', 'suit-tab-services',),
-        #     'fields': [
-        #         'services',
-        #     ]
-        # }),
     ]
 
     suit_form_tabs = (
@@ -334,8 +374,6 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                     )
 
     inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline]
-
-    filter_horizontal = ('items', 'services')
 
     ordering = (u'-created',)
     date_hierarchy = u'created'
@@ -408,6 +446,7 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
         form.request = request
         user = request.user
         form.base_fields['section'].initial = user.section
+        form.base_fields['year'].initial = datetime.datetime.now().year
         if has_group(request.user, 'BUDGET_OWNER') and 'approved_by' in form.base_fields:
             form.base_fields['approved_by'].initial = user
 
@@ -468,7 +507,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'partner',
                 'pca',
                 'status',
-                'tpm_focal_point',
+                # 'tpm_focal_point',
                 'comments',
                 'partnership_start_date',
                 'partnership_end_date',
@@ -504,11 +543,18 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 'wave_number',
             ]
         }),
+        ('Services', {
+            'classes': ('suit-tab', 'suit-tab-service',),
+            'fields': [
+                'services',
+            ]
+        })
     ]
 
     suit_form_tabs = (
                       ('general', 'Supply Plan'),
                       ('waves', 'Supply Items'),
+                      ('service', 'Services'),
                     )
 
     inlines = [SupplyPlanWaveInline, ]
@@ -524,6 +570,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
     list_display = (
         'reference_number',
         'section',
+        'is_for_internal',
         'partner',
         'pca',
         'partnership_start_date',
@@ -541,6 +588,7 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         'approved_by',
         'approval_date',
         'section',
+        'is_for_internal',
     )
 
     # class Media:
@@ -596,6 +644,8 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         form.request = request
         user = request.user
         form.base_fields['section'].initial = user.section
+        form.base_fields['supply_plan'].initial = YearlySupplyPlan.objects.filter(
+            section=user.section, year=2019).last()
         # if has_group(request.user, 'UNICEF_PD'):
         #     form.base_fields['status'].choices = (
         #         (SupplyPlan.PLANNED, u"Planned"),
@@ -646,24 +696,29 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
                 obj.approval_date = datetime.datetime.now()
                 obj.approved_by = request.user
                 obj.status = obj.APPROVED
-                dist_plan, created = DistributionPlan.objects.get_or_create(plan=obj)
-                for plan_wave in obj.supply_plans_waves.all():
-                    dist_plan_wave = DistributionPlanWave.objects.create(
-                        plan=dist_plan,
-                        wave_number=plan_wave.wave_number,
-                        wave=plan_wave,
-                        date_required_by=plan_wave.date_required_by
-                    )
-                    for wave_item in plan_wave.supply_plan_wave_items.all():
-                        DistributionPlanWaveItem.objects.create(
-                            plan_wave=dist_plan_wave,
-                            wave_item=wave_item,
-                            item=wave_item.item,
-                            quantity_requested=wave_item.quantity
-                        )
+                if not obj.is_for_internal:
 
-                send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
-                send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED - PARTNER WILL BE NOTIFIED', dist_plan, '#request', 'info', obj.partner_id)
+                    dist_plan, created = DistributionPlan.objects.get_or_create(plan=obj)
+                    for plan_wave in obj.supply_plans_waves.all():
+                        dist_plan_wave = DistributionPlanWave.objects.create(
+                            plan=dist_plan,
+                            yearly_plan=obj.supply_plan,
+                            wave_number=plan_wave.wave_number,
+                            wave=plan_wave,
+                            date_required_by=plan_wave.date_required_by
+                        )
+                        for wave_item in plan_wave.supply_plan_wave_items.all():
+                            DistributionPlanWaveItem.objects.create(
+                                plan_wave=dist_plan_wave,
+                                wave_item=wave_item,
+                                item=wave_item.item,
+                                quantity_requested=wave_item.quantity
+                            )
+
+                    send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
+                    send_notification('PARTNER', 'DISTRIBUTION PLAN CREATED - PARTNER WILL BE NOTIFIED', dist_plan, '#request', 'info', obj.partner_id)
+                else:
+                    send_notification('UNICEF_PD', 'SUPPLY PLAN APPROVED BY THE BUDGET OWNER', obj)
             elif obj.approved is False:
                 obj.review_date = None
                 obj.reviewed_by = None
@@ -678,6 +733,9 @@ class SupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmin):
         if has_group(request.user, 'BUDGET_OWNER'):
             qs = qs.filter(status__in=['reviewed', 'approved'])
         return qs
+
+    class Media:
+        js = ('js/base_admin.js',)
 
 
 class ReceivedItemInline(admin.TabularInline):
@@ -741,17 +799,20 @@ class DistributedItemSiteInline(nested_admin.NestedTabularInline):
         'quantity_distributed_per_site',
         'distribution_date',
         'tpm_visit',
+        'tpm_focal_point',
         'unicef_visit',
     )
 
     def get_readonly_fields(self, request, obj=None):
 
         fields = [
-           'tpm_visit',
-           'unicef_visit',
+            'tpm_visit',
+            'tpm_focal_point',
+            'unicef_visit',
         ]
         if obj and (has_group(request.user, 'UNICEF_PO') or has_group(request.user, 'FIELD_FP')):
             fields.remove('tpm_visit')
+            fields.remove('tpm_focal_point')
             fields.remove('unicef_visit')
 
         return fields
@@ -869,6 +930,7 @@ class DistributionPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
                 'reference_number',
+                #'yearly_plan',
                 'plan_partner',
                 'plan_partnership',
                 'plan_section',

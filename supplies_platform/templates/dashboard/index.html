@@ -264,7 +264,27 @@
       <div class="section-deck">
         <!-- .card -->
         <div class="card card-fluid">
-          <header class="card-header"> Active Distribution request plans </header>
+          <header class="card-header"> Active Distribution request plans
+
+            <ul class="nav navbar-left" style="margin-top: -7px; float: right;" data-step="10" data-intro="Download Dashboard report and raw data">
+              <li class="dropdown">
+                <a id="drop5" href="#" style="font-size: 25px; padding: 10px 25px 0;" class="dropdown-toggle" title="Download report"
+                   data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+                            <i class="fa fa-download faa-bounce animated-hover" style="font-size: 25px;"></i>
+                  <!--<span class="caret"></span>-->
+                </a>
+                <ul id="menu2" class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="drop5" style="z-index: 3000;">
+                  <li role="presentation" class="divider" style="margin-top: -1px;"></li>
+                  <li role="presentation"><a href="{% url 'planning:export_supply_goods' %}" role="menuitem" tabindex="-1">Goods Report</a>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation"><a href="{% url 'planning:export_supply_goods' %}" role="menuitem" tabindex="-1">Service Report</a>
+                  <li role="presentation" class="divider" style="margin-bottom: -1px;"></li>
+                </ul>
+              </li>
+            </ul>
+
+          </header>
+
           <!-- .lits-group -->
           <div style="height:500px; overflow: scroll;">
           {% for item in request_waves %}

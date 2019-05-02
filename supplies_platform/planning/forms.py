@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from suit.widgets import SuitDateWidget, SuitTimeWidget, SuitSplitDateTimeWidget
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib import messages
 from datetime import date
 from dal import autocomplete
@@ -19,7 +20,7 @@ from supplies_platform.backends.utils import send_notification
 
 from supplies_platform.partners.models import PartnerStaffMember
 from supplies_platform.locations.models import Location
-from supplies_platform.supplies.models import SupplyItem
+from supplies_platform.supplies.models import SupplyItem, SupplyService
 from supplies_platform.tpm.models import SMVisit
 from supplies_platform.users.models import User
 from .models import (
@@ -38,34 +39,49 @@ YES_NO_CHOICE = (
     (True, 'Yes'),
     (False, 'No')
 )
+CURRENT_YEAR = datetime.datetime.now().year
 
 
 class YearlySupplyPlanForm(forms.ModelForm):
 
-    tpm_focal_point = forms.ModelChoiceField(
-        required=False, label='TPM focal point',
-        queryset=User.objects.filter(groups__name='TPM_COMPANY')
-    )
-
     reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
     approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
+    year = forms.ChoiceField(choices=list(((str(x), x) for x in range(CURRENT_YEAR - 5, CURRENT_YEAR + 5))),
+                             initial=CURRENT_YEAR)
 
     class Meta:
         model = YearlySupplyPlan
         fields = '__all__'
 
+    # def clean(self):
+    #     """
+    #     Ensure distribution plans are inline with overall supply plan
+    #     """
+    #     cleaned_data = super(YearlySupplyPlanForm, self).clean()
+    #     if cleaned_data.get('DELETE', False):
+    #         return cleaned_data
+    #
+    #     yearly_plan = YearlySupplyPlan.objects.filter(year=CURRENT_YEAR)
+    #     if yearly_plan.count() > 1:
+    #         raise ValidationError(
+    #             _(u'You can\'t create more than one Yearly Supply Plan per year')
+    #         )
+    #
+    #     return cleaned_data
+
 
 class SupplyPlanForm(forms.ModelForm):
 
-    tpm_focal_point = forms.ModelChoiceField(
-        required=False, label='TPM focal point',
-        queryset=User.objects.filter(groups__name='TPM_COMPANY')
+    items = forms.ModelMultipleChoiceField(
+        queryset=SupplyItem.objects.all(),
+        required=False,
+        widget=FilteredSelectMultiple("items", is_stacked=False)
     )
-
-    # items = forms.MultipleChoiceField(
-    #     required=False,
-    #     queryset=SupplyItem.objects.all()
-    # )
+    services = forms.ModelMultipleChoiceField(
+        queryset=SupplyService.objects.all(),
+        required=False,
+        widget=FilteredSelectMultiple("services", is_stacked=False)
+    )
 
     reviewed = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
     approved = forms.ChoiceField(widget=forms.RadioSelect, choices=YES_NO_CHOICE, initial=False)
@@ -74,21 +90,22 @@ class SupplyPlanForm(forms.ModelForm):
         model = SupplyPlan
         fields = '__all__'
 
-    # def __init__(self, *args, **kwargs):
-    #     """
-    #     Only show supply items already in the supply plan
-    #     """
-    #     if 'instance' in kwargs:
-    #         self.instance = kwargs['instance']
-    #
-    #     super(SupplyPlanForm, self).__init__(*args, **kwargs)
-    #
-    #     if self.instance and hasattr(self.instance, 'supply_pan') and self.instance.supply_plan:
-    #         queryset = SupplyItem.objects.filter(
-    #            activity__database_id=self.instance.activity.database_id)
-    #     else:
-    #         queryset = SupplyItem.objects.all()
-    #     self.fields['items'].queryset = queryset
+    def __init__(self, *args, **kwargs):
+        """
+        Only show supply items already in the supply plan
+        """
+        if 'instance' in kwargs:
+            self.instance = kwargs['instance']
+
+        super(SupplyPlanForm, self).__init__(*args, **kwargs)
+
+        if self.instance and hasattr(self.instance, 'supply_plan') and self.instance.supply_plan:
+            item_list = self.instance.supply_plan.supply_plan_items.all().values('item_id')
+            service_list = self.instance.supply_plan.supply_plan_services.all().values('item_id')
+
+            self.fields['items'].required = True
+            self.fields['items'].queryset = SupplyItem.objects.filter(id__in=item_list)
+            self.fields['services'].queryset = SupplyService.objects.filter(id__in=service_list)
 
     def clean(self):
         """
@@ -105,6 +122,14 @@ class SupplyPlanForm(forms.ModelForm):
                 raise ValidationError(
                     _(u'Please select a valid partnership')
                 )
+
+        is_for_internal = cleaned_data.get('is_for_internal', False)
+        partner = cleaned_data.get('partner', 0)
+
+        if not is_for_internal and not partner:
+            raise ValidationError(
+                _(u'Please select a Partner Organization')
+            )
 
         return cleaned_data
 

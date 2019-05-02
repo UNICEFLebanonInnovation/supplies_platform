@@ -44,10 +44,10 @@ class SupplyItem(models.Model):
         return 0.0
 
     def __unicode__(self):
-        return '{} - {}'.format(
+        return '{} - {} - {}$'.format(
             self.code,
             self.description,
-            # self.price,
+            self.price,
             # self.quantity_in_stock,
             # self.section
         )
@@ -57,6 +57,7 @@ class SupplyService(models.Model):
 
     code = models.CharField(
         max_length=10,
+        verbose_name='Name',
     )
     description = models.TextField(
         blank=True
