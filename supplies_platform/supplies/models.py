@@ -56,7 +56,7 @@ class SupplyItem(models.Model):
 class SupplyService(models.Model):
 
     code = models.CharField(
-        max_length=10,
+        max_length=254,
         verbose_name='Name',
     )
     description = models.TextField(
@@ -73,3 +73,10 @@ class SupplyService(models.Model):
             self.code,
             self.description,
         )
+
+
+class Grant(models.Model):
+
+    name = models.CharField(
+        max_length=254,
+    )

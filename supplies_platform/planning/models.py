@@ -14,7 +14,7 @@ from smart_selects.db_fields import ChainedForeignKey
 from supplies_platform.locations.models import Location
 from supplies_platform.users.models import User, Section
 from supplies_platform.partners.models import PartnerOrganization, PartnerStaffMember, PCA
-from supplies_platform.supplies.models import SupplyItem, SupplyService
+from supplies_platform.supplies.models import SupplyItem, SupplyService, Grant
 
 
 class YearlySupplyPlan(TimeStampedModel):
@@ -51,6 +51,24 @@ class YearlySupplyPlan(TimeStampedModel):
         max_length=4,
         blank=True,
         null=True,
+    )
+    solicitation_method = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=(
+            ('Low Value', 'Low Value'),
+            ('Request for Quotation (RFQ)', 'Request for Quotation (RFQ)'),
+            ('Invitation To Bid (ITB)', 'Invitation To Bid (ITB)'),
+            ('Request for Proposal (RFP)', 'Request for Proposal (RFP)'),
+            ('Long Term Agreement (LTA)', 'Long Term Agreement (LTA)'),
+            ('Direct Order', 'Direct Order'),
+            ('Off shore (SD)', 'Off shore (SD)'),
+        ),
+    )
+    activity_ref = models.CharField(
+        max_length=254,
+        null=True, blank=True,
     )
     submission_date = models.DateField(
         null=True, blank=True
@@ -208,6 +226,19 @@ class SupplyPlanItem(models.Model):
             self.item,
             self.quantity
         )
+
+
+class SupplyPlanGrant(models.Model):
+
+    plan = models.ForeignKey(
+        YearlySupplyPlan,
+        null=True, blank=True,
+        related_name='supply_plan_grants'
+    )
+    grant = models.ForeignKey(Grant)
+    expiry_date = models.DateField(
+        null=True, blank=True
+    )
 
 
 class SupplyPlanService(models.Model):

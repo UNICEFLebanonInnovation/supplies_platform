@@ -4,7 +4,7 @@ from import_export import resources, fields
 from import_export import fields
 from import_export.admin import ImportExportModelAdmin
 
-from .models import SupplyItem, SupplyService
+from .models import SupplyItem, SupplyService, Grant
 
 
 class SupplyItemResource(resources.ModelResource):
@@ -84,3 +84,4 @@ class SupplyServiceAdmin(ImportExportModelAdmin):
 
 admin.site.register(SupplyItem, SupplyItemAdmin)
 admin.site.register(SupplyService, SupplyServiceAdmin)
+admin.site.register(Grant)

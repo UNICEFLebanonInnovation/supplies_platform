@@ -15,6 +15,7 @@ from supplies_platform.users.util import has_group
 from .models import (
     YearlySupplyPlan,
     SupplyPlanItem,
+    SupplyPlanGrant,
     SupplyPlanService,
     SupplyPlan,
     SupplyPlanWave,
@@ -261,6 +262,35 @@ class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
         return fields
 
 
+class SupplyPlanGrantsInline(nested_admin.NestedTabularInline):
+    model = SupplyPlanGrant
+    verbose_name = 'Grant'
+    verbose_name_plural = 'Grants'
+    min_num = 0
+    max_num = 100
+    extra = 0
+    fk_name = 'plan'
+    suit_classes = u'suit-tab suit-tab-grants'
+
+    fields = (
+        'grant',
+        'expiry_date',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+
+        fields = [
+            'grant',
+            'expiry_date',
+        ]
+
+        if not has_group(request.user, 'BUDGET_OWNER'):
+            fields.remove('grant')
+            fields.remove('expiry_date')
+
+        return fields
+
+
 class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
     model = SupplyPlanService
     verbose_name = 'Service'
@@ -338,6 +368,8 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'section',
                 'year',
                 'status',
+                'solicitation_method',
+                'activity_ref',
                 # 'tpm_focal_point',
                 'comments',
                 'total_budget',
@@ -369,11 +401,12 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
     suit_form_tabs = (
                       ('general', 'Supply Plan'),
+                      ('grants', 'Grant'),
                       ('items', 'Supply Items'),
                       ('services', 'Supply Services'),
                     )
 
-    inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline]
+    inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline, SupplyPlanGrantsInline]
 
     ordering = (u'-created',)
     date_hierarchy = u'created'

@@ -14,6 +14,7 @@ from supplies_platform.supplies.models import SupplyItem, SupplyService
 from supplies_platform.planning.models import (
     SupplyPlan,
     SupplyPlanItem,
+    SupplyPlanService,
     DistributionPlan,
     DistributionPlanWave,
     DistributionPlanItemReceived,
@@ -45,7 +46,7 @@ class ExportSupplyGoodsViewSet(ListView):
 
             'Grant',
             'Grant Expiry date',
-            'Activity ref number in the AWP 2019',
+            'Activity ref # in the AWP 2019',
             'Implementing Partner',
             'Prog Focal Point',
 
@@ -78,20 +79,25 @@ class ExportSupplyGoodsViewSet(ListView):
             # if not item.items_distribution_waves.all().count():
             #     continue
             waves = item.items_distribution_waves.all()
+            target_population = 0
             try:
                 wave1 = waves[0]
+                target_population += wave1.target_population
             except IndexError:
                 wave1 = None
             try:
                 wave2 = waves[1]
+                target_population += wave2.target_population
             except IndexError:
                 wave2 = None
             try:
                 wave3 = waves[2]
+                target_population += wave3.target_population
             except IndexError:
                 wave3 = None
             try:
                 wave4 = waves[3]
+                target_population += wave4.target_population
             except IndexError:
                 wave4 = None
 
@@ -105,16 +111,16 @@ class ExportSupplyGoodsViewSet(ListView):
                     item.price if item.price else '',
                     plan.quantity,
                     plan.total_budget,
-                    '',  # Procuring Entity
+                    'UNICEF',  # Procuring Entity
                     item.quantity_in_stock if item.quantity_in_stock else '',
-                    '',  # Solicitation Method
+                    yearly_plan.solicitation_method,
                     '',  # Grant
                     '',  # Grant Expiry date
-                    '',  # Activity ref # in the AWP 2019
+                    yearly_plan.activiy_ref,
                     dist_plan.plan.partner,
                     plan.plan.created_by.name,
 
-                    '',
+                    target_population,
 
                     wave1.target_population if wave1 else '',
                     wave1.quantity_requested if wave1 else '',
@@ -132,12 +138,14 @@ class ExportSupplyGoodsViewSet(ListView):
                     wave4.quantity_requested if wave4 else '',
                     wave4.date_distributed_by if wave4 else '',
 
-                    '',
+                    yearly_plan.comments,
                 ]
                 data.append(content)
 
         file_format = base_formats.XLSX()
         data = file_format.export_data(data)
+
+        # book = tablib.Databook((data1, data2, data3))
 
         response = HttpResponse(
             data,
@@ -154,12 +162,59 @@ class ExportSupplyServicesViewSet(ListView):
 
     def get(self, request, *args, **kwargs):
 
-        headers = {
+        data = tablib.Dataset()
 
-        }
+        data.headers = [
+            'Service Description',
+            'Estimated Contract Value',
+            'Quantity (if applicable)',
 
-        qs = SupplyPlanWaveItem.objects.all()
+            'Expected Contract Start Date',
+            'Expected Contract Duration',
+            'Solicitation Method',
 
-        filename = ''
+            'Grant',
+            'Grant Expiry date',
+            'Activity ref # in the AWP 2019',
+            'Implementing Partner',
+            'Programme Focal Point',
 
-        return render_to_csv_response(qs, filename, field_header_map=headers)
+            'Comments'
+        ]
+
+        qs = SupplyPlanService.objects.all()
+
+        content = []
+        for plan in qs:
+            item = plan.item
+
+            yearly_plan = plan.plan
+            yearly_dist_plans = yearly_plan.yearly_dist_plan.all()
+            for dist_plan in yearly_dist_plans:
+                content = [
+                    item.code,
+                    '{}$'.format(plan.expected_amount),
+                    plan.quantity,
+                    plan.total_budget,
+                    '',
+                    item.quantity_in_stock if item.quantity_in_stock else '',
+                    '',  # Solicitation Method
+                    '',  # Grant
+                    '',  # Grant Expiry date
+                    '',  # Activity ref # in the AWP 2019
+                    dist_plan.plan.partner,
+                    plan.plan.created_by.name,
+
+                    '',
+                ]
+                data.append(content)
+
+        file_format = base_formats.XLSX()
+        data = file_format.export_data(data)
+
+        response = HttpResponse(
+            data,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = 'attachment; filename=supply_services.xlsx'
+        return response
