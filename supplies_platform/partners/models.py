@@ -83,6 +83,11 @@ class PartnerOrganization(models.Model):
         blank=True, null=True,
         verbose_name=u'Risk Rating'
     )
+    partner_type = models.CharField(
+        max_length=50,
+        blank=True, null=True,
+        verbose_name=u'Risk Rating'
+    )
 
     class Meta:
         ordering = ['name']

@@ -75,9 +75,10 @@ class ExportSupplyGoodsViewSet(ListView):
 
         content = []
         for plan in qs:
+            if not plan.plan:
+                continue
             item = plan.item
-            # if not item.items_distribution_waves.all().count():
-            #     continue
+
             waves = item.items_distribution_waves.all()
             target_population = 0
             try:
@@ -113,10 +114,10 @@ class ExportSupplyGoodsViewSet(ListView):
                     plan.total_budget,
                     'UNICEF',  # Procuring Entity
                     item.quantity_in_stock if item.quantity_in_stock else '',
-                    yearly_plan.solicitation_method,
-                    '',  # Grant
-                    '',  # Grant Expiry date
-                    yearly_plan.activiy_ref,
+                    plan.solicitation_method,
+                    plan.grant,
+                    plan.expiry_date,
+                    plan.activity_reference,
                     dist_plan.plan.partner,
                     plan.plan.created_by.name,
 

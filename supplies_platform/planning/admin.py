@@ -227,7 +227,7 @@ class SupplyPlanWaveInline(nested_admin.NestedStackedInline):
         return False
 
 
-class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
+class SupplyPlanItemsInline(nested_admin.NestedStackedInline):
     model = SupplyPlanItem
     verbose_name = 'Item'
     verbose_name_plural = 'Items'
@@ -241,6 +241,10 @@ class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
         'item',
         'quantity',
         'total_budget',
+        'grant',
+        'expiry_date',
+        'solicitation_method',
+        'activity_reference',
     )
 
     readonly_fields = (
@@ -262,36 +266,7 @@ class SupplyPlanItemsInline(nested_admin.NestedTabularInline):
         return fields
 
 
-class SupplyPlanGrantsInline(nested_admin.NestedTabularInline):
-    model = SupplyPlanGrant
-    verbose_name = 'Grant'
-    verbose_name_plural = 'Grants'
-    min_num = 0
-    max_num = 100
-    extra = 0
-    fk_name = 'plan'
-    suit_classes = u'suit-tab suit-tab-grants'
-
-    fields = (
-        'grant',
-        'expiry_date',
-    )
-
-    def get_readonly_fields(self, request, obj=None):
-
-        fields = [
-            'grant',
-            'expiry_date',
-        ]
-
-        if not has_group(request.user, 'BUDGET_OWNER'):
-            fields.remove('grant')
-            fields.remove('expiry_date')
-
-        return fields
-
-
-class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
+class SupplyPlanServicesInline(nested_admin.NestedStackedInline):
     model = SupplyPlanService
     verbose_name = 'Service'
     verbose_name_plural = 'Services'
@@ -306,6 +281,10 @@ class SupplyPlanServicesInline(nested_admin.NestedTabularInline):
         'quantity',
         'expected_amount',
         'total_budget',
+        'grant',
+        'expiry_date',
+        'solicitation_method',
+        'activity_reference',
     )
 
     readonly_fields = (
@@ -368,9 +347,6 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
                 'section',
                 'year',
                 'status',
-                'solicitation_method',
-                'activity_ref',
-                # 'tpm_focal_point',
                 'comments',
                 'total_budget',
                 # 'target_population',
@@ -401,12 +377,11 @@ class YearlySupplyPlanAdmin(ImportExportModelAdmin, nested_admin.NestedModelAdmi
 
     suit_form_tabs = (
                       ('general', 'Supply Plan'),
-                      ('grants', 'Grant'),
                       ('items', 'Supply Items'),
                       ('services', 'Supply Services'),
                     )
 
-    inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline, SupplyPlanGrantsInline]
+    inlines = [SupplyPlanItemsInline, SupplyPlanServicesInline]
 
     ordering = (u'-created',)
     date_hierarchy = u'created'

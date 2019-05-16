@@ -186,6 +186,28 @@ class SupplyPlanItem(models.Model):
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
     )
+    grant = models.ForeignKey(Grant, null=True, blank=True)
+    expiry_date = models.DateField(
+        null=True, blank=True
+    )
+    solicitation_method = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=(
+            ('Low Value', 'Low Value'),
+            ('Request for Quotation (RFQ)', 'Request for Quotation (RFQ)'),
+            ('Invitation To Bid (ITB)', 'Invitation To Bid (ITB)'),
+            ('Request for Proposal (RFP)', 'Request for Proposal (RFP)'),
+            ('Long Term Agreement (LTA)', 'Long Term Agreement (LTA)'),
+            ('Direct Order', 'Direct Order'),
+            ('Off shore (SD)', 'Off shore (SD)'),
+        ),
+    )
+    activity_reference = models.CharField(
+        max_length=254,
+        null=True, blank=True,
+    )
 
     @property
     def beneficiaries_covered_per_item(self):
@@ -256,6 +278,28 @@ class SupplyPlanService(models.Model):
     )
     quantity = models.PositiveIntegerField(
         help_text=u'PD Quantity'
+    )
+    grant = models.ForeignKey(Grant, null=True, blank=True)
+    expiry_date = models.DateField(
+        null=True, blank=True
+    )
+    solicitation_method = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=(
+            ('Low Value', 'Low Value'),
+            ('Request for Quotation (RFQ)', 'Request for Quotation (RFQ)'),
+            ('Invitation To Bid (ITB)', 'Invitation To Bid (ITB)'),
+            ('Request for Proposal (RFP)', 'Request for Proposal (RFP)'),
+            ('Long Term Agreement (LTA)', 'Long Term Agreement (LTA)'),
+            ('Direct Order', 'Direct Order'),
+            ('Off shore (SD)', 'Off shore (SD)'),
+        ),
+    )
+    activity_reference = models.CharField(
+        max_length=254,
+        null=True, blank=True,
     )
 
     @property
