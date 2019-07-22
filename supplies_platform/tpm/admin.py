@@ -12,23 +12,23 @@ from prettyjson import PrettyJSONWidget
 
 from supplies_platform.users.util import has_group
 from .models import (
-    TPMVisit,
+    SMVisit,
     AssessmentHash
 )
 
 
-class TPMVisitResource(resources.ModelResource):
+class SMVisitResource(resources.ModelResource):
     class Meta:
-        model = TPMVisit
+        model = SMVisit
         fields = (
         )
         export_order = fields
 
 
-class TPMVisitAdmin(ImportExportModelAdmin):
-    resource_class = TPMVisitResource
-    verbose_name = 'TPM Visit'
-    verbose_name_plural = 'TPM Visits'
+class SMVisitAdmin(ImportExportModelAdmin):
+    resource_class = SMVisitResource
+    verbose_name = 'SM Visit'
+    verbose_name_plural = 'SM Visits'
 
     fieldsets = [
         (None, {
@@ -37,54 +37,41 @@ class TPMVisitAdmin(ImportExportModelAdmin):
                 'supply_plan_partner',
                 'supply_plan_partnership',
                 'supply_plan_section',
-                # 'requested_by',
+                'type',
                 'site',
                 'supply_item',
                 'quantity_distributed',
                 'distribution_date',
             ]
         }),
-        ('Quantity Assessment', {
+        ('Assessment', {
             'classes': ('suit-tab', 'suit-tab-general',),
             'fields': [
-                'assigned_to_officer',
-                'quantity_assessment_completed',
-                'quantity_assessment_completed_date',
-                'quantity_assessment',
+                'assigned_to',
+                'assessment_completed',
+                'assessment_completed_date',
+                'assessment',
             ]
-        }),
-        ('Qualitative Assessment', {
-            'classes': ('suit-tab', 'suit-tab-general',),
-            'fields': [
-                'assigned_to_tpm',
-                'quality_assessment_completed',
-                'quality_assessment_completed_date',
-                'quality_assessment',
-            ]
-        }),
+        })
     ]
 
     suit_form_tabs = (
-                      ('general', 'TPM Visit'),
+                      ('general', 'SM Visit'),
                     )
 
     readonly_fields = (
         'supply_plan_partner',
         'supply_plan_partnership',
         'supply_plan_section',
-        # 'requested_by',
+        'type',
         'site',
         'supply_item',
         'quantity_distributed',
         'distribution_date',
-        'assigned_to_officer',
-        'quantity_assessment_completed',
-        'quantity_assessment_completed_date',
-        'quantity_assessment',
-        'assigned_to_tpm',
-        'quality_assessment_completed',
-        'quality_assessment_completed_date',
-        'quality_assessment',
+        'assigned_to',
+        'assessment_completed',
+        'assessment_completed_date',
+        'assessment',
     )
 
     search_fields = (
@@ -94,21 +81,20 @@ class TPMVisitAdmin(ImportExportModelAdmin):
         'supply_plan_partner',
         'supply_plan_partnership',
         'supply_plan_section',
+        'type',
         'site',
         'supply_item',
         'quantity_distributed',
         'distribution_date',
-        'quantity_assessment_completed',
-        'quantity_assessment_completed_date',
-        'quality_assessment_completed',
-        'quality_assessment_completed_date',
+        'assessment_completed',
+        'assessment_completed_date',
     )
     list_filter = (
         'supply_plan__partner',
         'supply_plan__section',
-        'quantity_assessment_completed',
-        'quality_assessment_completed',
+        'assessment_completed',
         'supply_item',
+        'type',
     )
 
     formfield_overrides = {
@@ -142,11 +128,11 @@ class TPMVisitAdmin(ImportExportModelAdmin):
         # return fields
 
     def get_queryset(self, request):
-        qs = super(TPMVisitAdmin, self).get_queryset(request)
+        qs = super(SMVisitAdmin, self).get_queryset(request)
         if has_group(request.user, 'TPM_COMPANY'):
-            qs = qs.filter(assigned_to_tpm=request.user)
+            qs = qs.filter(assigned_to=request.user, type='quantity')
         return qs
 
 
-admin.site.register(TPMVisit, TPMVisitAdmin)
+admin.site.register(SMVisit, SMVisitAdmin)
 admin.site.register(AssessmentHash)

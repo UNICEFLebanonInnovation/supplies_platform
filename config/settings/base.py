@@ -220,16 +220,23 @@ SUIT_CONFIG = {
     'MENU_EXCLUDE': ('auth.group',),
     'MENU': (
         {'label': 'View site', 'icon': 'icon-home', 'url': "/"},
-        {'label': 'SM Visits', 'icon': 'icon-home', 'url': "/tpm/visits/"},
-        {'app': 'users', 'label': 'Users', 'icon':'icon-user'},
-        {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-globe'},
+        {'label': 'Dashboard', 'icon': 'icon-home', 'url': "/dashboard/index"},
+        {'label': 'SM Visits', 'icon': 'icon-home', 'url': "/tpm/unicef-visits/"},
+        {'label': 'Planning', 'icon': 'icon-th-list', 'models': (
+            'planning.YearlySupplyPlan',
+            'planning.SupplyPlan',
+            'planning.DistributionPlan',
+        )},
+        {'label': 'Partnerships', 'icon': 'icon-th-list', 'models': (
+            'partners.PartnerOrganization',
+            'partners.PartnerStaffMember',
+            'partners.Agreement',
+            'partners.PCA',
+        )},
+        # {'app': 'tmp', 'label': 'TPM Visits', 'icon': 'icon-th-list'},
+        {'app': 'supplies', 'label': 'Supplies', 'icon': 'icon-th-list'},
         {'app': 'locations', 'label': 'Locations', 'icon': 'icon-globe'},
-        {'app': 'planning', 'label': 'Planning', 'icon': 'icon-globe'},
-        {'app': 'transport', 'label': 'Transport', 'icon': 'icon-globe'},
-        {'app': 'partners', 'label': 'Partners', 'icon': 'icon-globe'},
-        {'app': 'tmp', 'label': 'TPM', 'icon': 'icon-globe'},
-        {'label': 'Settings', 'icon':'icon-cog', 'models': ('auth.user', 'auth.group')},
-        {'label': 'Support', 'icon':'icon-question-sign', 'url': '/support/'},
+        {'app': 'users', 'label': 'Users', 'icon': 'icon-user'},
     ),
 
     # misc

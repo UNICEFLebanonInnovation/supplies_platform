@@ -283,6 +283,15 @@
               '<span data-notify="message">{2}</span>' +
             '</div>'
           });
+
+          reload_page();
+      }
+
+      function reload_page()
+      {
+          setTimeout(function(){
+             window.location.reload(1);
+          }, 5000);
       }
 
     </script>

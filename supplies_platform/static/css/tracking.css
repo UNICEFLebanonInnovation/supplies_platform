@@ -1,5 +1,5 @@
 .shop-tracking-status .form-horizontal{margin-bottom:50px}
-.shop-tracking-status .order-status{margin-top:0px;position:relative;margin-bottom:20px}
+.shop-tracking-status .order-status{margin-top:10px;position:relative;margin-bottom:10px}
 .shop-tracking-status .order-status-timeline{height: 7px;border:1px solid #aaa;border-radius:7px;background:#eee;box-shadow:0px 0px 5px 0px #C2C2C2 inset}
 .shop-tracking-status .order-status-timeline .order-status-timeline-completion{
     height:3px;margin:1px;border-radius:7px;
@@ -15,7 +15,7 @@
 .shop-tracking-status .image-order-status.active .status{color:#cf7400;text-shadow:0px 0px 1px #777}*/
 .shop-tracking-status .image-order-status .icon{
     position: absolute !important;
-    top: 1px;
+    top: -19px;
     height:30px;
     width:30px;
     background-size:contain;
@@ -25,6 +25,7 @@
     left: 20px;
     /* padding-left: 34px; */
     margin-left: 35px;
+    font-style: italic;
     /*border: 1px solid;*/
 }
 /*.shop-tracking-status .image-order-status .status{position:absolute;text-shadow:1px 1px #eee;color:#333;transform:rotate(-30deg);-webkit-transform:rotate(-30deg);width:180px;top:-50px;left:50px}*/

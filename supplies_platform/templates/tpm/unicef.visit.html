@@ -92,7 +92,7 @@
 
         function assign_to_me(item, user)
         {
-            var data = {assigned_to_officer:user}
+            var data = {assigned_to:user}
             $.ajax({
                 type: "PATCH",
                 url: tpm_url+item.attr('itemref')+'/',
@@ -115,29 +115,6 @@
                           item.addClass('btn-info');
                           item.removeClass('btn-success');
                         }
-                    }
-                },
-                error: function (response) {
-                    console.log(response);
-                }
-            });
-        }
-
-        function assign_to_tpm(item, user, user_fullname)
-        {
-            var data = {assigned_to_tpm:user}
-            var itemref = item.attr('itemref')
-            $.ajax({
-                type: "PATCH",
-                url: tpm_url+itemref+'/',
-                data: data,
-                cache: false,
-                headers: getHeader(),
-                dataType: 'json',
-                success: function (response, result, jqXHR) {
-                    if(jqXHR.status == 200){
-                        $('#assign-btn-'+itemref).find('.assigned_to_tpm_name').text(user_fullname);
-                        $('#assign-tpm-block-'+itemref).addClass('d-none');
                     }
                 },
                 error: function (response) {

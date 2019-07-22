@@ -8,11 +8,11 @@ from rest_framework_nested import routers
 from rest_framework_swagger.views import get_swagger_view
 
 from supplies_platform.locations.views import LocationAutocomplete
-from supplies_platform.tpm.views import TPMVisitViewSet
+from supplies_platform.tpm.views import SMVisitViewSet
 from supplies_platform.backends.views import NotificationViewSet
 
 api = routers.SimpleRouter()
-api.register(r'tpm-visits', TPMVisitViewSet, base_name='tpm-visits')
+api.register(r'tpm-visits', SMVisitViewSet, base_name='tpm-visits')
 api.register(r'notifications', NotificationViewSet, base_name='notifications')
 
 schema_view = get_swagger_view(title='SMS API')

@@ -35,7 +35,7 @@ class SupplyItem(models.Model):
         help_text='$'
     )
     quantity_in_stock = models.PositiveIntegerField(blank=True, null=True,)
-    section = models.ForeignKey(Section)
+    section = models.ForeignKey(Section, blank=True, null=True)
 
     @property
     def stock_value(self):
@@ -44,10 +44,39 @@ class SupplyItem(models.Model):
         return 0.0
 
     def __unicode__(self):
-        return '{} - {}'.format(
+        return '{} - {} - {}$'.format(
             self.code,
             self.description,
-            # self.price,
+            self.price,
             # self.quantity_in_stock,
             # self.section
         )
+
+
+class SupplyService(models.Model):
+
+    code = models.CharField(
+        max_length=254,
+        verbose_name='Name',
+    )
+    description = models.TextField(
+        blank=True
+    )
+    expected_amount = models.FloatField(
+        blank=True, null=True,
+        verbose_name='Unit price',
+        help_text='$'
+    )
+
+    def __unicode__(self):
+        return '{} - {}'.format(
+            self.code,
+            self.description,
+        )
+
+
+class Grant(models.Model):
+
+    name = models.CharField(
+        max_length=254,
+    )

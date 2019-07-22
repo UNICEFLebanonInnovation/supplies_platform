@@ -26,6 +26,10 @@ class Notification(TimeStampedModel):
         max_length=50,
         blank=True, null=True
     )
+    tab = models.CharField(
+        max_length=50,
+        blank=True, null=True
+    )
     model = models.CharField(
         max_length=100,
         blank=True, null=True

@@ -5,6 +5,7 @@
 {% block css %}
   <style type="text/css">
     a.toggle-status:hover .dropdown-item-body { color: white !important;}
+    a.filter-link {color: white !important; }
   </style>
 {% endblock %}
 
@@ -18,93 +19,188 @@
     </header>
     <!-- /.page-title-bar -->
     <!-- .page-section -->
-    <div class="page-section">
+    <!--<div class="page-section">-->
+    <div style="">
       <!-- .section-block -->
       <div class="section-block">
+
+        <div class="metric-bordered" style="height: 100px; padding: 10px; position: relative;">
+              <!--<i class="fa fa-filter" style="position: absolute; top: -2px;left: -7px;"></i>-->
+              <div class="" style="float: left; width: 100px; padding:5px;">
+                <a class="filter-link {% if not selected_section %}disabled{% endif %}" href="{% url 'dashboard:index' %}" role="button">
+                  <span class="badge badge-lg badge-secondary" style="width: 80px; background: #d4d5d7;">
+                    <span class="oi oi-media-record pulse mr-1"></span> ALL </span>
+                </a>
+              </div>
+          {% for item in sections %}
+              <div class="" style="float: left; width: 100px; padding:5px; color: white;">
+                <a class="filter-link {% if selected_section == item.id %}disabled{% endif %}" href="{% url 'dashboard:index' %}?section={{ item.id }}" role="button">
+                  <span class="badge badge-lg {{ item.color }}" style="width: 80px;">
+                    <span class="oi oi-media-record pulse mr-1"></span> {{ item.code }} </span>
+                </a>
+              </div>
+          {% endfor %}
+        </div>
         <!-- metric row -->
         <div class="metric-row">
           <!-- metric column -->
 
+          {% if request.user|has_group:"ADMIN" %}
+
+          {% if nbr_planned %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
               <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - PLANNED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=planned" target="_blank">
+                  <span class="value">
+                      {{ nbr_planned }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_submitted %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - SUBMITTED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=submitted" target="_blank">
+                  <span class="value">
+                      {{ nbr_submitted }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_reviewed %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge">
+                <span class="badge badge-lg badge-success">
+                  <span class="oi oi-media-record pulse mr-1"></span> SUPPLY PLAN - REVIEWED </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-clock"></i>
+                </sub>
+                <a href="/admin/planning/supplyplan/?q=&status=reviewed" target="_blank">
+                  <span class="value">
+                      {{ nbr_reviewed }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+          {% endif %}
+
+          {% if nbr_actions_24h %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Actions required at the planning phase for the next 48 hours">
                 <span class="badge badge-lg badge-primary">
-                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED SUPPLY PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> ACTIONS REQUIRED IN 48H </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_planned }}</span>
+                <span class="value">{{ nbr_actions_24h }}</span>
               </p>
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
 
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Distribution plans coming up in the next 2 weeks">
                 <span class="badge badge-lg badge-success">
-                  <span class="oi oi-media-record pulse mr-1"></span> PLANNED DISTRIBUTION PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> UPCOMING DISTRIBUTION </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_planned }}</span>
+                <a href="/admin/planning/distributionplan/?q=&upcoming_delivery=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in upcoming_delivery_plan %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_upcoming_delivery }}
+                  </span>
+                </a>
               </p>
             </span>
             <!-- /.metric -->
           </div>
 
+          {% if nbr_actions_sm %}
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Actions needed and not completed from supply within 10 days after end user monitoring">
                 <span class="badge badge-lg badge-success">
-                  <span class="oi oi-media-record pulse mr-1"></span> APPROVED DISTRIBUTION PLAN </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> ACTION NEEDED AFTER SM </span>
               </div>
               <p class="metric-value h3">
                 <sub>
-                  <i class="oi oi-timer"></i>
+                  <i class="oi oi-clock"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_approved }}</span>
+                <span class="value">{{ nbr_actions_sm }}</span>
               </p>
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
 
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Late deliveries of supplies">
                 <span class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> WAVES DELAYED FOR DELIVERY </span>
-              </div>
-              <p class="metric-value h3">
-                <sub>
-                  <i class="oi oi-timer"></i>
-                </sub>
-                <span class="value">{{ nbr_delayed_delivery }}</span>
-              </p>
-            </span>
-            <!-- /.metric -->
-          </div>
-
-          <div class="col-lg-3">
-            <!-- .metric -->
-            <span class="metric metric-bordered">
-              <div class="metric-badge">
-                <span class="badge badge-lg badge-warning">
-                  <span class="oi oi-media-record pulse mr-1"></span> READY TO DISTRIBUTE </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> LATE DELIVERIES </span>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
-                <span class="value">{{ nbr_dist_ready }}</span>
+                <a href="/admin/planning/distributionplan/?q=&late_delivery=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in delayed_delivery_plans %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_delayed_delivery }}
+                  </span>
+                </a>
               </p>
             </span>
             <!-- /.metric -->
@@ -113,19 +209,54 @@
           <div class="col-lg-3">
             <!-- .metric -->
             <span class="metric metric-bordered">
-              <div class="metric-badge">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Discrepancy between quantity of supplies received and quantity of supplies dispatched">
+                <span class="badge badge-lg badge-warning">
+                  <span class="oi oi-media-record pulse mr-1"></span> QUANTITY GAP </span>
+              </div>
+              <p class="metric-value h3">
+                <sub>
+                  <i class="oi oi-warning"></i>
+                </sub>
+
+                <a href="/admin/planning/distributionplan/?q=&quantity_gap=yes" target="_blank">
+                  <span class="value" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                      <div class=&quot;text-left small&quot;>
+                          {% for item in quantity_gap_plans %}
+                          <i class=&quot;fa fa-fw fa-circle text-red&quot;></i> {{ item }}<br>
+                          {% endfor %}
+                      </div>">
+                      {{ nbr_quantity_gap }}
+                  </span>
+                </a>
+              </p>
+            </span>
+            <!-- /.metric -->
+          </div>
+
+          {% if nbr_stock_not_available %}
+          <div class="col-lg-3">
+            <!-- .metric -->
+            <span class="metric metric-bordered">
+              <div class="metric-badge" data-toggle="tooltip" data-html="false" title="" data-original-title="Replenishment and orders of PD supplies not available in stock">
                 <span class="badge badge-lg badge-danger">
-                  <span class="oi oi-media-record pulse mr-1"></span> WAVES NOT RECEIVED </span>
+                  <span class="oi oi-media-record pulse mr-1"></span> STOCK NOT AVAILABLE </span>
               </div>
               <p class="metric-value h3">
                 <sub>
                   <i class="oi oi-warning"></i>
                 </sub>
-                <span class="value">{{ nbr_not_received }}</span>
+                <span class="value">{{ nbr_stock_not_available }}</span>
               </p>
             </span>
             <!-- /.metric -->
           </div>
+          {% endif %}
+
+          {% endif %}
+
+          {% if request.user|has_group:"UNICEF_PO" %}
+
+          {% endif %}
           <!-- /metric column -->
         </div>
         <!-- /metric row -->
@@ -133,17 +264,37 @@
       <div class="section-deck">
         <!-- .card -->
         <div class="card card-fluid">
-          <header class="card-header"> Active Plans </header>
+          <header class="card-header"> Active Distribution request plans
+
+            <ul class="nav navbar-left" style="margin-top: -7px; float: right;" data-step="10" data-intro="Download Dashboard report and raw data">
+              <li class="dropdown">
+                <a id="drop5" href="#" style="font-size: 25px; padding: 10px 25px 0;" class="dropdown-toggle" title="Download report"
+                   data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+                            <i class="fa fa-download faa-bounce animated-hover" style="font-size: 25px;"></i>
+                  <!--<span class="caret"></span>-->
+                </a>
+                <ul id="menu2" class="dropdown-menu animated fadeInDown" role="menu" aria-labelledby="drop5" style="z-index: 3000;">
+                  <li role="presentation" class="divider" style="margin-top: -1px;"></li>
+                  <li role="presentation"><a href="{% url 'planning:export_supply_goods' %}" role="menuitem" tabindex="-1">Goods Report</a>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation"><a href="{% url 'planning:export_supply_goods' %}" role="menuitem" tabindex="-1">Service Report</a>
+                  <li role="presentation" class="divider" style="margin-bottom: -1px;"></li>
+                </ul>
+              </li>
+            </ul>
+
+          </header>
+
           <!-- .lits-group -->
           <div style="height:500px; overflow: scroll;">
-          {% for item in plans %}
+          {% for item in request_waves %}
           <div class="lits-group list-group-flush">
             <!-- .lits-group-item -->
             <div class="list-group-item">
               <!-- .lits-group-item-figure -->
               <div class="list-group-item-figure">
                 <div class="has-badge">
-                  <a href="" class="tile tile-md {{ item.section.color }}">{{ item.section.code }}</a>
+                  <a href="" class="tile tile-md {{ item.plan.plan.section.color }}">{{ item.plan.plan.section.code }}</a>
                   <a href="team" class="">
                     <!--<img src="{% static 'dashboard/team1.jpg' %}" alt="">-->
                   </a>
@@ -153,12 +304,11 @@
               <!-- .lits-group-item-body -->
               <div class="list-group-item-body">
                 <h5 class="card-title mb-2">
-                  <a href="">{{ item }}</a>
+                  <a href="/admin/planning/distributionplan/{{ item.plan_id }}/change/" target="_blank">WAVE #{{ item.wave_number }} {{ item.plan }}</a>
                 </h5>
                 <!--<p class="card-subtitle text-muted"> Progress in 74% - Last update date </p>-->
-                <!--{{ item.plan.all.first }}-->
-                {% with item.plan.all.first as distribution %}
-                <p class="card-subtitle text-muted"> {% if item.plan %} {{ distribution.modified }} {% else %} {{ item.modified }} {% endif %}</p>
+                {% with item.plan as distribution %}
+                <!--<p class="card-subtitle text-muted" style="padding-left: 35px;">{{ distribution.modified }}</p>-->
 
                     <div class="row shop-tracking-status">
 
@@ -169,47 +319,102 @@
 
                                     <div class="order-status-timeline">
                                         <!-- class names: c0 c1 c2 c3 and c4 -->
-                                        {% if not distribution %}
-                                        <div class="order-status-timeline-completion c0 {{ item.section.color }}"></div>
-                                        {% elif distribution.status == 'submitted' %}
-                                        <div class="order-status-timeline-completion c1 {{ item.section.color }}"></div>
-                                        {% elif distribution.delivery_expected_date %}
-                                        <div class="order-status-timeline-completion c2 {{ item.section.color }}"></div>
-                                        {% elif distribution.item_received %}
-                                        <div class="order-status-timeline-completion c3 {{ item.section.color }}"></div>
-                                        {% elif distribution.item_distributed %}
-                                        <div class="order-status-timeline-completion c4 {{ item.section.color }}"></div>
+                                        {% if distribution.item_distributed %}
+                                          <div class="order-status-timeline-completion c4 {{ distribution.plan.section.color }}"></div>
+                                        {% elif item.received_wave_plan.all.first %}
+                                          <div class="order-status-timeline-completion c3 {{ distribution.plan.section.color }}"></div>
+                                        {% elif item.delivery_expected_date %}
+                                          <div class="order-status-timeline-completion c2 {{ distribution.plan.section.color }}"></div>
+                                        {% elif distribution.status == 'submitted' or distribution.status == 'reviewed' or distribution.status == 'cleared' or distribution.status == 'approved' %}
+                                          <div class="order-status-timeline-completion c1 {{ distribution.plan.section.color }}"></div>
+                                        {% else %}
+                                          <div class="order-status-timeline-completion c0 {{ distribution.plan.section.color }}"></div>
                                         {% endif %}
                                     </div>
 
                                     <div class="image-order-status supply-plan-icon active img-circle">
-                                        <span class="status">{{ item.status }}</span>
-                                        <div class="icon"></div>
+                                        <span class="status text-muted">{{ distribution.plan.status }}</span>
+                                        <a href="/admin/planning/supplyplan/{{ distribution.plan_id }}/change/" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i> {{ distribution.plan.reference_number }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i> {{ distribution.plan.pca }}<br>
+                                                </div>">
+                                            </div>
+                                        </a>
                                     </div>
                                     <div class="image-order-status distribution-plan-icon active img-circle">
-                                        <span class="status">{{ distribution.status }}</span>
-                                        <div class="icon"></div>
+                                        <span class="status text-muted">{{ distribution.status }}</span>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#request" target="_blank">
+                                          <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Site: {{ item.site }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Targeting: {{ item.target_population }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Deliver to: {% if item.delivery_location %}{{ item.delivery_location }} {% else %}{{ item.site }}{% endif %}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Contact: {{ item.contact_person }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Quantity: {{ item.quantity_requested }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Date: {{ item.date_required_by }}<br>
+                                                    <i class=&quot;fa fa-fw fa-circle text-red&quot;></i>Expected distribution: {{ item.date_distributed_by }}<br>
+                                                </div>">
+                                            </div>
+                                        </a>
                                     </div>
+
                                     <div class="image-order-status shipping-icon active img-circle">
-                                        <span class="status">{% if distribution.delivery_expected_date %}
-                                                  {{ distribution.delivery_expected_date }}
-                                                {% endif %}
+                                        <span class="status text-muted">
+                                          {% if item.delivery_expected_date %}
+                                              {{ item.delivery_expected_date }}
+                                          {% endif %}
                                         </span>
-                                        <div class="icon"></div>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#request" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                  <div class=&quot;text-left small&quot;>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Quantity: {{ item.quantity_requested }}<br>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Contact: {{ item.contact_person }}<br>
+                                                      <i class=&quot;fa fa-fw fa-circle text-yellow&quot;></i>Deliver to: {% if item.delivery_location %}{{ item.delivery_location }} {% else %}{{ item.site }}{% endif %}<br>
+                                                  </div>">
+                                              </div>
+                                        </a>
                                     </div>
                                     <div class="image-order-status received-icon active img-circle">
-                                        <span class="status">{% if distribution.item_received_date %}
-                                          {{ distribution.item_received_date }}
-                                          {% endif %}
-                                        </span>
-                                        <div class="icon"></div>
+                                      {% if item.received_wave.all %}
+                                          {% with item.received_wave.all.first as received_wave %}
+                                            <span class="status text-muted">
+                                                {{ received_wave.date_received }}
+                                            </span>
+
+                                            <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#receiving" target="_blank">
+                                                <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                    <div class=&quot;text-left small&quot;>
+                                                        <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i>{{ received_wave.supply_item.code }} <br>
+                                                        <i class=&quot;fa fa-fw fa-circle text-teal&quot;></i>{{ received_wave.quantity_received }} of {{ received_wave.quantity_requested }}<br>
+                                                    </div>">
+                                                </div>
+                                            </a>
+                                          {% endwith %}
+                                      {% else %}
+                                          <span class="status text-muted"></span>
+                                          <div class="icon"></div>
+                                      {% endif %}
                                     </div>
                                     <div class="image-order-status distributed-icon active img-circle">
-                                        <span class="status">{% if distribution.item_distributed_date %}
-                                          {{ distribution.item_distributed_date }}
-                                          {% endif %}
+                                      {% if item.distributed_wave.all %}
+                                        <span class="status text-muted">
+                                            {{ item.distributed_wave.all.first.distributed_sites.all.count }} Site(s)
                                         </span>
+                                        <a href="/admin/planning/distributionplan/{{ distribution.id }}/change/#distribution" target="_blank">
+                                            <div class="icon" data-toggle="tooltip" data-html="true" title="" data-original-title="
+                                                <div class=&quot;text-left small&quot;>
+                                                    {% for local in item.distributed_wave.all.first.distributed_sites.all %}
+                                                    <i class=&quot;fa fa-fw fa-circle text-orange&quot;></i> {{ local }}<br>
+                                                    {% endfor %}
+                                                </div>">
+                                            </div>
+                                        </a>
+                                      {% else %}
+                                        <span class="status text-muted"></span>
                                         <div class="icon"></div>
+                                      {% endif %}
                                     </div>
 
                                 </div>

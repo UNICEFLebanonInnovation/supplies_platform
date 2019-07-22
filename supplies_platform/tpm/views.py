@@ -21,11 +21,28 @@ from django_filters.views import FilterView
 from django_tables2 import RequestConfig, SingleTableView
 from django_tables2.export.views import ExportMixin
 
-from .models import TPMVisit, AssessmentHash
-from .filters import TPMVisitFilter
-from .tables import BootstrapTable, TPMVisitTable
-from .serializers import TPMVisitSerializer
+from .models import SMVisit, AssessmentHash
+from .filters import SMVisitFilter
+from .tables import BootstrapTable, SMVisitTable, TPMVisitTable
+from .serializers import SMVisitSerializer
 from supplies_platform.users.util import has_group
+
+
+class SMListView(LoginRequiredMixin,
+                 FilterView,
+                 ExportMixin,
+                 SingleTableView,
+                 RequestConfig):
+
+    table_class = SMVisitTable
+    model = SMVisit
+    template_name = 'tpm/unicef.visit.html'
+    table = BootstrapTable(SMVisit.objects.all(), order_by='-id')
+
+    filterset_class = SMVisitFilter
+
+    def get_queryset(self):
+        return SMVisit.objects.filter(type='quality')
 
 
 class TPMListView(LoginRequiredMixin,
@@ -35,27 +52,20 @@ class TPMListView(LoginRequiredMixin,
                   RequestConfig):
 
     table_class = TPMVisitTable
-    model = TPMVisit
-    template_name = 'tpm/visits2.html'
-    table = BootstrapTable(TPMVisit.objects.all(), order_by='-id')
+    model = SMVisit
+    template_name = 'tpm/tpm.visit.html'
+    table = BootstrapTable(SMVisit.objects.all(), order_by='-id')
 
-    filterset_class = TPMVisitFilter
+    filterset_class = SMVisitFilter
 
     def get_queryset(self):
-        # if has_group(self.request.user, 'TPM_COMPANY'):
-        #     return TPMVisit.objects.filter(assigned_to_tpm=self.request.user)
-        return TPMVisit.objects.all()
-
-    # def get_context_data(self, **kwargs):
-    #
-    #     context = super(TPMListView, self).get_context_data(**kwargs)
-    #     table = self.get_table(**self.get_table_kwargs())
-    #     context[self.get_context_table_name(table)] = table
-    #     return context
+        if has_group(self.request.user, 'TPM_COMPANY'):
+            return SMVisit.objects.filter(assigned_to=self.request.user, type='quantity')
+        return SMVisit.objects.all()
 
 
-class TPMAssessment(SingleObjectMixin, RedirectView):
-    model = TPMVisit
+class SMAssessment(SingleObjectMixin, RedirectView):
+    model = SMVisit
 
     def get_redirect_url(self, *args, **kwargs):
         tpm_visit = self.get_object()
@@ -69,16 +79,19 @@ class TPMAssessment(SingleObjectMixin, RedirectView):
             timestamp=time.time()
         )
         assessment_form = ''
+        callback_url = ''
         if assessment_slug == 'quality':
-            if assessment_mode == 'online':
-                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'  # Online only
-            else:
-                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8V'  # Online / Offline
-        if assessment_slug == 'quantity':
+            callback_url = self.request.META.get('HTTP_REFERER', reverse('tpm:unicef_visits', args={}))
             if assessment_mode == 'online':
                 assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8V'  # Online only
             else:
-                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8O'  # Online / Offline
+                assessment_form = 'https://ee.humanitarianresponse.info/x/#YS8V'  # Online / Offline
+        if assessment_slug == 'quantity':
+            callback_url = self.request.META.get('HTTP_REFERER', reverse('tpm:tpm_visits', args={}))
+            if assessment_mode == 'online':
+                assessment_form = 'https://ee.humanitarianresponse.info/single/::YS8O'  # Online only
+            else:
+                assessment_form = 'https://ee.humanitarianresponse.info/x/::YS8O'  # Online / Offline
 
         url = '{form}?d[supply]={supply}&d[partnership]={partnership}&d[supply_item]={supply_item}' \
               '&d[location]={location}&d[quantity]={quantity}&d[distribution_date]={distribution_date}' \
@@ -90,13 +103,13 @@ class TPMAssessment(SingleObjectMixin, RedirectView):
                 location=tpm_visit.site,
                 quantity=tpm_visit.quantity_distributed,
                 distribution_date=tpm_visit.distribution_date,
-                callback=self.request.META.get('HTTP_REFERER', reverse('tpm:visits', args={}))
+                callback=callback_url
         )
         return url
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class TPMVisitSubmission(SingleObjectMixin, View):
+class SMVisitSubmission(SingleObjectMixin, View):
     def post(self, request, *args, **kwargs):
         if 'supply' not in request.body:
             return HttpResponseBadRequest()
@@ -105,27 +118,20 @@ class TPMVisitSubmission(SingleObjectMixin, View):
 
         hashing = AssessmentHash.objects.get(hashed=payload['supply'])
 
-        tpm_visit = TPMVisit.objects.get(id=int(hashing.tpm_visit))
-
-        if hashing.assessment_slug == 'quantity':
-            tpm_visit.quantity_assessment_completed = True
-            tpm_visit.quantity_assessment = payload
-            tpm_visit.quantity_assessment_completed_date = datetime.datetime.now()
-
-        if hashing.assessment_slug == 'quality':
-            tpm_visit.quality_assessment_completed = True
-            tpm_visit.quality_assessment = payload
-            tpm_visit.quality_assessment_completed_date = datetime.datetime.now()
+        tpm_visit = SMVisit.objects.get(id=int(hashing.tpm_visit))
+        tpm_visit.assessment_completed = True
+        tpm_visit.assessment = payload
+        tpm_visit.assessment_completed_date = datetime.datetime.now()
 
         tpm_visit.save()
 
         return HttpResponse()
 
 
-class TPMVisitViewSet(mixins.UpdateModelMixin,
-                      viewsets.GenericViewSet):
+class SMVisitViewSet(mixins.UpdateModelMixin,
+                     viewsets.GenericViewSet):
 
-    model = TPMVisit
-    queryset = TPMVisit.objects.all()
-    serializer_class = TPMVisitSerializer
+    model = SMVisit
+    queryset = SMVisit.objects.all()
+    serializer_class = SMVisitSerializer
     permission_classes = (permissions.IsAuthenticated,)

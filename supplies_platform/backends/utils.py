@@ -4,10 +4,11 @@ import datetime
 import pyrebase
 
 from time import mktime
-from mailer import send_messaage
+from mailer import send_multi_message, send_simple_message
+from supplies_platform.users.models import User
 
 
-def send_notification(user_group, subject, obj, level='info', partner=None, recipient=None):
+def send_notification(user_group, subject, obj, tab='#general', level='info', partner=None, recipient=None):
     from supplies_platform.backends.models import Notification
 
     instance = Notification.objects.create(
@@ -18,7 +19,8 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
         object_id=obj.id,
         model=obj.__class__.__name__,
         description=obj.__unicode__(),
-        level=level
+        level=level,
+        tab=tab
     )
 
     config = {
@@ -43,4 +45,49 @@ def send_notification(user_group, subject, obj, level='info', partner=None, reci
     }
     db.child("notifications").push(data)
 
-    # send_messaage(subject, 'to do', 'sms@unicef.org', [recipient.email])
+    try:
+        recipients = User.objects.filter(
+            groups__name=user_group,
+            section=obj.plan_section,
+            email__isnull=False,
+        ).values_list('email', flat=True).distinct()
+        content = '{}: {} \\r\\n Please click on the link: {}'.format(
+            subject,
+            obj.__unicode__(),
+            obj.get_path(tab)
+        )
+
+        recipients = ['unicef.sms@gmail.com']
+        send_simple_message(subject, content, recipients)
+    except Exception as ex:
+        print(ex.message)
+        pass
+
+
+def get_data(url, apifunc, token, protocol='HTTPS'):
+
+    headers = {"Content-type": "application/json",
+               "Authorization": token,
+               "HTTP_REFERER": "etools.unicef.org",
+               # "Cookie": "tfUDK97TJSCkB4Nlm2wuMx67XNOYWpKT18BeV3RNoeq6nO7FXemAZypct369yF9I",
+               # "X-CSRFToken": 'tfUDK97TJSCkB4Nlm2wuMx67XNOYWpKT18BeV3RNoeq6nO7FXemAZypct369yF9I',
+               # "username": "achamseddine@unicef.org", "password": "Alouche21!"
+               }
+
+    if protocol == 'HTTPS':
+        conn = httplib.HTTPSConnection(url)
+    else:
+        conn = httplib.HTTPConnection(url)
+    conn.request('GET', apifunc, "", headers)
+    response = conn.getresponse()
+    result = response.read()
+
+    if not response.status == 200:
+        if response.status == 400 or response.status == 403:
+            raise Exception(str(response.status) + response.reason + response.read())
+        else:
+            raise Exception(str(response.status) + response.reason)
+
+    conn.close()
+
+    return result

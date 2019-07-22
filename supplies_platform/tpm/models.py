@@ -16,6 +16,78 @@ from supplies_platform.planning.models import SupplyPlan
 from supplies_platform.users.util import generate_hash
 
 
+class SMVisit(TimeStampedModel):
+
+    supply_plan = models.ForeignKey(SupplyPlan, related_name='+')
+    distribution_plan = models.ForeignKey(DistributionPlan, related_name='+')
+    supply_item = models.ForeignKey(SupplyItem, blank=False, related_name='+')
+    site = models.ForeignKey(Location, blank=False, related_name='+')
+    quantity_distributed = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    distribution_date = models.DateField(
+        null=True, blank=True
+    )
+    type = models.CharField(
+        max_length=10,
+        null=True, blank=False,
+        choices=Choices(
+            ('quantity', 'Quantity'),
+            ('quality', 'Quality')
+        )
+    )
+
+    assessment = JSONField(blank=True, null=True)
+    assessment_completed = models.BooleanField(blank=True, default=False)
+    assessment_completed_date = models.DateTimeField(
+        blank=True, null=True
+    )
+    requested_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+    assigned_to = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        related_name='+'
+    )
+
+    class Meta:
+        ordering = ['created']
+        verbose_name = 'SM Visit'
+        verbose_name_plural = 'SM Visits'
+
+    def __unicode__(self):
+        return u'{} - {} - {}'.format(
+            self.supply_plan.partner,
+            self.site,
+            self.supply_item
+        )
+
+    def get_path(self, tab=None):
+        if self.type == 'quality':
+            return 'https://supply-platform.herokuapp.com/tpm/unicef-visits/'
+        else:
+            return 'https://supply-platform.herokuapp.com/tpm/tpm-visits/'
+
+    @property
+    def supply_plan_partner(self):
+        return self.supply_plan.partner
+
+    @property
+    def supply_plan_partnership(self):
+        return self.supply_plan.pca
+
+    @property
+    def supply_plan_section(self):
+        return self.supply_plan.section
+
+    @property
+    def supply_plan_tpm(self):
+        return self.supply_plan.tpm_focal_point
+
+
 class TPMVisit(TimeStampedModel):
 
     supply_plan = models.ForeignKey(SupplyPlan, related_name='+')
